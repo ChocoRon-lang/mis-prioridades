@@ -789,22 +789,42 @@
     flex-shrink: 0;
   }
 
-  .study-cta {
-    display: block;
-    width: calc(100% - 40px);
+  .study-modes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
     margin: 14px 20px 0 20px;
-    padding: 14px;
+  }
+  .study-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 13px 8px;
     border-radius: 13px;
     border: none;
     background: var(--accent);
     color: #fff;
-    font-size: 14.5px;
-    font-weight: 700;
-    letter-spacing: -0.01em;
     box-shadow: 0 6px 20px -4px var(--accent-soft);
   }
+  .study-cta .mode-title { font-size: 13.5px; font-weight: 700; letter-spacing: -0.01em; }
+  .study-cta .mode-sub { font-size: 11px; font-weight: 600; opacity: 0.85; }
   .study-cta:active { opacity: 0.85; }
   .study-cta:disabled { background: var(--field-bg); color: var(--ink-soft); box-shadow: none; }
+  .study-cta.free { background: #F5A623; box-shadow: 0 6px 20px -4px rgba(245,166,35,0.35); }
+  .study-cta.free:disabled { background: var(--field-bg); color: var(--ink-soft); box-shadow: none; }
+
+  .study-progress-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .study-mode-badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--accent-strong);
+    background: var(--accent-soft);
+    padding: 2px 8px;
+    border-radius: 6px;
+  }
+  .study-mode-badge.free { color: #F5A623; background: rgba(245,166,35,0.15); }
 
   .add-card-toggle {
     display: block;
@@ -1064,9 +1084,16 @@
         </button>
       </div>
 
-      <button class="study-cta" id="studyBtn">
-        <span id="studyCtaText">Estudiar · 0 pendientes</span>
-      </button>
+      <div class="study-modes">
+        <button class="study-cta classic" id="studyClassicBtn">
+          <span class="mode-title">📅 Modo clásico</span>
+          <span class="mode-sub" id="classicCtaSub">0 pendientes</span>
+        </button>
+        <button class="study-cta free" id="studyFreeBtn">
+          <span class="mode-title">⚡ Modo libre</span>
+          <span class="mode-sub" id="freeCtaSub">Practica ahora</span>
+        </button>
+      </div>
 
       <button class="add-card-toggle" id="addCardToggle">+ Agregar tarjeta</button>
       <div class="add-card-form" id="addCardForm" style="display:none;">
@@ -1098,7 +1125,10 @@
         <button class="icon-btn" id="studyExitBtn" aria-label="Salir del repaso">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
-        <div class="study-progress" id="studyProgress">1 / 5</div>
+        <div class="study-progress-wrap">
+          <span class="study-mode-badge" id="studyModeBadge">Modo clásico</span>
+          <div class="study-progress" id="studyProgress">1 / 5</div>
+        </div>
         <div style="width:38px;"></div>
       </div>
 
@@ -1240,8 +1270,10 @@
   const deckBackBtn = document.getElementById('deckBackBtn');
   const deckDeleteBtn = document.getElementById('deckDeleteBtn');
   const deckDetailNameEl = document.getElementById('deckDetailName');
-  const studyBtn = document.getElementById('studyBtn');
-  const studyCtaText = document.getElementById('studyCtaText');
+  const studyClassicBtn = document.getElementById('studyClassicBtn');
+  const classicCtaSub = document.getElementById('classicCtaSub');
+  const studyFreeBtn = document.getElementById('studyFreeBtn');
+  const freeCtaSub = document.getElementById('freeCtaSub');
   const addCardToggle = document.getElementById('addCardToggle');
   const addCardForm = document.getElementById('addCardForm');
   const newCardFrontEl = document.getElementById('newCardFront');
@@ -1253,6 +1285,7 @@
   const cardListEl = document.getElementById('cardList');
   const studyExitBtn = document.getElementById('studyExitBtn');
   const studyProgressEl = document.getElementById('studyProgress');
+  const studyModeBadgeEl = document.getElementById('studyModeBadge');
   const studyCardEl = document.getElementById('studyCard');
   const studyCardLabelEl = document.getElementById('studyCardLabel');
   const studyCardTextEl = document.getElementById('studyCardText');
@@ -1277,9 +1310,13 @@
   let decks = [];
   let activeDeckId = null;
   let cardEditMode = false;
-  let studyQueue = [];
+  let studyQueue = []; // array of { card, box } wrappers
   let studyIndex = 0;
   let studyFlipped = false;
+  let studyMode = 'classic'; // 'classic' | 'free'
+  let freeTotal = 0;
+  let freeMastered = 0;
+  const FREE_MASTER_BOX = 2; // successes needed to retire a card for the session
 
   let tasks = [];
   let history = [];
@@ -2103,8 +2140,10 @@
 
     deckDetailNameEl.textContent = deck.name;
     const due = dueCountForDeck(deck);
-    studyCtaText.textContent = due > 0 ? `Estudiar · ${due} pendiente${due === 1 ? '' : 's'}` : 'No hay tarjetas pendientes hoy';
-    studyBtn.disabled = due === 0;
+    classicCtaSub.textContent = due > 0 ? `${due} pendiente${due === 1 ? '' : 's'}` : 'Nada pendiente hoy';
+    studyClassicBtn.disabled = due === 0;
+    freeCtaSub.textContent = deck.cards.length > 0 ? 'Practica ahora' : 'Agrega tarjetas primero';
+    studyFreeBtn.disabled = deck.cards.length === 0;
 
     cardEmptyEl.style.display = deck.cards.length === 0 ? '' : 'none';
     const tKey = todayKey();
@@ -2121,14 +2160,33 @@
     });
   }
 
-  function startStudy(){
+  function startStudy(mode){
     const deck = activeDeck();
     if (!deck) return;
-    const tKey = todayKey();
-    studyQueue = deck.cards.filter(c => c.due <= tKey).sort(() => Math.random() - 0.5);
+    studyMode = mode;
+
+    if (mode === 'classic') {
+      const tKey = todayKey();
+      studyQueue = deck.cards
+        .filter(c => c.due <= tKey)
+        .sort(() => Math.random() - 0.5)
+        .map(c => ({ card: c, box: 0 }));
+    } else {
+      studyQueue = deck.cards
+        .slice()
+        .sort(() => Math.random() - 0.5)
+        .map(c => ({ card: c, box: 0 }));
+      freeTotal = studyQueue.length;
+      freeMastered = 0;
+    }
+
     studyIndex = 0;
     studyFlipped = false;
     if (studyQueue.length === 0) return;
+
+    studyModeBadgeEl.textContent = mode === 'classic' ? 'Modo clásico' : 'Modo libre';
+    studyModeBadgeEl.classList.toggle('free', mode === 'free');
+
     deckDetailViewEl.style.display = 'none';
     studyViewEl.style.display = 'flex';
     studyDoneEl.style.display = 'none';
@@ -2138,46 +2196,95 @@
   }
 
   function renderStudyCard(){
-    const card = studyQueue[studyIndex];
-    studyProgressEl.textContent = (studyIndex + 1) + ' / ' + studyQueue.length;
+    const entry = studyQueue[studyIndex];
+    if (studyMode === 'classic') {
+      studyProgressEl.textContent = (studyIndex + 1) + ' / ' + studyQueue.length;
+    } else {
+      studyProgressEl.textContent = 'Dominadas ' + freeMastered + ' / ' + freeTotal;
+    }
     studyFlipped = false;
     studyCardEl.classList.remove('flipped');
     studyCardLabelEl.textContent = 'PREGUNTA';
-    studyCardTextEl.textContent = card.front;
+    studyCardTextEl.textContent = entry.card.front;
     studyRevealBtn.style.display = '';
     studyRateRowEl.style.display = 'none';
   }
 
   function revealAnswer(){
-    const card = studyQueue[studyIndex];
-    if (!card) return;
+    const entry = studyQueue[studyIndex];
+    if (!entry) return;
     studyFlipped = true;
     studyCardEl.classList.add('flipped');
     studyCardLabelEl.textContent = 'RESPUESTA';
-    studyCardTextEl.textContent = card.back;
+    studyCardTextEl.textContent = entry.card.back;
     studyRevealBtn.style.display = 'none';
     studyRateRowEl.style.display = 'grid';
-    document.getElementById('ivAgain').textContent = formatInterval(previewInterval(card, 'again'));
-    document.getElementById('ivHard').textContent = formatInterval(previewInterval(card, 'hard'));
-    document.getElementById('ivGood').textContent = formatInterval(previewInterval(card, 'good'));
-    document.getElementById('ivEasy').textContent = formatInterval(previewInterval(card, 'easy'));
+
+    if (studyMode === 'classic') {
+      document.getElementById('ivAgain').textContent = formatInterval(previewInterval(entry.card, 'again'));
+      document.getElementById('ivHard').textContent = formatInterval(previewInterval(entry.card, 'hard'));
+      document.getElementById('ivGood').textContent = formatInterval(previewInterval(entry.card, 'good'));
+      document.getElementById('ivEasy').textContent = formatInterval(previewInterval(entry.card, 'easy'));
+    } else {
+      // Free mode reschedules within the session (turns), not calendar days.
+      document.getElementById('ivAgain').textContent = 'pronto';
+      document.getElementById('ivHard').textContent = 'de nuevo';
+      document.getElementById('ivGood').textContent = '+1';
+      document.getElementById('ivEasy').textContent = deckAppearsMastered(entry, 'easy') ? 'lista' : '+1';
+    }
+  }
+
+  function deckAppearsMastered(entry, rating){
+    const gain = rating === 'easy' ? 2 : rating === 'good' ? 1 : 0;
+    return (entry.box + gain) >= FREE_MASTER_BOX;
   }
 
   function rateCard(rating){
-    const card = studyQueue[studyIndex];
-    if (!card) return;
-    scheduleCard(card, rating);
-    scheduleSave();
-    studyIndex += 1;
-    if (studyIndex >= studyQueue.length) {
-      studyCardEl.style.display = 'none';
-      studyRevealBtn.style.display = 'none';
-      studyRateRowEl.style.display = 'none';
-      studyDoneEl.style.display = 'flex';
-      studyProgressEl.textContent = studyQueue.length + ' / ' + studyQueue.length;
-    } else {
+    const entry = studyQueue[studyIndex];
+    if (!entry) return;
+
+    if (studyMode === 'classic') {
+      scheduleCard(entry.card, rating);
+      scheduleSave();
+      studyIndex += 1;
+      if (studyIndex >= studyQueue.length) { finishStudy(); return; }
       renderStudyCard();
+      return;
     }
+
+    // Free mode: requeue within this session based on how well it went,
+    // measured in "turns" (positions in the queue) instead of days.
+    studyQueue.splice(studyIndex, 1);
+    if (rating === 'again') {
+      entry.box = 0;
+      const pos = Math.min(studyQueue.length, 1);
+      studyQueue.splice(pos, 0, entry);
+    } else if (rating === 'hard') {
+      const pos = Math.min(studyQueue.length, 3);
+      studyQueue.splice(pos, 0, entry);
+    } else {
+      entry.box += rating === 'easy' ? 2 : 1;
+      if (entry.box >= FREE_MASTER_BOX) {
+        freeMastered += 1; // retired for this session, not reinserted
+      } else {
+        const pos = Math.min(studyQueue.length, rating === 'easy' ? 10 : 6);
+        studyQueue.splice(pos, 0, entry);
+      }
+    }
+
+    if (studyQueue.length === 0) { finishStudy(); return; }
+    if (studyIndex >= studyQueue.length) studyIndex = 0;
+    renderStudyCard();
+  }
+
+  function finishStudy(){
+    studyCardEl.style.display = 'none';
+    studyRevealBtn.style.display = 'none';
+    studyRateRowEl.style.display = 'none';
+    studyDoneEl.style.display = 'flex';
+    studyProgressEl.textContent = studyMode === 'classic'
+      ? '¡Listo!'
+      : 'Dominadas ' + freeMastered + ' / ' + freeTotal;
   }
 
   function exitStudy(){
@@ -2208,7 +2315,8 @@
     if (deck) deleteDeck(deck.id);
   });
 
-  studyBtn.addEventListener('click', startStudy);
+  studyClassicBtn.addEventListener('click', () => startStudy('classic'));
+  studyFreeBtn.addEventListener('click', () => startStudy('free'));
 
   addCardToggle.addEventListener('click', () => {
     const showing = addCardForm.style.display !== 'none';
