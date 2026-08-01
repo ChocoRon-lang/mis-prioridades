@@ -34,6 +34,27 @@
     overscroll-behavior-y: contain;
   }
   #app { display:flex; flex-direction:column; height:100dvh; }
+  .page { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+
+  .bottom-tabs {
+    display: flex;
+    flex-shrink: 0;
+    border-top: 1px solid var(--hairline);
+    background: var(--bg);
+    padding: 6px 8px calc(var(--safe-bottom) + 6px) 8px;
+  }
+  .bottom-tab {
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    border: none; background: none;
+    padding: 6px 4px;
+    color: var(--ink-soft);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .bottom-tab.active { color: var(--accent); }
+  .bottom-tab:active { opacity: 0.7; }
 
   header {
     padding: calc(var(--safe-top) + 14px) 20px 12px 20px;
@@ -409,7 +430,7 @@
   main {
     flex: 1;
     overflow-y: auto;
-    padding: 6px 20px calc(var(--safe-bottom) + 24px) 20px;
+    padding: 6px 20px 20px 20px;
   }
 
   .empty {
@@ -583,6 +604,127 @@
     background: none; border: none; padding: 6px 0;
   }
 
+  /* ---- Habits page ---- */
+  .habits-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin: 14px 20px 0 20px;
+  }
+  .month-switcher {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .month-arrow {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    border: 1px solid var(--hairline);
+    background: var(--card);
+    color: var(--ink-soft);
+    font-size: 15px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .month-arrow:active { opacity: 0.7; }
+  .month-label {
+    font-size: 14.5px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    min-width: 108px;
+    text-align: center;
+    text-transform: capitalize;
+  }
+  .habit-edit-btn {
+    border: none; background: none;
+    color: var(--accent-strong);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 4px;
+  }
+  .habit-edit-btn.active { color: var(--urgent); }
+
+  .habit-empty {
+    margin-top: 60px;
+    text-align: center;
+    color: var(--ink-soft);
+    padding: 0 20px;
+  }
+  .habit-empty .glyph { font-size: 34px; margin-bottom: 10px; opacity: 0.7; }
+  .habit-empty p { font-size: 14px; margin: 4px 0; }
+
+  .habit-grid-wrap {
+    flex: 1;
+    overflow: auto;
+    margin: 10px 0 0 0;
+    padding: 0 0 20px 0;
+  }
+  table.habit-grid {
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 0 20px;
+  }
+  .habit-grid th, .habit-grid td {
+    padding: 0;
+    text-align: center;
+  }
+  .habit-name-cell {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: var(--bg);
+    text-align: left !important;
+    padding-right: 10px !important;
+    max-width: 132px;
+  }
+  .habit-name-inner {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    padding: 4px 10px 4px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .habit-remove {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--urgent);
+    color: #fff;
+    border: none;
+    font-size: 12px;
+    line-height: 1;
+    display: none;
+    align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .habit-grid.editing .habit-remove { display: flex; }
+  .habit-grid.editing .habit-name-label { color: var(--urgent); }
+
+  .habit-daynum {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    padding-bottom: 6px !important;
+    font-variant-numeric: tabular-nums;
+  }
+  .habit-daynum.today { color: var(--accent-strong); }
+  .habit-daynum.weekend { opacity: 0.55; }
+
+  .habit-cell-wrap { padding: 2px !important; }
+  .habit-cell {
+    width: 26px; height: 26px;
+    border-radius: 8px;
+    border: 1px solid var(--hairline);
+    background: var(--field-bg);
+    display: block;
+    margin: 0 auto;
+  }
+  .habit-cell.today { border-color: var(--accent); }
+  .habit-cell.done {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 10px -1px var(--accent-soft);
+  }
+  .habit-cell.future { opacity: 0.35; }
+  .habit-row-spacer td { height: 6px; }
+
   ::-webkit-scrollbar { display: none; }
 </style>
 </head>
@@ -611,28 +753,77 @@
     </div>
   </header>
 
-  <div class="add-bar">
-    <input id="newTaskInput" type="text" placeholder="Nueva tarea" maxlength="140" />
-    <button class="add-btn" id="addBtn" disabled>+</button>
+  <div id="tasksPage" class="page">
+    <div class="add-bar">
+      <input id="newTaskInput" type="text" placeholder="Nueva tarea" maxlength="140" />
+      <button class="add-btn" id="addBtn" disabled>+</button>
+    </div>
+
+    <div class="view-tabs">
+      <button class="view-tab active" id="tabMine" data-view="mine">Mi orden</button>
+      <button class="view-tab" id="tabRecommended" data-view="recommended">Recomendado</button>
+    </div>
+
+    <main>
+      <div class="empty" id="emptyState" style="display:none;">
+        <div class="glyph">✓</div>
+        <p><strong>Todo en orden</strong></p>
+        <p>Agrega una tarea arriba para empezar.</p>
+      </div>
+      <ul id="list"></ul>
+      <div id="recommendedView" style="display:none;">
+        <p class="rec-hint">Ordenado según la matriz de Eisenhower: primero lo urgente e importante, luego lo importante, después lo urgente, y al final lo que ni urge ni importa.</p>
+        <ul id="recommendedList"></ul>
+      </div>
+    </main>
   </div>
 
-  <div class="view-tabs">
-    <button class="view-tab active" id="tabMine" data-view="mine">Mi orden</button>
-    <button class="view-tab" id="tabRecommended" data-view="recommended">Recomendado</button>
+  <div id="habitsPage" class="page" style="display:none;">
+    <div class="habits-toolbar">
+      <div class="month-switcher">
+        <button class="month-arrow" id="habitPrevMonth" aria-label="Mes anterior">‹</button>
+        <span class="month-label" id="habitMonthLabel">—</span>
+        <button class="month-arrow" id="habitNextMonth" aria-label="Mes siguiente">›</button>
+      </div>
+      <button class="habit-edit-btn" id="habitEditToggle">Editar</button>
+    </div>
+
+    <div class="add-bar">
+      <input id="newHabitInput" type="text" placeholder="Nuevo hábito" maxlength="60" />
+      <button class="add-btn" id="addHabitBtn" disabled>+</button>
+    </div>
+
+    <div class="habit-empty" id="habitEmpty" style="display:none;">
+      <div class="glyph">📅</div>
+      <p><strong>Sin hábitos todavía</strong></p>
+      <p>Agrega uno arriba para empezar a marcar tus días.</p>
+    </div>
+
+    <div class="habit-grid-wrap" id="habitGridWrap" style="display:none;">
+      <table class="habit-grid" id="habitGrid"></table>
+    </div>
   </div>
 
-  <main>
-    <div class="empty" id="emptyState" style="display:none;">
-      <div class="glyph">✓</div>
-      <p><strong>Todo en orden</strong></p>
-      <p>Agrega una tarea arriba para empezar.</p>
-    </div>
-    <ul id="list"></ul>
-    <div id="recommendedView" style="display:none;">
-      <p class="rec-hint">Ordenado según la matriz de Eisenhower: primero lo urgente e importante, luego lo importante, después lo urgente, y al final lo que ni urge ni importa.</p>
-      <ul id="recommendedList"></ul>
-    </div>
-  </main>
+  <nav class="bottom-tabs">
+    <button class="bottom-tab active" id="navTasks" data-page="tasks">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none">
+        <path d="M4 6h11M4 12h11M4 18h7" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+        <path d="M18.5 5.5l1.3 1.3L22.5 4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Tareas</span>
+    </button>
+    <button class="bottom-tab" id="navHabits" data-page="habits">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none">
+        <rect x="3.5" y="4.5" width="17" height="16" rx="3" stroke="currentColor" stroke-width="1.9"/>
+        <path d="M3.5 9.5h17" stroke="currentColor" stroke-width="1.9"/>
+        <path d="M8 3v3M16 3v3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+        <circle cx="8" cy="13.5" r="1.3" fill="currentColor"/>
+        <circle cx="12" cy="13.5" r="1.3" fill="currentColor"/>
+        <circle cx="8" cy="17.3" r="1.3" fill="currentColor"/>
+      </svg>
+      <span>Hábitos</span>
+    </button>
+  </nav>
 </div>
 
 <div class="history-overlay" id="historyOverlay">
@@ -694,6 +885,20 @@
   const settingsCloseBtn = document.getElementById('settingsCloseBtn');
   const themeGridEl = document.getElementById('themeGrid');
 
+  const tasksPageEl = document.getElementById('tasksPage');
+  const habitsPageEl = document.getElementById('habitsPage');
+  const navTasksBtn = document.getElementById('navTasks');
+  const navHabitsBtn = document.getElementById('navHabits');
+  const habitPrevMonthBtn = document.getElementById('habitPrevMonth');
+  const habitNextMonthBtn = document.getElementById('habitNextMonth');
+  const habitMonthLabelEl = document.getElementById('habitMonthLabel');
+  const newHabitInputEl = document.getElementById('newHabitInput');
+  const addHabitBtn = document.getElementById('addHabitBtn');
+  const habitEditToggleBtn = document.getElementById('habitEditToggle');
+  const habitEmptyEl = document.getElementById('habitEmpty');
+  const habitGridWrapEl = document.getElementById('habitGridWrap');
+  const habitGridEl = document.getElementById('habitGrid');
+
   const THEMES = [
     { key: 'dark',   name: 'Oscuro',     bg: '#0B0B0E', accent: '#6E7BFF' },
     { key: 'light',  name: 'Claro',      bg: '#F2F2F7', accent: '#5856D6' },
@@ -702,6 +907,10 @@
     { key: 'forest', name: 'Bosque',     bg: '#EFF6EF', accent: '#22874F' },
   ];
   let currentTheme = 'dark';
+  let currentPage = 'tasks'; // 'tasks' | 'habits'
+  let habits = [];
+  let habitEditMode = false;
+  let habitMonthCursor = new Date(); // any date within the month being viewed
 
   let tasks = [];
   let history = [];
@@ -747,19 +956,22 @@
       const state = raw ? JSON.parse(raw) : {};
       tasks = Array.isArray(state.tasks) ? state.tasks.map(migrateTask) : [];
       history = Array.isArray(state.history) ? state.history : [];
+      habits = Array.isArray(state.habits) ? state.habits : [];
       applyTheme(state.theme || 'dark');
     } catch(e) {
       tasks = [];
       history = [];
+      habits = [];
       applyTheme('dark');
     }
     loaded = true;
     render();
+    renderHabits();
   }
 
-  // All data (tasks, history, theme) lives in one storage key and is written
-  // together, debounced, so rapid actions (like typing) don't flood the API
-  // with a separate request per keystroke.
+  // All data (tasks, history, theme, habits) lives in one storage key and is
+  // written together, debounced, so rapid actions (like typing) don't flood
+  // the API with a separate request per keystroke.
   let saveTimer = null;
   function scheduleSave(){
     clearTimeout(saveTimer);
@@ -768,7 +980,7 @@
 
   function persist(){
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ tasks, history, theme: currentTheme }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ tasks, history, theme: currentTheme, habits }));
     } catch(e) {
       console.error('No se pudo guardar', e);
     }
@@ -1248,6 +1460,135 @@
   settingsCloseBtn.addEventListener('click', closeSettings);
   settingsOverlay.addEventListener('click', (e) => {
     if (e.target === settingsOverlay) closeSettings();
+  });
+
+  // ---- Bottom navigation: Tareas / Hábitos ----
+  function setPage(page){
+    if (currentPage === page) return;
+    currentPage = page;
+    tasksPageEl.style.display = page === 'tasks' ? 'flex' : 'none';
+    habitsPageEl.style.display = page === 'habits' ? 'flex' : 'none';
+    navTasksBtn.classList.toggle('active', page === 'tasks');
+    navHabitsBtn.classList.toggle('active', page === 'habits');
+    if (page === 'habits') renderHabits();
+  }
+  navTasksBtn.addEventListener('click', () => setPage('tasks'));
+  navHabitsBtn.addEventListener('click', () => setPage('habits'));
+
+  // ---- Habit tracker ----
+  const MONTH_NAMES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const WEEKDAY_INITIALS = ['D','L','M','M','J','V','S'];
+
+  function pad2(n){ return n < 10 ? '0' + n : '' + n; }
+  function dateKey(y, m, d){ return y + '-' + pad2(m + 1) + '-' + pad2(d); }
+  function todayKey(){ const t = new Date(); return dateKey(t.getFullYear(), t.getMonth(), t.getDate()); }
+
+  function addHabit(name){
+    name = name.trim();
+    if (!name) return;
+    habits.push({ id: uid(), name, dates: {} });
+    scheduleSave();
+    renderHabits();
+  }
+
+  function deleteHabit(id){
+    habits = habits.filter(h => h.id !== id);
+    scheduleSave();
+    renderHabits();
+  }
+
+  function toggleHabitDay(habitId, key){
+    const h = habits.find(h => h.id === habitId);
+    if (!h) return;
+    if (h.dates[key]) delete h.dates[key];
+    else h.dates[key] = true;
+    scheduleSave();
+    renderHabits();
+  }
+
+  function renderHabits(){
+    const y = habitMonthCursor.getFullYear();
+    const m = habitMonthCursor.getMonth();
+    habitMonthLabelEl.textContent = MONTH_NAMES[m] + ' ' + y;
+
+    habitEmptyEl.style.display = habits.length === 0 ? '' : 'none';
+    habitGridWrapEl.style.display = habits.length === 0 ? 'none' : '';
+    if (habits.length === 0) return;
+
+    const daysCount = new Date(y, m + 1, 0).getDate();
+    const tKey = todayKey();
+
+    let html = '<thead><tr><th class="habit-name-cell"></th>';
+    for (let d = 1; d <= daysCount; d++) {
+      const wd = new Date(y, m, d).getDay();
+      const key = dateKey(y, m, d);
+      const isToday = key === tKey;
+      const isWeekend = wd === 0 || wd === 6;
+      html += `<th class="habit-daynum${isToday ? ' today' : ''}${isWeekend ? ' weekend' : ''}">${WEEKDAY_INITIALS[wd]}<br>${d}</th>`;
+    }
+    html += '</tr></thead><tbody>';
+
+    habits.forEach(h => {
+      html += `<tr data-habit-id="${h.id}">`;
+      html += `<td class="habit-name-cell"><div class="habit-name-inner"><button class="habit-remove" data-habit-id="${h.id}">✕</button><span class="habit-name-label">${escapeHtml(h.name)}</span></div></td>`;
+      for (let d = 1; d <= daysCount; d++) {
+        const key = dateKey(y, m, d);
+        const isToday = key === tKey;
+        const isFuture = key > tKey;
+        const done = !!h.dates[key];
+        html += `<td class="habit-cell-wrap"><button class="habit-cell${done ? ' done' : ''}${isToday ? ' today' : ''}${isFuture ? ' future' : ''}" data-habit-id="${h.id}" data-key="${key}" ${isFuture ? 'disabled' : ''} aria-label="${escapeHtml(h.name)} ${key}"></button></td>`;
+      }
+      html += '</tr>';
+    });
+    html += '</tbody>';
+
+    habitGridEl.innerHTML = html;
+    habitGridEl.classList.toggle('editing', habitEditMode);
+
+    habitGridEl.querySelectorAll('.habit-cell:not(:disabled)').forEach(btn => {
+      btn.addEventListener('click', () => toggleHabitDay(btn.dataset.habitId, btn.dataset.key));
+    });
+    habitGridEl.querySelectorAll('.habit-remove').forEach(btn => {
+      btn.addEventListener('click', () => deleteHabit(btn.dataset.habitId));
+    });
+
+    // Keep today's column in view on first render of a given month.
+    if (y === new Date().getFullYear() && m === new Date().getMonth()) {
+      const todayCell = habitGridEl.querySelector('.habit-daynum.today');
+      if (todayCell) todayCell.scrollIntoView({ inline: 'center', block: 'nearest' });
+    }
+  }
+
+  habitPrevMonthBtn.addEventListener('click', () => {
+    habitMonthCursor = new Date(habitMonthCursor.getFullYear(), habitMonthCursor.getMonth() - 1, 1);
+    renderHabits();
+  });
+  habitNextMonthBtn.addEventListener('click', () => {
+    habitMonthCursor = new Date(habitMonthCursor.getFullYear(), habitMonthCursor.getMonth() + 1, 1);
+    renderHabits();
+  });
+
+  newHabitInputEl.addEventListener('input', () => {
+    addHabitBtn.disabled = !newHabitInputEl.value.trim();
+  });
+  newHabitInputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      addHabit(newHabitInputEl.value);
+      newHabitInputEl.value = '';
+      addHabitBtn.disabled = true;
+    }
+  });
+  addHabitBtn.addEventListener('click', () => {
+    addHabit(newHabitInputEl.value);
+    newHabitInputEl.value = '';
+    addHabitBtn.disabled = true;
+  });
+
+  habitEditToggleBtn.addEventListener('click', () => {
+    habitEditMode = !habitEditMode;
+    habitEditToggleBtn.textContent = habitEditMode ? 'Listo' : 'Editar';
+    habitEditToggleBtn.classList.toggle('active', habitEditMode);
+    habitGridEl.classList.toggle('editing', habitEditMode);
   });
 
   load();
