@@ -1184,6 +1184,17 @@
   </div>
 </div>
 
+<div id="loadError" class="auth-screen" style="display:none;">
+  <div class="auth-card">
+    <div class="auth-mark">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 8v5M12 16.5v.1" stroke="#F5A623" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="#F5A623" stroke-width="1.6"/></svg>
+    </div>
+    <h1>No se pudo cargar</h1>
+    <p class="auth-sub">No pudimos traer tus datos desde la nube. Revisa tu conexión e inténtalo de nuevo — no se guardó nada mientras tanto, así que no hay ningún riesgo.</p>
+    <button class="auth-submit" id="loadRetryBtn">Reintentar</button>
+  </div>
+</div>
+
 <div id="app" style="display:none;">
   <header>
     <div>
@@ -1492,6 +1503,8 @@ const db = getFirestore(firebaseApp);
   const listEl = document.getElementById('list');
 
   const authScreenEl = document.getElementById('authScreen');
+  const loadErrorEl = document.getElementById('loadError');
+  const loadRetryBtn = document.getElementById('loadRetryBtn');
   const appEl = document.getElementById('app');
   const authEmailEl = document.getElementById('authEmail');
   const authPasswordEl = document.getElementById('authPassword');
@@ -1647,9 +1660,12 @@ const db = getFirestore(firebaseApp);
   function uid(){ return 't' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 
   let currentUserId = null;
+  let dataLoadOk = false; // becomes true only after a real, successful fetch
 
   async function load(){
     if (!currentUserId) return;
+    dataLoadOk = false;
+    loadErrorEl.style.display = 'none';
     try {
       const snap = await getDoc(doc(db, 'users', currentUserId));
       const state = snap.exists() ? snap.data() : {};
@@ -1658,13 +1674,14 @@ const db = getFirestore(firebaseApp);
       habits = Array.isArray(state.habits) ? state.habits.map(migrateHabit) : [];
       decks = Array.isArray(state.decks) ? state.decks : [];
       applyTheme(state.theme || 'dark');
+      dataLoadOk = true;
     } catch(e) {
       console.error('No se pudieron cargar los datos', e);
-      tasks = [];
-      history = [];
-      habits = [];
-      decks = [];
-      applyTheme('dark');
+      // Do NOT fall back to blank data here — leaving dataLoadOk false blocks
+      // persist() below, so a failed fetch can never overwrite real data in
+      // the cloud with an empty state.
+      loadErrorEl.style.display = 'flex';
+      return;
     }
     loaded = true;
     render();
@@ -1677,12 +1694,13 @@ const db = getFirestore(firebaseApp);
   // (like typing) don't flood the API with a separate request per keystroke.
   let saveTimer = null;
   function scheduleSave(){
+    if (!dataLoadOk) return; // safety net: never schedule a write before a confirmed load
     clearTimeout(saveTimer);
     saveTimer = setTimeout(persist, 350);
   }
 
   async function persist(){
-    if (!currentUserId) return;
+    if (!currentUserId || !dataLoadOk) return;
     try {
       await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, habits, decks });
     } catch(e) {
@@ -1694,7 +1712,9 @@ const db = getFirestore(firebaseApp);
     tasks = []; history = []; habits = []; decks = [];
     openId = null; activeDeckId = null;
     loaded = false;
+    dataLoadOk = false;
     applyTheme('dark');
+    loadErrorEl.style.display = 'none';
 
     currentPage = 'tasks';
     tasksPageEl.style.display = 'flex';
@@ -2893,7 +2913,7 @@ const db = getFirestore(firebaseApp);
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-03.4';
+  const APP_VERSION = '2026-08-03.5';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -2933,6 +2953,8 @@ const db = getFirestore(firebaseApp);
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') checkVersion();
   });
+
+  loadRetryBtn.addEventListener('click', load);
 
   // ---- Authentication ----
   let authMode = 'login'; // 'login' | 'signup'
