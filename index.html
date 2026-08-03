@@ -1158,6 +1158,145 @@
   .version-badge.outdated .version-dot { background: #F5A623; }
   .version-badge:active { opacity: 0.75; }
 
+  /* ---- Finanzas ---- */
+  .safe-to-spend {
+    margin: 14px 20px 0 20px;
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 16px;
+    padding: 18px 16px;
+    text-align: center;
+  }
+  .sts-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+  }
+  .sts-amount {
+    font-size: 34px;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-top: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .sts-amount.negative { color: var(--urgent); }
+  .sts-sub {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 3px;
+  }
+
+  .envelope-item {
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 13px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+  }
+  .envelope-item-top {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .envelope-item-name {
+    font-size: 14.5px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .envelope-item-amounts {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  .envelope-item-amounts .spent { font-weight: 700; color: var(--ink); }
+  .envelope-bar-track {
+    height: 7px;
+    border-radius: 4px;
+    background: var(--field-bg);
+    overflow: hidden;
+  }
+  .envelope-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: #3FC373;
+    transition: width 220ms ease;
+  }
+  .envelope-bar-fill.warn { background: #F5A623; }
+  .envelope-bar-fill.over { background: var(--urgent); }
+
+  .envelope-detail-summary {
+    margin: 14px 20px 0 20px;
+    display: flex;
+    gap: 8px;
+  }
+  .envelope-detail-summary .habit-stat-box { flex: 1; }
+
+  .envelope-budget-edit {
+    margin: 12px 20px 0 20px;
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 10px 12px 12px 12px;
+  }
+  .ebe-row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+
+  .txn-type-toggle { display: flex; gap: 8px; margin-bottom: 4px; }
+  .txn-type-btn {
+    flex: 1;
+    padding: 9px;
+    border-radius: 10px;
+    border: 1px solid var(--hairline);
+    background: var(--field-bg);
+    color: var(--ink-soft);
+    font-size: 13px;
+    font-weight: 650;
+  }
+  .txn-type-btn.expense.active { background: var(--urgent); color: #fff; border-color: transparent; }
+  .txn-type-btn.income.active { background: #3FC373; color: #fff; border-color: transparent; }
+
+  .txn-item {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 11px 12px;
+    margin-bottom: 8px;
+  }
+  .txn-item-info { flex: 1; min-width: 0; }
+  .txn-item-note {
+    font-size: 13.5px;
+    font-weight: 550;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .txn-item-date { font-size: 11px; color: var(--ink-soft); margin-top: 1px; }
+  .txn-item-amount {
+    font-size: 14px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+  }
+  .txn-item-amount.expense { color: var(--urgent); }
+  .txn-item-amount.income { color: #3FC373; }
+  .txn-remove {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--urgent);
+    color: #fff;
+    border: none;
+    font-size: 12px;
+    line-height: 1;
+    display: none;
+    align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  #txnList.editing .txn-remove { display: flex; }
+  #txnList.editing .txn-item-amount { display: none; }
+
   ::-webkit-scrollbar { display: none; }
 </style>
 </head>
@@ -1406,6 +1545,92 @@
 
   </div>
 
+  <div id="financePage" class="page" style="display:none;">
+
+    <!-- Level 1: envelope overview -->
+    <div id="envelopeListView" class="subview">
+      <div class="habits-toolbar">
+        <div class="month-switcher">
+          <button class="month-arrow" id="financePrevMonth" aria-label="Mes anterior">‹</button>
+          <span class="month-label" id="financeMonthLabel">—</span>
+          <button class="month-arrow" id="financeNextMonth" aria-label="Mes siguiente">›</button>
+        </div>
+      </div>
+
+      <div class="safe-to-spend">
+        <div class="sts-label">Te queda para gastar</div>
+        <div class="sts-amount" id="safeToSpendAmount">$0</div>
+        <div class="sts-sub" id="safeToSpendSub">$0 presupuestado</div>
+      </div>
+
+      <div class="add-bar">
+        <input id="newEnvelopeName" type="text" placeholder="Nombre del sobre" maxlength="40" />
+        <input id="newEnvelopeBudget" type="number" inputmode="decimal" placeholder="Presupuesto" style="max-width:110px; flex:none;" />
+        <button class="add-btn" id="addEnvelopeBtn" disabled>+</button>
+      </div>
+
+      <div class="deck-empty" id="envelopeEmpty" style="display:none;">
+        <div class="glyph">💰</div>
+        <p><strong>Sin sobres todavía</strong></p>
+        <p>Crea uno arriba para empezar a repartir tu presupuesto.</p>
+      </div>
+      <main>
+        <ul id="envelopeList"></ul>
+      </main>
+    </div>
+
+    <!-- Level 2: envelope detail (transactions inside an envelope) -->
+    <div id="envelopeDetailView" class="subview" style="display:none;">
+      <div class="cards-toolbar">
+        <button class="icon-btn" id="envelopeBackBtn" aria-label="Volver a sobres">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <h2 class="page-title" id="envelopeDetailName">—</h2>
+        <button class="icon-btn" id="envelopeDeleteBtn" aria-label="Eliminar sobre">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m-9 0 1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+
+      <div class="envelope-detail-summary" id="envelopeDetailSummary"></div>
+
+      <div class="envelope-budget-edit">
+        <span class="field-label" style="margin:0;">Presupuesto mensual</span>
+        <div class="ebe-row">
+          <input class="due" id="editEnvelopeBudget" type="number" inputmode="decimal" style="width:120px;" />
+          <button class="habit-edit-btn" id="saveEnvelopeBudgetBtn">Guardar</button>
+        </div>
+      </div>
+
+      <button class="add-card-toggle" id="addTxnToggle">+ Agregar movimiento</button>
+      <div class="add-card-form" id="addTxnForm" style="display:none;">
+        <div class="txn-type-toggle">
+          <button class="txn-type-btn expense active" data-type="expense">Gasto</button>
+          <button class="txn-type-btn income" data-type="income">Ingreso</button>
+        </div>
+        <div class="field-label">Monto</div>
+        <input class="due" id="newTxnAmount" type="number" inputmode="decimal" style="width:100%;" placeholder="0" />
+        <div class="field-label">Descripción (opcional)</div>
+        <input class="due" id="newTxnNote" type="text" style="width:100%;" placeholder="Ej. Supermercado" />
+        <div class="add-card-actions">
+          <button class="habit-edit-btn" id="cancelTxnBtn">Cancelar</button>
+          <button class="done-toggle" id="saveTxnBtn">Guardar</button>
+        </div>
+      </div>
+
+      <div class="cards-toolbar" style="margin-top:16px;">
+        <h2 class="page-title small">Movimientos de este mes</h2>
+        <button class="habit-edit-btn" id="txnEditToggle">Editar</button>
+      </div>
+      <main>
+        <div class="deck-empty" id="txnEmpty" style="display:none;">
+          <p>Sin movimientos este mes.</p>
+        </div>
+        <ul id="txnList"></ul>
+      </main>
+    </div>
+
+  </div>
+
   <nav class="bottom-tabs">
     <button class="bottom-tab active" id="navTasks" data-page="tasks">
       <svg width="21" height="21" viewBox="0 0 24 24" fill="none">
@@ -1431,6 +1656,14 @@
         <path d="M8 4.5h11a2 2 0 0 1 2 2v10" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
       </svg>
       <span>Repaso</span>
+    </button>
+    <button class="bottom-tab" id="navFinance" data-page="finance">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none">
+        <path d="M3.5 8.5h17v10a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2v-10Z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+        <path d="M3.5 8.5V6a2 2 0 0 1 2-2h9l3 4.5" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+        <circle cx="16.5" cy="14" r="1.6" stroke="currentColor" stroke-width="1.6"/>
+      </svg>
+      <span>Finanzas</span>
     </button>
   </nav>
 </div>
@@ -1550,6 +1783,36 @@ const db = getFirestore(firebaseApp);
 
   const cardsPageEl = document.getElementById('cardsPage');
   const navCardsBtn = document.getElementById('navCards');
+
+  const financePageEl = document.getElementById('financePage');
+  const navFinanceBtn = document.getElementById('navFinance');
+  const envelopeListViewEl = document.getElementById('envelopeListView');
+  const envelopeDetailViewEl = document.getElementById('envelopeDetailView');
+  const financePrevMonthBtn = document.getElementById('financePrevMonth');
+  const financeNextMonthBtn = document.getElementById('financeNextMonth');
+  const financeMonthLabelEl = document.getElementById('financeMonthLabel');
+  const safeToSpendAmountEl = document.getElementById('safeToSpendAmount');
+  const safeToSpendSubEl = document.getElementById('safeToSpendSub');
+  const newEnvelopeNameEl = document.getElementById('newEnvelopeName');
+  const newEnvelopeBudgetEl = document.getElementById('newEnvelopeBudget');
+  const addEnvelopeBtn = document.getElementById('addEnvelopeBtn');
+  const envelopeEmptyEl = document.getElementById('envelopeEmpty');
+  const envelopeListEl = document.getElementById('envelopeList');
+  const envelopeBackBtn = document.getElementById('envelopeBackBtn');
+  const envelopeDeleteBtn = document.getElementById('envelopeDeleteBtn');
+  const envelopeDetailNameEl = document.getElementById('envelopeDetailName');
+  const envelopeDetailSummaryEl = document.getElementById('envelopeDetailSummary');
+  const editEnvelopeBudgetEl = document.getElementById('editEnvelopeBudget');
+  const saveEnvelopeBudgetBtn = document.getElementById('saveEnvelopeBudgetBtn');
+  const addTxnToggle = document.getElementById('addTxnToggle');
+  const addTxnForm = document.getElementById('addTxnForm');
+  const newTxnAmountEl = document.getElementById('newTxnAmount');
+  const newTxnNoteEl = document.getElementById('newTxnNote');
+  const cancelTxnBtn = document.getElementById('cancelTxnBtn');
+  const saveTxnBtn = document.getElementById('saveTxnBtn');
+  const txnEditToggle = document.getElementById('txnEditToggle');
+  const txnEmptyEl = document.getElementById('txnEmpty');
+  const txnListEl = document.getElementById('txnList');
   const deckListViewEl = document.getElementById('deckListView');
   const deckDetailViewEl = document.getElementById('deckDetailView');
   const studyViewEl = document.getElementById('studyView');
@@ -1621,6 +1884,14 @@ const db = getFirestore(firebaseApp);
   let freeMastered = 0;
   const FREE_MASTER_BOX = 2; // successes needed to retire a card for the session
 
+  let envelopes = [];
+  let transactions = [];
+  let activeEnvelopeId = null;
+  let txnEditMode = false;
+  let txnType = 'expense'; // 'expense' | 'income'
+  let financeMonthCursor = new Date();
+
+
   let tasks = [];
   let history = [];
   let openId = null;
@@ -1673,6 +1944,8 @@ const db = getFirestore(firebaseApp);
       history = Array.isArray(state.history) ? state.history : [];
       habits = Array.isArray(state.habits) ? state.habits.map(migrateHabit) : [];
       decks = Array.isArray(state.decks) ? state.decks : [];
+      envelopes = Array.isArray(state.envelopes) ? state.envelopes : [];
+      transactions = Array.isArray(state.transactions) ? state.transactions : [];
       applyTheme(state.theme || 'dark');
       dataLoadOk = true;
     } catch(e) {
@@ -1687,6 +1960,7 @@ const db = getFirestore(firebaseApp);
     render();
     renderHabits();
     renderDeckList();
+    renderEnvelopeList();
   }
 
   // All data (tasks, history, theme, habits, decks) lives in one Firestore
@@ -1702,7 +1976,7 @@ const db = getFirestore(firebaseApp);
   async function persist(){
     if (!currentUserId || !dataLoadOk) return;
     try {
-      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, habits, decks });
+      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, habits, decks, envelopes, transactions });
     } catch(e) {
       console.error('No se pudo guardar', e);
     }
@@ -1710,6 +1984,7 @@ const db = getFirestore(firebaseApp);
 
   function resetLocalState(){
     tasks = []; history = []; habits = []; decks = [];
+    envelopes = []; transactions = []; activeEnvelopeId = null;
     openId = null; activeDeckId = null;
     loaded = false;
     dataLoadOk = false;
@@ -1720,13 +1995,18 @@ const db = getFirestore(firebaseApp);
     tasksPageEl.style.display = 'flex';
     habitsPageEl.style.display = 'none';
     cardsPageEl.style.display = 'none';
+    financePageEl.style.display = 'none';
     navTasksBtn.classList.add('active');
     navHabitsBtn.classList.remove('active');
     navCardsBtn.classList.remove('active');
+    navFinanceBtn.classList.remove('active');
 
     deckDetailViewEl.style.display = 'none';
     studyViewEl.style.display = 'none';
     deckListViewEl.style.display = 'flex';
+
+    envelopeDetailViewEl.style.display = 'none';
+    envelopeListViewEl.style.display = 'flex';
   }
 
   function logChange(taskTitle, action, detail){
@@ -2212,15 +2492,19 @@ const db = getFirestore(firebaseApp);
     tasksPageEl.style.display = page === 'tasks' ? 'flex' : 'none';
     habitsPageEl.style.display = page === 'habits' ? 'flex' : 'none';
     cardsPageEl.style.display = page === 'cards' ? 'flex' : 'none';
+    financePageEl.style.display = page === 'finance' ? 'flex' : 'none';
     navTasksBtn.classList.toggle('active', page === 'tasks');
     navHabitsBtn.classList.toggle('active', page === 'habits');
     navCardsBtn.classList.toggle('active', page === 'cards');
+    navFinanceBtn.classList.toggle('active', page === 'finance');
     if (page === 'habits') renderHabits();
     if (page === 'cards') renderDeckList();
+    if (page === 'finance') renderEnvelopeList();
   }
   navTasksBtn.addEventListener('click', () => setPage('tasks'));
   navHabitsBtn.addEventListener('click', () => setPage('habits'));
   navCardsBtn.addEventListener('click', () => setPage('cards'));
+  navFinanceBtn.addEventListener('click', () => setPage('finance'));
 
   // ---- Habit tracker ----
   const MONTH_NAMES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -2913,7 +3197,7 @@ const db = getFirestore(firebaseApp);
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-03.5';
+  const APP_VERSION = '2026-08-03.6';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -2955,6 +3239,237 @@ const db = getFirestore(firebaseApp);
   });
 
   loadRetryBtn.addEventListener('click', load);
+
+  // ---- Finanzas: envelopes & transactions ----
+  function formatMoney(n){
+    const rounded = Math.round(n);
+    return '$' + rounded.toLocaleString('es-CL');
+  }
+
+  function financeMonthKey(){
+    const y = financeMonthCursor.getFullYear();
+    const m = financeMonthCursor.getMonth();
+    return y + '-' + pad2(m + 1);
+  }
+
+  function monthOfKey(dateStr){
+    return dateStr.slice(0, 7); // "YYYY-MM"
+  }
+
+  function envelopeTxns(envelopeId, monthKey){
+    return transactions.filter(t => t.envelopeId === envelopeId && monthOfKey(t.date) === monthKey);
+  }
+
+  function envelopeSpent(envelopeId, monthKey){
+    const txns = envelopeTxns(envelopeId, monthKey);
+    const expense = txns.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+    const income = txns.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+    return expense - income; // net spent (income offsets spend, e.g. a refund)
+  }
+
+  function activeEnvelope(){
+    return envelopes.find(e => e.id === activeEnvelopeId) || null;
+  }
+
+  function addEnvelope(name, budget){
+    name = name.trim();
+    const b = parseFloat(budget);
+    if (!name || !isFinite(b) || b < 0) return;
+    envelopes.push({ id: uid(), name, budget: b });
+    scheduleSave();
+    renderEnvelopeList();
+  }
+
+  function deleteEnvelope(id){
+    envelopes = envelopes.filter(e => e.id !== id);
+    transactions = transactions.filter(t => t.envelopeId !== id);
+    scheduleSave();
+    backToEnvelopes();
+  }
+
+  function updateEnvelopeBudget(id, budget){
+    const e = envelopes.find(e => e.id === id);
+    const b = parseFloat(budget);
+    if (!e || !isFinite(b) || b < 0) return;
+    e.budget = b;
+    scheduleSave();
+    renderEnvelopeDetail();
+  }
+
+  function addTransaction(envelopeId, type, amount, note){
+    const amt = parseFloat(amount);
+    if (!isFinite(amt) || amt <= 0) return false;
+    transactions.push({
+      id: uid(), envelopeId, type, amount: amt,
+      note: note.trim(), date: todayKey(),
+    });
+    scheduleSave();
+    renderEnvelopeDetail();
+    return true;
+  }
+
+  function deleteTransaction(id){
+    transactions = transactions.filter(t => t.id !== id);
+    scheduleSave();
+    renderEnvelopeDetail();
+  }
+
+  function renderEnvelopeList(){
+    const mKey = financeMonthKey();
+    financeMonthLabelEl.textContent = MONTH_NAMES[financeMonthCursor.getMonth()] + ' ' + financeMonthCursor.getFullYear();
+
+    envelopeEmptyEl.style.display = envelopes.length === 0 ? '' : 'none';
+
+    let totalBudget = 0, totalSpent = 0;
+    envelopeListEl.innerHTML = envelopes.map(e => {
+      const spent = envelopeSpent(e.id, mKey);
+      totalBudget += e.budget;
+      totalSpent += spent;
+      const pct = e.budget > 0 ? Math.min(100, Math.round((spent / e.budget) * 100)) : (spent > 0 ? 100 : 0);
+      const over = spent > e.budget;
+      const barClass = over ? 'over' : (pct >= 80 ? 'warn' : '');
+      return `
+        <li class="envelope-item" data-id="${e.id}">
+          <div class="envelope-item-top">
+            <span class="envelope-item-name">${escapeHtml(e.name)}</span>
+            <span class="envelope-item-amounts"><span class="spent">${formatMoney(spent)}</span> / ${formatMoney(e.budget)}</span>
+          </div>
+          <div class="envelope-bar-track"><div class="envelope-bar-fill ${barClass}" style="width:${Math.max(4, pct)}%"></div></div>
+        </li>`;
+    }).join('');
+
+    envelopeListEl.querySelectorAll('.envelope-item').forEach(el => {
+      el.addEventListener('click', () => openEnvelope(el.dataset.id));
+    });
+
+    const safe = totalBudget - totalSpent;
+    safeToSpendAmountEl.textContent = formatMoney(safe);
+    safeToSpendAmountEl.classList.toggle('negative', safe < 0);
+    safeToSpendSubEl.textContent = `${formatMoney(totalBudget)} presupuestado · ${formatMoney(totalSpent)} gastado`;
+  }
+
+  function openEnvelope(id){
+    activeEnvelopeId = id;
+    envelopeListViewEl.style.display = 'none';
+    envelopeDetailViewEl.style.display = 'flex';
+    addTxnForm.style.display = 'none';
+    txnEditMode = false;
+    txnEditToggle.textContent = 'Editar';
+    renderEnvelopeDetail();
+  }
+
+  function backToEnvelopes(){
+    activeEnvelopeId = null;
+    envelopeDetailViewEl.style.display = 'none';
+    envelopeListViewEl.style.display = 'flex';
+    renderEnvelopeList();
+  }
+
+  function renderEnvelopeDetail(){
+    const e = activeEnvelope();
+    if (!e) { backToEnvelopes(); return; }
+
+    const mKey = financeMonthKey();
+    envelopeDetailNameEl.textContent = e.name;
+    editEnvelopeBudgetEl.value = e.budget;
+
+    const spent = envelopeSpent(e.id, mKey);
+    const remaining = e.budget - spent;
+    envelopeDetailSummaryEl.innerHTML = `
+      <div class="habit-stat-box">
+        <div class="habit-stat-num">${formatMoney(e.budget)}</div>
+        <div class="habit-stat-label">Presupuesto</div>
+      </div>
+      <div class="habit-stat-box accent">
+        <div class="habit-stat-num">${formatMoney(spent)}</div>
+        <div class="habit-stat-label">Gastado este mes</div>
+      </div>
+      <div class="habit-stat-box">
+        <div class="habit-stat-num" style="${remaining < 0 ? 'color:var(--urgent)' : ''}">${formatMoney(remaining)}</div>
+        <div class="habit-stat-label">Disponible</div>
+      </div>`;
+
+    const txns = envelopeTxns(e.id, mKey).slice().sort((a, b) => b.date < a.date ? -1 : 1);
+    txnEmptyEl.style.display = txns.length === 0 ? '' : 'none';
+    txnListEl.innerHTML = txns.map(t => `
+      <li class="txn-item" data-id="${t.id}">
+        <button class="txn-remove" data-id="${t.id}">✕</button>
+        <div class="txn-item-info">
+          <div class="txn-item-note">${escapeHtml(t.note || (t.type === 'expense' ? 'Gasto' : 'Ingreso'))}</div>
+          <div class="txn-item-date">${t.date}</div>
+        </div>
+        <div class="txn-item-amount ${t.type}">${t.type === 'expense' ? '−' : '+'}${formatMoney(t.amount)}</div>
+      </li>`).join('');
+    txnListEl.classList.toggle('editing', txnEditMode);
+
+    txnListEl.querySelectorAll('.txn-remove').forEach(btn => {
+      btn.addEventListener('click', () => deleteTransaction(btn.dataset.id));
+    });
+  }
+
+  financePrevMonthBtn.addEventListener('click', () => {
+    financeMonthCursor = new Date(financeMonthCursor.getFullYear(), financeMonthCursor.getMonth() - 1, 1);
+    renderEnvelopeList();
+  });
+  financeNextMonthBtn.addEventListener('click', () => {
+    financeMonthCursor = new Date(financeMonthCursor.getFullYear(), financeMonthCursor.getMonth() + 1, 1);
+    renderEnvelopeList();
+  });
+
+  function updateAddEnvelopeBtn(){
+    addEnvelopeBtn.disabled = !(newEnvelopeNameEl.value.trim() && newEnvelopeBudgetEl.value !== '');
+  }
+  newEnvelopeNameEl.addEventListener('input', updateAddEnvelopeBtn);
+  newEnvelopeBudgetEl.addEventListener('input', updateAddEnvelopeBtn);
+  addEnvelopeBtn.addEventListener('click', () => {
+    addEnvelope(newEnvelopeNameEl.value, newEnvelopeBudgetEl.value);
+    newEnvelopeNameEl.value = '';
+    newEnvelopeBudgetEl.value = '';
+    addEnvelopeBtn.disabled = true;
+  });
+
+  envelopeBackBtn.addEventListener('click', backToEnvelopes);
+  envelopeDeleteBtn.addEventListener('click', () => {
+    const e = activeEnvelope();
+    if (e) deleteEnvelope(e.id);
+  });
+  saveEnvelopeBudgetBtn.addEventListener('click', () => {
+    const e = activeEnvelope();
+    if (e) updateEnvelopeBudget(e.id, editEnvelopeBudgetEl.value);
+  });
+
+  addTxnToggle.addEventListener('click', () => {
+    const showing = addTxnForm.style.display !== 'none';
+    addTxnForm.style.display = showing ? 'none' : '';
+    if (!showing) newTxnAmountEl.focus();
+  });
+  cancelTxnBtn.addEventListener('click', () => {
+    addTxnForm.style.display = 'none';
+    newTxnAmountEl.value = '';
+    newTxnNoteEl.value = '';
+  });
+  document.querySelectorAll('.txn-type-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      txnType = btn.dataset.type;
+      document.querySelectorAll('.txn-type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === txnType));
+    });
+  });
+  saveTxnBtn.addEventListener('click', () => {
+    const e = activeEnvelope();
+    if (!e) return;
+    const ok = addTransaction(e.id, txnType, newTxnAmountEl.value, newTxnNoteEl.value);
+    if (!ok) { newTxnAmountEl.focus(); return; }
+    newTxnAmountEl.value = '';
+    newTxnNoteEl.value = '';
+    newTxnAmountEl.focus();
+  });
+
+  txnEditToggle.addEventListener('click', () => {
+    txnEditMode = !txnEditMode;
+    txnEditToggle.textContent = txnEditMode ? 'Listo' : 'Editar';
+    txnEditToggle.classList.toggle('active', txnEditMode);
+    txnListEl.classList.toggle('editing', txnEditMode);
+  });
 
   // ---- Authentication ----
   let authMode = 'login'; // 'login' | 'signup'
