@@ -972,11 +972,143 @@
   .study-done .glyph { font-size: 40px; margin-bottom: 6px; }
   .study-done p { margin: 0 0 10px 0; font-size: 15px; }
 
+  /* ---- Auth screen ---- */
+  .auth-screen {
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(480px circle at 50% 0%, var(--accent-soft), transparent 62%),
+      var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    z-index: 100;
+  }
+  .auth-card {
+    width: 100%;
+    max-width: 340px;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center;
+  }
+  .auth-mark {
+    width: 56px; height: 56px;
+    border-radius: 16px;
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px;
+  }
+  .auth-card h1 {
+    margin: 0 0 4px 0;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+  }
+  .auth-sub {
+    margin: 0 0 22px 0;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+  }
+  .auth-input {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 11px;
+    padding: 13px 14px;
+    font-size: 15px;
+    font-family: inherit;
+    color: var(--ink);
+    outline: none;
+    margin-bottom: 10px;
+  }
+  .auth-input:focus { border-color: var(--accent); }
+  .auth-input::placeholder { color: var(--ink-soft); opacity: 0.7; }
+
+  .auth-error {
+    width: 100%;
+    text-align: left;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--urgent);
+    background: rgba(242,85,90,0.12);
+    border-radius: 9px;
+    padding: 9px 11px;
+    margin-bottom: 10px;
+  }
+
+  .auth-submit {
+    width: 100%;
+    border: none;
+    border-radius: 11px;
+    padding: 14px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    margin-top: 6px;
+    box-shadow: 0 6px 20px -4px var(--accent-soft);
+  }
+  .auth-submit:active { opacity: 0.85; }
+  .auth-submit:disabled { background: var(--field-bg); color: var(--ink-soft); box-shadow: none; }
+
+  .auth-toggle {
+    border: none; background: none;
+    color: var(--accent-strong);
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 16px;
+    padding: 4px;
+  }
+
+  .signout-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 6px;
+    padding: 12px 2px 2px 2px;
+    border-top: 1px solid var(--hairline);
+  }
+  .signout-email {
+    font-size: 12px;
+    color: var(--ink-soft);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 180px;
+  }
+  .signout-btn {
+    border: none; background: none;
+    color: var(--urgent);
+    font-size: 13px;
+    font-weight: 650;
+    padding: 4px;
+    flex-shrink: 0;
+  }
+
   ::-webkit-scrollbar { display: none; }
 </style>
 </head>
 <body>
-<div id="app">
+
+<div id="authScreen" class="auth-screen">
+  <div class="auth-card">
+    <div class="auth-mark">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+        <path d="M12 3l9 16H3l9-16Z" stroke="#EDEDEF" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M13.5 12.5l4 1.2M13.5 12.5l4.6-0.4M13.5 12.5l3.7-2.3" stroke="#F2555A" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <h1>Prisma</h1>
+    <p class="auth-sub" id="authSubtitle">Inicia sesión para continuar</p>
+
+    <input id="authEmail" class="auth-input" type="email" placeholder="Correo electrónico" autocomplete="email" />
+    <input id="authPassword" class="auth-input" type="password" placeholder="Contraseña" autocomplete="current-password" />
+
+    <div class="auth-error" id="authError" style="display:none;"></div>
+
+    <button class="auth-submit" id="authSubmitBtn">Iniciar sesión</button>
+    <button class="auth-toggle" id="authToggleModeBtn">¿No tienes cuenta? Crea una</button>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
   <header>
     <div>
       <h1>Prisma</h1>
@@ -1206,11 +1338,37 @@
     <div class="history-list">
       <div class="settings-section-label">Temas</div>
       <div class="theme-grid" id="themeGrid"></div>
+
+      <div class="signout-row">
+        <span class="signout-email" id="accountEmail">—</span>
+        <button class="signout-btn" id="signOutBtn">Cerrar sesión</button>
+      </div>
     </div>
   </div>
 </div>
 
-<script>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js';
+import {
+  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  onAuthStateChanged, signOut
+} from 'https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js';
+import {
+  getFirestore, doc, getDoc, setDoc
+} from 'https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBvpaxvHPHvkKUPkNF445tihmvwRNv18mk",
+  authDomain: "prisma-1dfb4.firebaseapp.com",
+  projectId: "prisma-1dfb4",
+  storageBucket: "prisma-1dfb4.firebasestorage.app",
+  messagingSenderId: "380563815508",
+  appId: "1:380563815508:web:d13ae6d5613fa10c72c1c1"
+};
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
+
 (function(){
   // Eisenhower matrix: every task is urgent (yes/no) × important (yes/no),
   // which places it in exactly one of these four quadrants.
@@ -1224,8 +1382,18 @@
     return QUADRANTS.find(q => q.urgent === !!t.urgent && q.important === !!t.important);
   }
 
-  const STORAGE_KEY = 'app-state-v1';
   const listEl = document.getElementById('list');
+
+  const authScreenEl = document.getElementById('authScreen');
+  const appEl = document.getElementById('app');
+  const authEmailEl = document.getElementById('authEmail');
+  const authPasswordEl = document.getElementById('authPassword');
+  const authErrorEl = document.getElementById('authError');
+  const authSubmitBtn = document.getElementById('authSubmitBtn');
+  const authToggleModeBtn = document.getElementById('authToggleModeBtn');
+  const authSubtitleEl = document.getElementById('authSubtitle');
+  const accountEmailEl = document.getElementById('accountEmail');
+  const signOutBtn = document.getElementById('signOutBtn');
   const recommendedViewEl = document.getElementById('recommendedView');
   const recommendedListEl = document.getElementById('recommendedList');
   const tabMineEl = document.getElementById('tabMine');
@@ -1356,16 +1524,20 @@
 
   function uid(){ return 't' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 
-  function load(){
+  let currentUserId = null;
+
+  async function load(){
+    if (!currentUserId) return;
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const state = raw ? JSON.parse(raw) : {};
+      const snap = await getDoc(doc(db, 'users', currentUserId));
+      const state = snap.exists() ? snap.data() : {};
       tasks = Array.isArray(state.tasks) ? state.tasks.map(migrateTask) : [];
       history = Array.isArray(state.history) ? state.history : [];
       habits = Array.isArray(state.habits) ? state.habits : [];
       decks = Array.isArray(state.decks) ? state.decks : [];
       applyTheme(state.theme || 'dark');
     } catch(e) {
+      console.error('No se pudieron cargar los datos', e);
       tasks = [];
       history = [];
       habits = [];
@@ -1378,21 +1550,41 @@
     renderDeckList();
   }
 
-  // All data (tasks, history, theme, habits, decks) lives in one storage key
-  // and is written together, debounced, so rapid actions (like typing) don't
-  // flood the API with a separate request per keystroke.
+  // All data (tasks, history, theme, habits, decks) lives in one Firestore
+  // document per user, and is written together, debounced, so rapid actions
+  // (like typing) don't flood the API with a separate request per keystroke.
   let saveTimer = null;
   function scheduleSave(){
     clearTimeout(saveTimer);
     saveTimer = setTimeout(persist, 350);
   }
 
-  function persist(){
+  async function persist(){
+    if (!currentUserId) return;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ tasks, history, theme: currentTheme, habits, decks }));
+      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, habits, decks });
     } catch(e) {
       console.error('No se pudo guardar', e);
     }
+  }
+
+  function resetLocalState(){
+    tasks = []; history = []; habits = []; decks = [];
+    openId = null; activeDeckId = null;
+    loaded = false;
+    applyTheme('dark');
+
+    currentPage = 'tasks';
+    tasksPageEl.style.display = 'flex';
+    habitsPageEl.style.display = 'none';
+    cardsPageEl.style.display = 'none';
+    navTasksBtn.classList.add('active');
+    navHabitsBtn.classList.remove('active');
+    navCardsBtn.classList.remove('active');
+
+    deckDetailViewEl.style.display = 'none';
+    studyViewEl.style.display = 'none';
+    deckListViewEl.style.display = 'flex';
   }
 
   function logChange(taskTitle, action, detail){
@@ -2080,12 +2272,13 @@
 
   function addCard(front, back){
     front = front.trim(); back = back.trim();
-    if (!front || !back) return;
+    if (!front || !back) return false;
     const deck = activeDeck();
-    if (!deck) return;
+    if (!deck) return false;
     deck.cards.push(Object.assign({ id: uid(), front, back }, newCardState()));
     scheduleSave();
     renderDeckDetail();
+    return true;
   }
 
   function deleteCard(id){
@@ -2328,11 +2521,32 @@
     newCardFrontEl.value = '';
     newCardBackEl.value = '';
   });
+  newCardFrontEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      newCardBackEl.focus();
+    }
+  });
+  newCardBackEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      saveCardBtn.click();
+    }
+  });
+
   saveCardBtn.addEventListener('click', () => {
-    addCard(newCardFrontEl.value, newCardBackEl.value);
+    const ok = addCard(newCardFrontEl.value, newCardBackEl.value);
+    if (!ok) {
+      newCardFrontEl.focus();
+      return;
+    }
     newCardFrontEl.value = '';
     newCardBackEl.value = '';
-    addCardForm.style.display = 'none';
+    newCardFrontEl.focus();
+
+    const original = saveCardBtn.textContent;
+    saveCardBtn.textContent = '✓ Agregada';
+    setTimeout(() => { saveCardBtn.textContent = original; }, 700);
   });
 
   cardEditToggle.addEventListener('click', () => {
@@ -2349,7 +2563,91 @@
   studyExitBtn.addEventListener('click', exitStudy);
   studyDoneBackBtn.addEventListener('click', exitStudy);
 
-  load();
+  // ---- Authentication ----
+  let authMode = 'login'; // 'login' | 'signup'
+
+  const AUTH_ERROR_MESSAGES = {
+    'auth/invalid-email': 'Ese correo no es válido.',
+    'auth/missing-password': 'Escribe una contraseña.',
+    'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres.',
+    'auth/email-already-in-use': 'Ya existe una cuenta con ese correo. Intenta iniciar sesión.',
+    'auth/invalid-credential': 'Correo o contraseña incorrectos.',
+    'auth/wrong-password': 'Correo o contraseña incorrectos.',
+    'auth/user-not-found': 'No encontramos una cuenta con ese correo.',
+    'auth/too-many-requests': 'Demasiados intentos. Espera un momento y vuelve a intentar.',
+  };
+
+  function showAuthError(msg){
+    authErrorEl.textContent = msg;
+    authErrorEl.style.display = '';
+  }
+  function hideAuthError(){
+    authErrorEl.style.display = 'none';
+  }
+
+  function setAuthMode(mode){
+    authMode = mode;
+    hideAuthError();
+    if (mode === 'login') {
+      authSubtitleEl.textContent = 'Inicia sesión para continuar';
+      authSubmitBtn.textContent = 'Iniciar sesión';
+      authToggleModeBtn.textContent = '¿No tienes cuenta? Crea una';
+    } else {
+      authSubtitleEl.textContent = 'Crea tu cuenta para empezar';
+      authSubmitBtn.textContent = 'Crear cuenta';
+      authToggleModeBtn.textContent = '¿Ya tienes cuenta? Inicia sesión';
+    }
+  }
+  authToggleModeBtn.addEventListener('click', () => setAuthMode(authMode === 'login' ? 'signup' : 'login'));
+
+  async function handleAuthSubmit(){
+    const email = authEmailEl.value.trim();
+    const password = authPasswordEl.value;
+    hideAuthError();
+    if (!email || !password) { showAuthError('Completa correo y contraseña.'); return; }
+
+    authSubmitBtn.disabled = true;
+    try {
+      if (authMode === 'login') {
+        await signInWithEmailAndPassword(auth, email, password);
+      } else {
+        await createUserWithEmailAndPassword(auth, email, password);
+      }
+      authPasswordEl.value = '';
+    } catch(e) {
+      showAuthError(AUTH_ERROR_MESSAGES[e.code] || 'Algo salió mal. Intenta de nuevo.');
+    } finally {
+      authSubmitBtn.disabled = false;
+    }
+  }
+  authSubmitBtn.addEventListener('click', handleAuthSubmit);
+  authPasswordEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleAuthSubmit(); });
+  authEmailEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') authPasswordEl.focus(); });
+
+  signOutBtn.addEventListener('click', () => {
+    closeSettings();
+    signOut(auth);
+  });
+
+  setAuthMode('login');
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      currentUserId = user.uid;
+      accountEmailEl.textContent = user.email || '';
+      authScreenEl.style.display = 'none';
+      appEl.style.display = '';
+      load();
+    } else {
+      currentUserId = null;
+      resetLocalState();
+      appEl.style.display = 'none';
+      authScreenEl.style.display = 'flex';
+      authEmailEl.value = '';
+      authPasswordEl.value = '';
+      setAuthMode('login');
+    }
+  });
 })();
 </script>
 </body>
