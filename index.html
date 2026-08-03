@@ -1278,6 +1278,73 @@
   .fh-sub { font-size: 11px; color: var(--ink-soft); margin-top: 1px; }
   .fh-amount { font-size: 13px; font-weight: 700; flex-shrink: 0; font-variant-numeric: tabular-nums; }
 
+  .salary-current {
+    background: var(--field-bg);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .sc-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+  }
+  .sc-amount {
+    font-size: 20px;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+    margin-top: 3px;
+    font-variant-numeric: tabular-nums;
+  }
+  .sc-date { font-size: 11.5px; color: var(--ink-soft); margin-top: 2px; }
+
+  .debt-progress-track {
+    height: 5px;
+    border-radius: 3px;
+    background: var(--field-bg);
+    overflow: hidden;
+    margin-top: 5px;
+  }
+  .debt-progress-fill { height: 100%; border-radius: 3px; background: #3FC373; }
+  .abonar-btn {
+    border: 1px solid var(--accent);
+    background: none;
+    color: var(--accent-strong);
+    font-size: 11.5px;
+    font-weight: 650;
+    padding: 5px 10px;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+  .abonar-form {
+    display: flex;
+    gap: 6px;
+    margin: -4px 0 8px 0;
+    padding-left: 2px;
+  }
+  .abonar-form input {
+    flex: 1;
+    border: 1px solid var(--hairline);
+    background: var(--field-bg);
+    border-radius: 9px;
+    padding: 8px 10px;
+    font-size: 13px;
+    color: var(--ink);
+    font-family: inherit;
+  }
+  .abonar-form button {
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-size: 12.5px;
+    font-weight: 650;
+    padding: 0 14px;
+    border-radius: 9px;
+  }
+
   .fin-item {
     display: flex; align-items: center; gap: 8px;
     background: var(--field-bg);
@@ -1580,8 +1647,20 @@
           <span class="chevron">›</span>
         </div>
         <div class="finance-section-body" id="incomeBody" style="display:none;">
-          <div class="field-label">Sueldo mensual</div>
-          <input class="due" id="salaryInput" type="number" inputmode="decimal" style="width:100%;" placeholder="0" />
+          <div class="salary-current" id="salaryCurrentBox">
+            <div class="sc-label">Sueldo del ciclo actual</div>
+            <div class="sc-amount" id="salaryCurrentAmount">Aún no ingresas tu sueldo</div>
+            <div class="sc-date" id="salaryCurrentDate"></div>
+          </div>
+          <button class="add-card-toggle" id="addSalaryToggle">+ Ingresar sueldo de este mes</button>
+          <div class="add-card-form" id="addSalaryForm" style="display:none;">
+            <input class="due" id="newSalaryAmount" type="number" inputmode="decimal" style="width:100%;" placeholder="Monto del sueldo" />
+            <p class="rec-hint" style="padding:6px 0 0 0;">Esto inicia un nuevo ciclo: tus gastos libres y abonos empiezan a contarse desde hoy.</p>
+            <div class="add-card-actions">
+              <button class="habit-edit-btn" id="cancelSalaryBtn">Cancelar</button>
+              <button class="done-toggle" id="saveSalaryBtn">Guardar</button>
+            </div>
+          </div>
 
           <div class="field-label" style="margin-top:14px;">Otros ingresos</div>
           <ul id="otherIncomeList"></ul>
@@ -1660,6 +1739,7 @@
               <button class="fin-kind-btn active" data-debt-kind="mensual">Mensual</button>
               <button class="fin-kind-btn" data-debt-kind="anual">Anual</button>
               <button class="fin-kind-btn" data-debt-kind="plazo">Plazo fijo</button>
+              <button class="fin-kind-btn" data-debt-kind="fijo">Monto fijo</button>
             </div>
 
             <div id="debtMensualFields">
@@ -1670,6 +1750,12 @@
             <div id="debtAnualFields" style="display:none;">
               <div class="field-label">Monto anual</div>
               <input class="due" id="newDebtAnualAmt" type="number" inputmode="decimal" style="width:100%;" placeholder="0" />
+            </div>
+
+            <div id="debtFijoFields" style="display:none;">
+              <div class="field-label">Monto total de la deuda</div>
+              <input class="due" id="newDebtFijoAmt" type="number" inputmode="decimal" style="width:100%;" placeholder="0" />
+              <p class="rec-hint" style="padding:6px 0 0 0;">No se descuenta solo cada mes — se descuenta de tu dinero libre solo cuando registres un abono, y ese abono también reduce el monto pendiente.</p>
             </div>
 
             <div id="debtPlazoFields" style="display:none;">
@@ -1926,7 +2012,13 @@ const db = getFirestore(firebaseApp);
   const freeMoneyBreakdownEl = document.getElementById('freeMoneyBreakdown');
 
   const incomeTotalEl = document.getElementById('incomeTotal');
-  const salaryInputEl = document.getElementById('salaryInput');
+  const salaryCurrentAmountEl = document.getElementById('salaryCurrentAmount');
+  const salaryCurrentDateEl = document.getElementById('salaryCurrentDate');
+  const addSalaryToggle = document.getElementById('addSalaryToggle');
+  const addSalaryForm = document.getElementById('addSalaryForm');
+  const newSalaryAmountEl = document.getElementById('newSalaryAmount');
+  const cancelSalaryBtn = document.getElementById('cancelSalaryBtn');
+  const saveSalaryBtn = document.getElementById('saveSalaryBtn');
   const otherIncomeListEl = document.getElementById('otherIncomeList');
   const addIncomeToggle = document.getElementById('addIncomeToggle');
   const addIncomeForm = document.getElementById('addIncomeForm');
@@ -1954,6 +2046,8 @@ const db = getFirestore(firebaseApp);
   const debtPlazoFieldsEl = document.getElementById('debtPlazoFields');
   const newDebtMensualAmtEl = document.getElementById('newDebtMensualAmt');
   const newDebtAnualAmtEl = document.getElementById('newDebtAnualAmt');
+  const debtFijoFieldsEl = document.getElementById('debtFijoFields');
+  const newDebtFijoAmtEl = document.getElementById('newDebtFijoAmt');
   const debtMonthlyFieldsEl = document.getElementById('debtMonthlyFields');
   const debtTotalFieldsEl = document.getElementById('debtTotalFields');
   const newDebtMonthlyEl = document.getElementById('newDebtMonthly');
@@ -2065,7 +2159,7 @@ const db = getFirestore(firebaseApp);
   let freeMastered = 0;
   const FREE_MASTER_BOX = 2; // successes needed to retire a card for the session
 
-  let salary = 0;
+  let salaryEntries = []; // [{id, amount, date}], newest first — defines the current cycle
   let otherIncomes = [];
   let fixedExpenses = [];
   let debts = [];
@@ -2129,7 +2223,7 @@ const db = getFirestore(firebaseApp);
       history = Array.isArray(state.history) ? state.history : [];
       habits = Array.isArray(state.habits) ? state.habits.map(migrateHabit) : [];
       decks = Array.isArray(state.decks) ? state.decks : [];
-      salary = typeof state.salary === 'number' ? state.salary : 0;
+      salaryEntries = Array.isArray(state.salaryEntries) ? state.salaryEntries : [];
       otherIncomes = Array.isArray(state.otherIncomes) ? state.otherIncomes : [];
       fixedExpenses = Array.isArray(state.fixedExpenses) ? state.fixedExpenses : [];
       debts = Array.isArray(state.debts) ? state.debts : [];
@@ -2166,7 +2260,7 @@ const db = getFirestore(firebaseApp);
   async function persist(){
     if (!currentUserId || !dataLoadOk) return;
     try {
-      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, habits, decks, salary, otherIncomes, fixedExpenses, debts, savings, freeExpenses, financeHistory });
+      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, habits, decks, salaryEntries, otherIncomes, fixedExpenses, debts, savings, freeExpenses, financeHistory });
     } catch(e) {
       console.error('No se pudo guardar', e);
     }
@@ -2174,7 +2268,7 @@ const db = getFirestore(firebaseApp);
 
   function resetLocalState(){
     tasks = []; history = []; habits = []; decks = [];
-    salary = 0; otherIncomes = []; fixedExpenses = []; debts = []; savings = [];
+    salaryEntries = []; otherIncomes = []; fixedExpenses = []; debts = []; savings = [];
     freeExpenses = []; financeHistory = [];
     openId = null; activeDeckId = null;
     loaded = false;
@@ -3385,7 +3479,7 @@ const db = getFirestore(firebaseApp);
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-03.9';
+  const APP_VERSION = '2026-08-04.1';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -3439,11 +3533,17 @@ const db = getFirestore(firebaseApp);
     return list.reduce((s, item) => s + item.amount, 0);
   }
 
-  function totalIncome(){ return salary + sumAmounts(otherIncomes); }
+  // ---- Salary cycle: the latest salary entry defines when the current
+  // cycle started; gastos libres and abonos only count from that date on. ----
+  function currentSalary(){ return salaryEntries.length ? salaryEntries[0].amount : 0; }
+  function cycleStartDate(){ return salaryEntries.length ? salaryEntries[0].date : null; }
+
+  function totalIncome(){ return currentSalary() + sumAmounts(otherIncomes); }
   function totalFixed(){ return sumAmounts(fixedExpenses); }
 
   function debtMonthlyEquivalent(d){
     if (d.kind === 'anual') return d.annualAmount / 12;
+    if (d.kind === 'fijo') return 0; // only counts against free money when abonada
     return d.monthlyPayment; // 'mensual' and 'plazo' both already store a monthly figure
   }
   function totalDebtMonthly(){ return debts.reduce((s, d) => s + debtMonthlyEquivalent(d), 0); }
@@ -3456,14 +3556,25 @@ const db = getFirestore(firebaseApp);
   }
   function totalSavings(){ return savings.reduce((s, item) => s + savingMonthlyEquivalent(item), 0); }
 
-  function currentMonthKey(){ return todayKey().slice(0, 7); }
-  function totalFreeExpensesThisMonth(){
-    const mKey = currentMonthKey();
-    return freeExpenses.filter(e => e.date.slice(0, 7) === mKey).reduce((s, e) => s + e.amount, 0);
+  function totalFreeExpensesThisCycle(){
+    const start = cycleStartDate();
+    if (!start) return 0;
+    return freeExpenses.filter(e => e.date >= start).reduce((s, e) => s + e.amount, 0);
+  }
+
+  function totalAbonosThisCycle(){
+    const start = cycleStartDate();
+    if (!start) return 0;
+    let total = 0;
+    debts.forEach(d => {
+      if (d.kind !== 'fijo' || !d.abonos) return;
+      total += d.abonos.filter(a => a.date >= start).reduce((s, a) => s + a.amount, 0);
+    });
+    return total;
   }
 
   function freeMoney(){
-    return totalIncome() - totalFixed() - totalDebtMonthly() - totalSavings() - totalFreeExpensesThisMonth();
+    return totalIncome() - totalFixed() - totalDebtMonthly() - totalSavings() - totalFreeExpensesThisCycle() - totalAbonosThisCycle();
   }
 
   // ---- Finance history: a running log of every add/delete so you can see
@@ -3554,8 +3665,6 @@ const db = getFirestore(firebaseApp);
   }
 
   function renderFreeExpenseList(){
-    const mKey = currentMonthKey();
-    const thisMonth = freeExpenses.filter(e => e.date.slice(0, 7) === mKey);
     if (freeExpenses.length === 0) {
       freeExpenseListEl.innerHTML = `<p class="fin-item-sub" style="padding:6px 0;">Sin gastos registrados todavía.</p>`;
     } else {
@@ -3572,7 +3681,7 @@ const db = getFirestore(firebaseApp);
         btn.addEventListener('click', () => removeFreeExpense(btn.dataset.id));
       });
     }
-    freeExpenseTotalEl.textContent = formatMoney(sumAmounts(thisMonth));
+    freeExpenseTotalEl.textContent = formatMoney(totalFreeExpensesThisCycle());
   }
 
   // ---- Deudas: mensual (recurring), anual (once a year), or plazo fijo (installments) ----
@@ -3590,6 +3699,11 @@ const db = getFirestore(firebaseApp);
       const amt = parseFloat(fields.annualAmt);
       if (!isFinite(amt) || amt <= 0) return false;
       debts.push({ id: uid(), name, kind, annualAmount: amt });
+      amountForLog = amt;
+    } else if (kind === 'fijo') {
+      const amt = parseFloat(fields.fijoAmt);
+      if (!isFinite(amt) || amt <= 0) return false;
+      debts.push({ id: uid(), name, kind, totalAmount: amt, remaining: amt, abonos: [] });
       amountForLog = amt;
     } else { // 'plazo'
       const n = parseInt(fields.installments, 10);
@@ -3613,28 +3727,77 @@ const db = getFirestore(firebaseApp);
     renderFinance();
   }
 
+  function abonarDebt(id, amount){
+    const d = debts.find(d => d.id === id);
+    const amt = parseFloat(amount);
+    if (!d || d.kind !== 'fijo' || !isFinite(amt) || amt <= 0) return false;
+    d.remaining = Math.max(0, d.remaining - amt);
+    d.abonos.push({ id: uid(), amount: amt, date: todayKey() });
+    logFinance('debt', 'abono', d.name, amt);
+    scheduleSave();
+    return true;
+  }
+
   function debtSummaryLine(d){
     if (d.kind === 'mensual') return 'Mensual';
     if (d.kind === 'anual') return `${formatMoney(d.annualAmount)}/año`;
+    if (d.kind === 'fijo') return d.remaining <= 0 ? '✓ Pagada por completo' : `Pendiente ${formatMoney(d.remaining)} de ${formatMoney(d.totalAmount)}`;
     return `${formatMoney(d.totalAmount)} total · ${d.installments} cuotas`;
   }
+
+  let abonoOpenDebtId = null;
 
   function renderDebtList(){
     if (debts.length === 0) {
       debtListEl.innerHTML = `<p class="fin-item-sub" style="padding:6px 0;">Sin deudas registradas.</p>`;
       return;
     }
-    debtListEl.innerHTML = debts.map(d => `
-      <li class="fin-item" data-id="${d.id}">
+    debtListEl.innerHTML = debts.map(d => {
+      const isFijo = d.kind === 'fijo';
+      const pct = isFijo && d.totalAmount > 0 ? Math.round(((d.totalAmount - d.remaining) / d.totalAmount) * 100) : 0;
+      const amountCol = isFijo
+        ? (d.remaining <= 0 ? '✓' : formatMoney(d.remaining) + ' pend.')
+        : formatMoney(debtMonthlyEquivalent(d)) + '/mes';
+      return `
+      <li class="fin-item" data-id="${d.id}" style="flex-wrap: wrap;">
         <button class="fin-remove" data-id="${d.id}">✕</button>
         <div class="fin-item-info">
           <div class="fin-item-name">${escapeHtml(d.name)}</div>
           <div class="fin-item-sub">${debtSummaryLine(d)}</div>
+          ${isFijo ? `<div class="debt-progress-track"><div class="debt-progress-fill" style="width:${Math.max(3, pct)}%"></div></div>` : ''}
         </div>
-        <div class="fin-item-amount">${formatMoney(debtMonthlyEquivalent(d))}/mes</div>
-      </li>`).join('');
+        <div class="fin-item-amount">${amountCol}</div>
+        ${isFijo && d.remaining > 0 ? `<button class="abonar-btn" data-abonar-id="${d.id}">Abonar</button>` : ''}
+      </li>
+      ${isFijo && abonoOpenDebtId === d.id ? `
+      <li class="abonar-form">
+        <input type="number" inputmode="decimal" id="abonarAmount_${d.id}" placeholder="Monto a abonar" />
+        <button data-confirm-abono="${d.id}">Abonar</button>
+      </li>` : ''}`;
+    }).join('');
+
     debtListEl.querySelectorAll('.fin-remove').forEach(btn => {
       btn.addEventListener('click', () => removeDebt(btn.dataset.id));
+    });
+    debtListEl.querySelectorAll('[data-abonar-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        abonoOpenDebtId = abonoOpenDebtId === btn.dataset.abonarId ? null : btn.dataset.abonarId;
+        renderDebtList();
+        if (abonoOpenDebtId) {
+          const input = document.getElementById('abonarAmount_' + abonoOpenDebtId);
+          if (input) input.focus();
+        }
+      });
+    });
+    debtListEl.querySelectorAll('[data-confirm-abono]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.confirmAbono;
+        const input = document.getElementById('abonarAmount_' + id);
+        const ok = abonarDebt(id, input.value);
+        if (!ok) { input.focus(); return; }
+        abonoOpenDebtId = null;
+        renderFinance();
+      });
     });
   }
 
@@ -3697,7 +3860,14 @@ const db = getFirestore(firebaseApp);
 
 
   function renderFinance(){
-    salaryInputEl.value = salary || '';
+    if (salaryEntries.length) {
+      salaryCurrentAmountEl.textContent = formatMoney(currentSalary());
+      const [y, m, d] = salaryEntries[0].date.split('-').map(Number);
+      salaryCurrentDateEl.textContent = 'Ciclo iniciado el ' + new Date(y, m - 1, d).toLocaleDateString('es-CL', { day: 'numeric', month: 'long' });
+    } else {
+      salaryCurrentAmountEl.textContent = 'Aún no ingresas tu sueldo';
+      salaryCurrentDateEl.textContent = '';
+    }
 
     renderGenericList(otherIncomeListEl, otherIncomes, 'Sin otros ingresos.');
     renderGenericList(fixedListEl, fixedExpenses, 'Sin gastos fijos registrados.');
@@ -3722,7 +3892,7 @@ const db = getFirestore(firebaseApp);
     freeMoneyAmountEl.textContent = formatMoney(free);
     freeMoneyAmountEl.classList.toggle('negative', free < 0);
     freeMoneyBreakdownEl.textContent =
-      `${formatMoney(totalIncome())} ingresos · ${formatMoney(totalFixed())} fijos · ${formatMoney(totalDebtMonthly())} deudas · ${formatMoney(totalSavings())} ahorro · ${formatMoney(totalFreeExpensesThisMonth())} gastos libres`;
+      `${formatMoney(totalIncome())} ingresos · ${formatMoney(totalFixed())} fijos · ${formatMoney(totalDebtMonthly())} deudas · ${formatMoney(totalSavings())} ahorro · ${formatMoney(totalFreeExpensesThisCycle())} gastos libres · ${formatMoney(totalAbonosThisCycle())} abonos`;
   }
 
   // Accordion: tap a section header to expand/collapse its body.
@@ -3735,10 +3905,29 @@ const db = getFirestore(firebaseApp);
     });
   });
 
-  salaryInputEl.addEventListener('change', () => {
-    const v = parseFloat(salaryInputEl.value);
-    salary = isFinite(v) && v >= 0 ? v : 0;
+  function addSalaryEntry(amount){
+    const amt = parseFloat(amount);
+    if (!isFinite(amt) || amt <= 0) return false;
+    salaryEntries.unshift({ id: uid(), amount: amt, date: todayKey() });
+    logFinance('income', 'add', 'Sueldo', amt);
     scheduleSave();
+    return true;
+  }
+
+  addSalaryToggle.addEventListener('click', () => {
+    const showing = addSalaryForm.style.display !== 'none';
+    addSalaryForm.style.display = showing ? 'none' : '';
+    if (!showing) newSalaryAmountEl.focus();
+  });
+  cancelSalaryBtn.addEventListener('click', () => {
+    addSalaryForm.style.display = 'none';
+    newSalaryAmountEl.value = '';
+  });
+  saveSalaryBtn.addEventListener('click', () => {
+    const ok = addSalaryEntry(newSalaryAmountEl.value);
+    if (!ok) { newSalaryAmountEl.focus(); return; }
+    newSalaryAmountEl.value = '';
+    addSalaryForm.style.display = 'none';
     renderFinance();
   });
 
@@ -3790,8 +3979,15 @@ const db = getFirestore(firebaseApp);
     const lines = [];
     lines.push('📊 Resumen financiero — ' + new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' }));
     lines.push('');
+    lines.push('CICLO ACTUAL');
+    if (salaryEntries.length) {
+      lines.push(`Sueldo del ciclo: ${formatMoney(currentSalary())} (ingresado el ${salaryEntries[0].date})`);
+    } else {
+      lines.push('(sueldo no ingresado todavía)');
+    }
+    lines.push('');
     lines.push('INGRESOS');
-    lines.push(`Sueldo mensual: ${formatMoney(salary)}`);
+    lines.push(`Sueldo: ${formatMoney(currentSalary())}`);
     otherIncomes.forEach(i => lines.push(`- ${i.name}: ${formatMoney(i.amount)}`));
     lines.push(`Total ingresos: ${formatMoney(totalIncome())}`);
     lines.push('');
@@ -3802,8 +3998,11 @@ const db = getFirestore(firebaseApp);
     lines.push('');
     lines.push('DEUDAS');
     if (debts.length === 0) lines.push('(sin deudas registradas)');
-    debts.forEach(d => lines.push(`- ${d.name} (${d.kind}): ${debtSummaryLine(d)} · equivalente ${formatMoney(debtMonthlyEquivalent(d))}/mes`));
-    lines.push(`Total deudas: ${formatMoney(totalDebtMonthly())}/mes`);
+    debts.forEach(d => {
+      const eq = d.kind === 'fijo' ? '(se descuenta solo al abonar)' : `equivalente ${formatMoney(debtMonthlyEquivalent(d))}/mes`;
+      lines.push(`- ${d.name} (${d.kind}): ${debtSummaryLine(d)} · ${eq}`);
+    });
+    lines.push(`Total deudas recurrentes: ${formatMoney(totalDebtMonthly())}/mes`);
     lines.push('');
     lines.push('AHORRO');
     if (savings.length === 0) lines.push('(sin ahorro planificado)');
@@ -3812,12 +4011,22 @@ const db = getFirestore(firebaseApp);
     lines.push('');
     lines.push(`DINERO LIBRE ANTES DE GASTOS VARIABLES: ${formatMoney(totalIncome() - totalFixed() - totalDebtMonthly() - totalSavings())}`);
     lines.push('');
-    lines.push('GASTOS LIBRES ESTE MES');
-    const mKey = currentMonthKey();
-    const thisMonthFree = freeExpenses.filter(e => e.date.slice(0, 7) === mKey);
-    if (thisMonthFree.length === 0) lines.push('(sin gastos libres este mes)');
-    thisMonthFree.forEach(e => lines.push(`- [${e.date}] ${e.note}: ${formatMoney(e.amount)}`));
-    lines.push(`Total gastos libres este mes: ${formatMoney(totalFreeExpensesThisMonth())}`);
+    lines.push('GASTOS LIBRES DE ESTE CICLO');
+    const start = cycleStartDate();
+    const cycleFree = start ? freeExpenses.filter(e => e.date >= start) : [];
+    if (cycleFree.length === 0) lines.push('(sin gastos libres este ciclo)');
+    cycleFree.forEach(e => lines.push(`- [${e.date}] ${e.note}: ${formatMoney(e.amount)}`));
+    lines.push(`Total gastos libres este ciclo: ${formatMoney(totalFreeExpensesThisCycle())}`);
+    lines.push('');
+    lines.push('ABONOS A DEUDAS DE MONTO FIJO (este ciclo)');
+    let anyAbono = false;
+    debts.forEach(d => {
+      if (d.kind !== 'fijo' || !d.abonos) return;
+      const cycleAbonos = start ? d.abonos.filter(a => a.date >= start) : [];
+      cycleAbonos.forEach(a => { anyAbono = true; lines.push(`- [${a.date}] ${d.name}: ${formatMoney(a.amount)}`); });
+    });
+    if (!anyAbono) lines.push('(sin abonos este ciclo)');
+    lines.push(`Total abonos este ciclo: ${formatMoney(totalAbonosThisCycle())}`);
     lines.push('');
     lines.push(`DINERO LIBRE RESTANTE: ${formatMoney(freeMoney())}`);
     return lines.join('\n');
@@ -3841,7 +4050,7 @@ const db = getFirestore(firebaseApp);
 
   // Debt form: two entry modes that compute each other live.
   function updateDebtCalcPreview(){
-    if (debtKind === 'mensual' || debtKind === 'anual') {
+    if (debtKind !== 'plazo') {
       debtCalcPreviewEl.textContent = '';
       return;
     }
@@ -3862,6 +4071,7 @@ const db = getFirestore(firebaseApp);
     newDebtNameEl.value = '';
     newDebtMensualAmtEl.value = '';
     newDebtAnualAmtEl.value = '';
+    newDebtFijoAmtEl.value = '';
     newDebtMonthlyEl.value = '';
     newDebtTotalAmtEl.value = '';
     newDebtInstallmentsEl.value = '';
@@ -3874,6 +4084,7 @@ const db = getFirestore(firebaseApp);
       document.querySelectorAll('[data-debt-kind]').forEach(b => b.classList.toggle('active', b.dataset.debtKind === debtKind));
       debtMensualFieldsEl.style.display = debtKind === 'mensual' ? '' : 'none';
       debtAnualFieldsEl.style.display = debtKind === 'anual' ? '' : 'none';
+      debtFijoFieldsEl.style.display = debtKind === 'fijo' ? '' : 'none';
       debtPlazoFieldsEl.style.display = debtKind === 'plazo' ? '' : 'none';
       updateDebtCalcPreview();
     });
@@ -3904,6 +4115,7 @@ const db = getFirestore(firebaseApp);
     const ok = addDebt(newDebtNameEl.value, debtKind, {
       monthlyAmt: debtKind === 'mensual' ? newDebtMensualAmtEl.value : newDebtMonthlyEl.value,
       annualAmt: newDebtAnualAmtEl.value,
+      fijoAmt: newDebtFijoAmtEl.value,
       totalAmt: newDebtTotalAmtEl.value,
       installments: newDebtInstallmentsEl.value,
       entryMode: debtEntryMode,
