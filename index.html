@@ -728,6 +728,56 @@
   .habit-cell.future { opacity: 0.35; }
   .habit-row-spacer td { height: 6px; }
 
+  .habit-name-label { cursor: pointer; }
+  .habit-name-label.open { color: var(--accent-strong); }
+
+  .habit-detail-row td {
+    padding: 0 !important;
+    background: var(--bg);
+  }
+  .habit-detail-inner {
+    position: sticky;
+    left: 0;
+    width: min(78vw, 340px);
+    padding: 10px 10px 14px 10px;
+    box-sizing: border-box;
+  }
+  .habit-stats {
+    display: flex;
+    gap: 8px;
+  }
+  .habit-stat-box {
+    flex: 1;
+    min-width: 0;
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .habit-stat-box.accent { border-color: var(--accent); background: var(--accent-soft); }
+  .habit-stat-num {
+    font-size: 20px;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .habit-stat-box.accent .habit-stat-num { color: var(--accent-strong); }
+  .habit-stat-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-top: 2px;
+    line-height: 1.25;
+  }
+  .habit-stat-caption {
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-align: left;
+  }
+
   /* ---- Repaso (flashcards) page ---- */
   .subview { flex: 1; display: flex; flex-direction: column; min-height: 0; }
 
@@ -1504,6 +1554,7 @@ const db = getFirestore(firebaseApp);
   let currentPage = 'tasks'; // 'tasks' | 'habits'
   let habits = [];
   let habitEditMode = false;
+  let expandedHabitId = null;
   let habitMonthCursor = new Date(); // any date within the month being viewed
 
   let decks = [];
@@ -1564,7 +1615,7 @@ const db = getFirestore(firebaseApp);
       const state = snap.exists() ? snap.data() : {};
       tasks = Array.isArray(state.tasks) ? state.tasks.map(migrateTask) : [];
       history = Array.isArray(state.history) ? state.history : [];
-      habits = Array.isArray(state.habits) ? state.habits : [];
+      habits = Array.isArray(state.habits) ? state.habits.map(migrateHabit) : [];
       decks = Array.isArray(state.decks) ? state.decks : [];
       applyTheme(state.theme || 'dark');
     } catch(e) {
@@ -2119,10 +2170,38 @@ const db = getFirestore(firebaseApp);
   function dateKey(y, m, d){ return y + '-' + pad2(m + 1) + '-' + pad2(d); }
   function todayKey(){ const t = new Date(); return dateKey(t.getFullYear(), t.getMonth(), t.getDate()); }
 
+  function migrateHabit(h){
+    if (!h.createdAt) {
+      const keys = Object.keys(h.dates || {}).sort();
+      h.createdAt = keys.length ? keys[0] : todayKey();
+    }
+    return h;
+  }
+
+  function daysBetweenKeys(a, b){
+    const [ay, am, ad] = a.split('-').map(Number);
+    const [by, bm, bd] = b.split('-').map(Number);
+    const diff = new Date(by, bm - 1, bd) - new Date(ay, am - 1, ad);
+    return Math.round(diff / 86400000);
+  }
+
+  function habitStats(h){
+    const created = h.createdAt || todayKey();
+    const daysSince = Math.max(1, daysBetweenKeys(created, todayKey()) + 1);
+    const completed = Object.values(h.dates || {}).filter(Boolean).length;
+    const pct = Math.round((completed / daysSince) * 100);
+    return { daysSince, completed, pct, created };
+  }
+
+  function toggleHabitExpand(id){
+    expandedHabitId = expandedHabitId === id ? null : id;
+    renderHabits();
+  }
+
   function addHabit(name){
     name = name.trim();
     if (!name) return;
-    habits.push({ id: uid(), name, dates: {} });
+    habits.push({ id: uid(), name, dates: {}, createdAt: todayKey() });
     scheduleSave();
     renderHabits();
   }
@@ -2165,8 +2244,9 @@ const db = getFirestore(firebaseApp);
     html += '</tr></thead><tbody>';
 
     habits.forEach(h => {
+      const isOpen = expandedHabitId === h.id;
       html += `<tr data-habit-id="${h.id}">`;
-      html += `<td class="habit-name-cell"><div class="habit-name-inner"><button class="habit-remove" data-habit-id="${h.id}">✕</button><span class="habit-name-label">${escapeHtml(h.name)}</span></div></td>`;
+      html += `<td class="habit-name-cell"><div class="habit-name-inner"><button class="habit-remove" data-habit-id="${h.id}">✕</button><span class="habit-name-label${isOpen ? ' open' : ''}" data-habit-id="${h.id}">${escapeHtml(h.name)}</span></div></td>`;
       for (let d = 1; d <= daysCount; d++) {
         const key = dateKey(y, m, d);
         const isToday = key === tKey;
@@ -2175,6 +2255,34 @@ const db = getFirestore(firebaseApp);
         html += `<td class="habit-cell-wrap"><button class="habit-cell${done ? ' done' : ''}${isToday ? ' today' : ''}${isFuture ? ' future' : ''}" data-habit-id="${h.id}" data-key="${key}" ${isFuture ? 'disabled' : ''} aria-label="${escapeHtml(h.name)} ${key}"></button></td>`;
       }
       html += '</tr>';
+
+      if (isOpen) {
+        const stats = habitStats(h);
+        const [cy, cm, cd] = stats.created.split('-').map(Number);
+        const createdLabel = new Date(cy, cm - 1, cd).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+        html += `
+          <tr class="habit-detail-row">
+            <td colspan="${daysCount + 1}">
+              <div class="habit-detail-inner">
+                <div class="habit-stats">
+                  <div class="habit-stat-box">
+                    <div class="habit-stat-num">${stats.daysSince}</div>
+                    <div class="habit-stat-label">Días desde que empezaste</div>
+                  </div>
+                  <div class="habit-stat-box accent">
+                    <div class="habit-stat-num">${stats.completed}</div>
+                    <div class="habit-stat-label">Días cumplidos</div>
+                  </div>
+                  <div class="habit-stat-box">
+                    <div class="habit-stat-num">${stats.pct}%</div>
+                    <div class="habit-stat-label">Cumplimiento</div>
+                  </div>
+                </div>
+                <div class="habit-stat-caption">Empezaste el ${createdLabel}</div>
+              </div>
+            </td>
+          </tr>`;
+      }
     });
     html += '</tbody>';
 
@@ -2186,6 +2294,9 @@ const db = getFirestore(firebaseApp);
     });
     habitGridEl.querySelectorAll('.habit-remove').forEach(btn => {
       btn.addEventListener('click', () => deleteHabit(btn.dataset.habitId));
+    });
+    habitGridEl.querySelectorAll('.habit-name-label').forEach(label => {
+      label.addEventListener('click', () => toggleHabitExpand(label.dataset.habitId));
     });
 
     // Keep today's column in view on first render of a given month.
@@ -2598,7 +2709,7 @@ const db = getFirestore(firebaseApp);
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-03.1';
+  const APP_VERSION = '2026-08-03.2';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
