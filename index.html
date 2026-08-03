@@ -1274,10 +1274,26 @@
         <button class="add-btn" id="addDeckBtn" disabled>+</button>
       </div>
 
-      <button class="add-card-toggle" id="importToggle">⇩ Importar mazo (JSON)</button>
+      <button class="add-card-toggle" id="importToggle">⇩ Importar mazo</button>
       <div class="add-card-form" id="importForm" style="display:none;">
-        <div class="field-label">Pega aquí el JSON que te dé Claude</div>
-        <textarea class="notes" id="importTextarea" style="min-height:140px;" placeholder='{"deck": "Nombre", "cards": [{"front":"...","back":"..."}]}'></textarea>
+        <div class="view-tabs" id="importModeTabs" style="margin:0 0 12px 0;">
+          <button class="view-tab active" id="importModeSimpleBtn" data-mode="simple">Texto simple</button>
+          <button class="view-tab" id="importModeJsonBtn" data-mode="json">JSON avanzado</button>
+        </div>
+
+        <div id="importSimplePane">
+          <div class="field-label">Nombre del mazo</div>
+          <input class="due" id="importDeckName" type="text" placeholder="Ej. Vocabulario en inglés" style="width:100%;" />
+          <div class="field-label">Tarjetas (una por línea)</div>
+          <textarea class="notes" id="importSimpleTextarea" style="min-height:140px;" placeholder="Pregunta - Respuesta&#10;Otra pregunta - Otra respuesta"></textarea>
+          <p class="rec-hint" style="padding:8px 0 0 0;">Separa pregunta y respuesta con un guion ( - ), una barra ( | ), o pega directamente dos columnas copiadas de Excel o Google Sheets.</p>
+        </div>
+
+        <div id="importJsonPane" style="display:none;">
+          <div class="field-label">Pega aquí el JSON que te dé Claude</div>
+          <textarea class="notes" id="importTextarea" style="min-height:140px;" placeholder='{"deck": "Nombre", "cards": [{"front":"...","back":"..."}]}'></textarea>
+        </div>
+
         <div class="auth-error" id="importError" style="display:none;"></div>
         <div class="add-card-actions">
           <button class="habit-edit-btn" id="importCancelBtn">Cancelar</button>
@@ -1544,6 +1560,12 @@ const db = getFirestore(firebaseApp);
   const cardEditToggle = document.getElementById('cardEditToggle');
   const importToggle = document.getElementById('importToggle');
   const importForm = document.getElementById('importForm');
+  const importModeSimpleBtn = document.getElementById('importModeSimpleBtn');
+  const importModeJsonBtn = document.getElementById('importModeJsonBtn');
+  const importSimplePane = document.getElementById('importSimplePane');
+  const importJsonPane = document.getElementById('importJsonPane');
+  const importDeckNameEl = document.getElementById('importDeckName');
+  const importSimpleTextarea = document.getElementById('importSimpleTextarea');
   const importTextarea = document.getElementById('importTextarea');
   const importErrorEl = document.getElementById('importError');
   const importCancelBtn = document.getElementById('importCancelBtn');
@@ -2450,15 +2472,46 @@ const db = getFirestore(firebaseApp);
     return list;
   }
 
-  function importDecks(text){
-    let list;
-    try {
-      list = parseImportPayload(text);
-    } catch(e) {
-      showImportError(e.message);
-      return;
+  // Friendly plain-text format: one card per line, question and answer split
+  // by whichever separator shows up first (tab, "|", " - ", or ":"). Pasting
+  // two spreadsheet columns straight into the textarea produces tab-separated
+  // lines automatically, so that works here with no extra steps.
+  function detectSeparator(line){
+    if (line.includes('\t')) return '\t';
+    if (line.includes('|')) return '|';
+    if (line.includes(' - ')) return ' - ';
+    if (line.includes(':')) return ':';
+    return null;
+  }
+
+  function parseSimplePayload(deckName, text){
+    deckName = deckName.trim();
+    if (!deckName) throw new Error('Ponle un nombre al mazo.');
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length === 0) throw new Error('Agrega al menos una tarjeta, una por línea.');
+
+    const sep = detectSeparator(lines[0]);
+    if (!sep) {
+      throw new Error('No encontré un separador entre pregunta y respuesta. Usa un guion ( - ), una barra ( | ) o dos puntos ( : ).');
     }
 
+    const cards = lines.map((line, i) => {
+      const idx = line.indexOf(sep);
+      if (idx === -1) {
+        throw new Error(`La línea ${i + 1} no tiene el separador "${sep.trim()}": "${line}"`);
+      }
+      const front = line.slice(0, idx).trim();
+      const back = line.slice(idx + sep.length).trim();
+      if (!front || !back) {
+        throw new Error(`La línea ${i + 1} necesita texto antes y después del separador.`);
+      }
+      return { front, back };
+    });
+
+    return [{ deck: deckName, cards }];
+  }
+
+  function applyImportedList(list){
     let totalCards = 0;
     list.forEach(entry => {
       const name = entry.deck.trim();
@@ -2479,6 +2532,8 @@ const db = getFirestore(firebaseApp);
     scheduleSave();
     hideImportError();
     importTextarea.value = '';
+    importSimpleTextarea.value = '';
+    importDeckNameEl.value = '';
     importForm.style.display = 'none';
     renderDeckList();
 
@@ -2733,20 +2788,44 @@ const db = getFirestore(firebaseApp);
     addDeckBtn.disabled = true;
   });
 
+  let importMode = 'simple';
+  function setImportMode(mode){
+    importMode = mode;
+    importModeSimpleBtn.classList.toggle('active', mode === 'simple');
+    importModeJsonBtn.classList.toggle('active', mode === 'json');
+    importSimplePane.style.display = mode === 'simple' ? '' : 'none';
+    importJsonPane.style.display = mode === 'json' ? '' : 'none';
+    hideImportError();
+  }
+  importModeSimpleBtn.addEventListener('click', () => setImportMode('simple'));
+  importModeJsonBtn.addEventListener('click', () => setImportMode('json'));
+
   importToggle.addEventListener('click', () => {
     const showing = importForm.style.display !== 'none';
     importForm.style.display = showing ? 'none' : '';
     hideImportError();
-    if (!showing) importTextarea.focus();
+    if (!showing) importDeckNameEl.focus();
   });
   importCancelBtn.addEventListener('click', () => {
     importForm.style.display = 'none';
     importTextarea.value = '';
+    importSimpleTextarea.value = '';
+    importDeckNameEl.value = '';
     hideImportError();
   });
   importSubmitBtn.addEventListener('click', () => {
-    if (!importTextarea.value.trim()) { showImportError('Pega el JSON primero.'); return; }
-    importDecks(importTextarea.value);
+    try {
+      let list;
+      if (importMode === 'simple') {
+        list = parseSimplePayload(importDeckNameEl.value, importSimpleTextarea.value);
+      } else {
+        if (!importTextarea.value.trim()) throw new Error('Pega el JSON primero.');
+        list = parseImportPayload(importTextarea.value);
+      }
+      applyImportedList(list);
+    } catch(e) {
+      showImportError(e.message);
+    }
   });
 
   deckBackBtn.addEventListener('click', backToDecks);
@@ -2814,7 +2893,7 @@ const db = getFirestore(firebaseApp);
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-03.3';
+  const APP_VERSION = '2026-08-03.4';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
