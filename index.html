@@ -1234,6 +1234,22 @@
   .txn-type-btn.expense.active { background: var(--accent); color: #fff; border-color: transparent; }
   .txn-type-btn.income.active { background: var(--accent); color: #fff; border-color: transparent; }
 
+  .fin-kind-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+    gap: 6px;
+  }
+  .fin-kind-btn {
+    padding: 8px 6px;
+    border-radius: 9px;
+    border: 1px solid var(--hairline);
+    background: var(--field-bg);
+    color: var(--ink-soft);
+    font-size: 12px;
+    font-weight: 650;
+  }
+  .fin-kind-btn.active { background: var(--accent); color: #fff; border-color: transparent; }
+
   .fin-item {
     display: flex; align-items: center; gap: 8px;
     background: var(--field-bg);
@@ -1589,22 +1605,38 @@
           <div class="add-card-form" id="addDebtForm" style="display:none;">
             <input class="due" id="newDebtName" type="text" style="width:100%;" placeholder="Nombre (ej. Tarjeta de crédito)" />
 
-            <div class="txn-type-toggle" style="margin-top:10px;">
-              <button class="txn-type-btn expense active" data-debt-mode="monthly">Sé la cuota mensual</button>
-              <button class="txn-type-btn income" data-debt-mode="total">Sé el monto total</button>
+            <div class="fin-kind-grid" style="margin-top:10px;">
+              <button class="fin-kind-btn active" data-debt-kind="mensual">Mensual</button>
+              <button class="fin-kind-btn" data-debt-kind="anual">Anual</button>
+              <button class="fin-kind-btn" data-debt-kind="plazo">Plazo fijo</button>
             </div>
 
-            <div id="debtMonthlyFields">
-              <div class="field-label">Cuota mensual</div>
-              <input class="due" id="newDebtMonthly" type="number" inputmode="decimal" style="width:100%;" placeholder="0" />
-            </div>
-            <div id="debtTotalFields" style="display:none;">
-              <div class="field-label">Monto total de la deuda</div>
-              <input class="due" id="newDebtTotalAmt" type="number" inputmode="decimal" style="width:100%;" placeholder="0" />
+            <div id="debtMensualFields">
+              <div class="field-label">Monto mensual</div>
+              <input class="due" id="newDebtMensualAmt" type="number" inputmode="decimal" style="width:100%;" placeholder="0" />
             </div>
 
-            <div class="field-label">Número de cuotas</div>
-            <input class="due" id="newDebtInstallments" type="number" inputmode="numeric" style="width:100%;" placeholder="Ej. 12" />
+            <div id="debtAnualFields" style="display:none;">
+              <div class="field-label">Monto anual</div>
+              <input class="due" id="newDebtAnualAmt" type="number" inputmode="decimal" style="width:100%;" placeholder="0" />
+            </div>
+
+            <div id="debtPlazoFields" style="display:none;">
+              <div class="txn-type-toggle" style="margin-top:4px;">
+                <button class="txn-type-btn expense active" data-debt-mode="monthly">Sé la cuota mensual</button>
+                <button class="txn-type-btn income" data-debt-mode="total">Sé el monto total</button>
+              </div>
+              <div id="debtMonthlyFields">
+                <div class="field-label">Cuota mensual</div>
+                <input class="due" id="newDebtMonthly" type="number" inputmode="decimal" style="width:100%;" placeholder="0" />
+              </div>
+              <div id="debtTotalFields" style="display:none;">
+                <div class="field-label">Monto total de la deuda</div>
+                <input class="due" id="newDebtTotalAmt" type="number" inputmode="decimal" style="width:100%;" placeholder="0" />
+              </div>
+              <div class="field-label">Número de cuotas</div>
+              <input class="due" id="newDebtInstallments" type="number" inputmode="numeric" style="width:100%;" placeholder="Ej. 12" />
+            </div>
 
             <p class="rec-hint" id="debtCalcPreview" style="padding:8px 0 0 0;"></p>
 
@@ -1629,7 +1661,35 @@
           <button class="add-card-toggle" id="addSavingsToggle">+ Agregar ahorro</button>
           <div class="add-card-form" id="addSavingsForm" style="display:none;">
             <input class="due" id="newSavingsName" type="text" style="width:100%;" placeholder="Nombre (ej. Fondo de emergencia)" />
-            <input class="due" id="newSavingsAmount" type="number" inputmode="decimal" style="width:100%; margin-top:8px;" placeholder="Monto mensual" />
+
+            <div class="fin-kind-grid" style="margin-top:10px;">
+              <button class="fin-kind-btn" data-savings-kind="diario">Diario</button>
+              <button class="fin-kind-btn active" data-savings-kind="mensual">Mensual</button>
+              <button class="fin-kind-btn" data-savings-kind="anual">Anual</button>
+              <button class="fin-kind-btn" data-savings-kind="plazo">Plazo fijo</button>
+            </div>
+
+            <div id="savingsDiarioFields" style="display:none;">
+              <div class="field-label">Monto diario</div>
+              <input class="due" id="newSavingsDaily" type="number" inputmode="decimal" style="width:100%;" placeholder="0" />
+            </div>
+            <div id="savingsMensualFields">
+              <div class="field-label">Monto mensual</div>
+              <input class="due" id="newSavingsAmount" type="number" inputmode="decimal" style="width:100%;" placeholder="0" />
+            </div>
+            <div id="savingsAnualFields" style="display:none;">
+              <div class="field-label">Monto anual</div>
+              <input class="due" id="newSavingsAnualAmt" type="number" inputmode="decimal" style="width:100%;" placeholder="0" />
+            </div>
+            <div id="savingsPlazoFields" style="display:none;">
+              <div class="field-label">Monto objetivo total</div>
+              <input class="due" id="newSavingsGoal" type="number" inputmode="decimal" style="width:100%;" placeholder="0" />
+              <div class="field-label">Plazo (en meses)</div>
+              <input class="due" id="newSavingsMonths" type="number" inputmode="numeric" style="width:100%;" placeholder="Ej. 12" />
+            </div>
+
+            <p class="rec-hint" id="savingsCalcPreview" style="padding:8px 0 0 0;"></p>
+
             <div class="add-card-actions">
               <button class="habit-edit-btn" id="cancelSavingsBtn">Cancelar</button>
               <button class="done-toggle" id="saveSavingsBtn">Guardar</button>
@@ -1822,6 +1882,11 @@ const db = getFirestore(firebaseApp);
   const addDebtToggle = document.getElementById('addDebtToggle');
   const addDebtForm = document.getElementById('addDebtForm');
   const newDebtNameEl = document.getElementById('newDebtName');
+  const debtMensualFieldsEl = document.getElementById('debtMensualFields');
+  const debtAnualFieldsEl = document.getElementById('debtAnualFields');
+  const debtPlazoFieldsEl = document.getElementById('debtPlazoFields');
+  const newDebtMensualAmtEl = document.getElementById('newDebtMensualAmt');
+  const newDebtAnualAmtEl = document.getElementById('newDebtAnualAmt');
   const debtMonthlyFieldsEl = document.getElementById('debtMonthlyFields');
   const debtTotalFieldsEl = document.getElementById('debtTotalFields');
   const newDebtMonthlyEl = document.getElementById('newDebtMonthly');
@@ -1836,7 +1901,16 @@ const db = getFirestore(firebaseApp);
   const addSavingsToggle = document.getElementById('addSavingsToggle');
   const addSavingsForm = document.getElementById('addSavingsForm');
   const newSavingsNameEl = document.getElementById('newSavingsName');
+  const savingsDiarioFieldsEl = document.getElementById('savingsDiarioFields');
+  const savingsMensualFieldsEl = document.getElementById('savingsMensualFields');
+  const savingsAnualFieldsEl = document.getElementById('savingsAnualFields');
+  const savingsPlazoFieldsEl = document.getElementById('savingsPlazoFields');
+  const newSavingsDailyEl = document.getElementById('newSavingsDaily');
   const newSavingsAmountEl = document.getElementById('newSavingsAmount');
+  const newSavingsAnualAmtEl = document.getElementById('newSavingsAnualAmt');
+  const newSavingsGoalEl = document.getElementById('newSavingsGoal');
+  const newSavingsMonthsEl = document.getElementById('newSavingsMonths');
+  const savingsCalcPreviewEl = document.getElementById('savingsCalcPreview');
   const cancelSavingsBtn = document.getElementById('cancelSavingsBtn');
   const saveSavingsBtn = document.getElementById('saveSavingsBtn');
 
@@ -1916,7 +1990,9 @@ const db = getFirestore(firebaseApp);
   let fixedExpenses = [];
   let debts = [];
   let savings = [];
-  let debtEntryMode = 'monthly'; // 'monthly' | 'total'
+  let debtEntryMode = 'monthly'; // 'monthly' | 'total' (only used within the "plazo fijo" debt kind)
+  let debtKind = 'mensual'; // 'mensual' | 'anual' | 'plazo'
+  let savingsKind = 'mensual'; // 'diario' | 'mensual' | 'anual' | 'plazo'
 
 
   let tasks = [];
@@ -3224,7 +3300,7 @@ const db = getFirestore(firebaseApp);
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-03.7';
+  const APP_VERSION = '2026-08-03.8';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -3280,8 +3356,21 @@ const db = getFirestore(firebaseApp);
 
   function totalIncome(){ return salary + sumAmounts(otherIncomes); }
   function totalFixed(){ return sumAmounts(fixedExpenses); }
-  function totalDebtMonthly(){ return debts.reduce((s, d) => s + d.monthlyPayment, 0); }
-  function totalSavings(){ return sumAmounts(savings); }
+
+  function debtMonthlyEquivalent(d){
+    if (d.kind === 'anual') return d.annualAmount / 12;
+    return d.monthlyPayment; // 'mensual' and 'plazo' both already store a monthly figure
+  }
+  function totalDebtMonthly(){ return debts.reduce((s, d) => s + debtMonthlyEquivalent(d), 0); }
+
+  function savingMonthlyEquivalent(s){
+    if (s.kind === 'diario') return s.amount * 30;
+    if (s.kind === 'anual') return s.amount / 12;
+    if (s.kind === 'plazo') return s.totalGoal / s.months;
+    return s.amount; // 'mensual'
+  }
+  function totalSavings(){ return savings.reduce((s, item) => s + savingMonthlyEquivalent(item), 0); }
+
   function freeMoney(){ return totalIncome() - totalFixed() - totalDebtMonthly() - totalSavings(); }
 
   function addGenericItem(list, name, amount){
@@ -3312,20 +3401,27 @@ const db = getFirestore(firebaseApp);
       </li>`).join('');
   }
 
-  function addDebt(name, entryMode, monthlyOrTotal, installments){
+  // ---- Deudas: mensual (recurring), anual (once a year), or plazo fijo (installments) ----
+  function addDebt(name, kind, fields){
     name = name.trim();
-    const n = parseInt(installments, 10);
-    const val = parseFloat(monthlyOrTotal);
-    if (!name || !isFinite(val) || val <= 0 || !isFinite(n) || n <= 0) return false;
-    let monthlyPayment, totalAmount;
-    if (entryMode === 'monthly') {
-      monthlyPayment = val;
-      totalAmount = val * n;
-    } else {
-      totalAmount = val;
-      monthlyPayment = val / n;
+    if (!name) return false;
+
+    if (kind === 'mensual') {
+      const amt = parseFloat(fields.monthlyAmt);
+      if (!isFinite(amt) || amt <= 0) return false;
+      debts.push({ id: uid(), name, kind, monthlyPayment: amt });
+    } else if (kind === 'anual') {
+      const amt = parseFloat(fields.annualAmt);
+      if (!isFinite(amt) || amt <= 0) return false;
+      debts.push({ id: uid(), name, kind, annualAmount: amt });
+    } else { // 'plazo'
+      const n = parseInt(fields.installments, 10);
+      const val = parseFloat(fields.entryMode === 'monthly' ? fields.monthlyAmt : fields.totalAmt);
+      if (!isFinite(val) || val <= 0 || !isFinite(n) || n <= 0) return false;
+      const monthlyPayment = fields.entryMode === 'monthly' ? val : val / n;
+      const totalAmount = fields.entryMode === 'monthly' ? val * n : val;
+      debts.push({ id: uid(), name, kind, monthlyPayment, totalAmount, installments: n });
     }
-    debts.push({ id: uid(), name, monthlyPayment, totalAmount, installments: n });
     scheduleSave();
     return true;
   }
@@ -3334,6 +3430,12 @@ const db = getFirestore(firebaseApp);
     debts = debts.filter(d => d.id !== id);
     scheduleSave();
     renderFinance();
+  }
+
+  function debtSummaryLine(d){
+    if (d.kind === 'mensual') return 'Mensual';
+    if (d.kind === 'anual') return `${formatMoney(d.annualAmount)}/año`;
+    return `${formatMoney(d.totalAmount)} total · ${d.installments} cuotas`;
   }
 
   function renderDebtList(){
@@ -3346,21 +3448,73 @@ const db = getFirestore(firebaseApp);
         <button class="fin-remove" data-id="${d.id}">✕</button>
         <div class="fin-item-info">
           <div class="fin-item-name">${escapeHtml(d.name)}</div>
-          <div class="fin-item-sub">${formatMoney(d.totalAmount)} total · ${d.installments} cuotas</div>
+          <div class="fin-item-sub">${debtSummaryLine(d)}</div>
         </div>
-        <div class="fin-item-amount">${formatMoney(d.monthlyPayment)}/mes</div>
+        <div class="fin-item-amount">${formatMoney(debtMonthlyEquivalent(d))}/mes</div>
       </li>`).join('');
     debtListEl.querySelectorAll('.fin-remove').forEach(btn => {
       btn.addEventListener('click', () => removeDebt(btn.dataset.id));
     });
   }
 
+  // ---- Ahorro: diario, mensual, anual, o plazo fijo (monto objetivo / meses) ----
+  function addSaving(name, kind, fields){
+    name = name.trim();
+    if (!name) return false;
+
+    if (kind === 'plazo') {
+      const goal = parseFloat(fields.goal);
+      const months = parseInt(fields.months, 10);
+      if (!isFinite(goal) || goal <= 0 || !isFinite(months) || months <= 0) return false;
+      savings.push({ id: uid(), name, kind, totalGoal: goal, months });
+    } else {
+      const amt = parseFloat(fields.amount);
+      if (!isFinite(amt) || amt <= 0) return false;
+      savings.push({ id: uid(), name, kind, amount: amt });
+    }
+    scheduleSave();
+    return true;
+  }
+
+  function removeSaving(id){
+    savings = savings.filter(s => s.id !== id);
+    scheduleSave();
+    renderFinance();
+  }
+
+  function savingSummaryLine(s){
+    if (s.kind === 'diario') return `${formatMoney(s.amount)}/día`;
+    if (s.kind === 'anual') return `${formatMoney(s.amount)}/año`;
+    if (s.kind === 'plazo') return `${formatMoney(s.totalGoal)} en ${s.months} meses`;
+    return 'Mensual';
+  }
+
+  function renderSavingsList(){
+    if (savings.length === 0) {
+      savingsListEl.innerHTML = `<p class="fin-item-sub" style="padding:6px 0;">Sin ahorro planificado.</p>`;
+      return;
+    }
+    savingsListEl.innerHTML = savings.map(s => `
+      <li class="fin-item" data-id="${s.id}">
+        <button class="fin-remove" data-id="${s.id}">✕</button>
+        <div class="fin-item-info">
+          <div class="fin-item-name">${escapeHtml(s.name)}</div>
+          <div class="fin-item-sub">${savingSummaryLine(s)}</div>
+        </div>
+        <div class="fin-item-amount">${formatMoney(savingMonthlyEquivalent(s))}/mes</div>
+      </li>`).join('');
+    savingsListEl.querySelectorAll('.fin-remove').forEach(btn => {
+      btn.addEventListener('click', () => removeSaving(btn.dataset.id));
+    });
+  }
+
+
   function renderFinance(){
     salaryInputEl.value = salary || '';
 
     renderGenericList(otherIncomeListEl, otherIncomes, 'Sin otros ingresos.');
     renderGenericList(fixedListEl, fixedExpenses, 'Sin gastos fijos registrados.');
-    renderGenericList(savingsListEl, savings, 'Sin ahorro planificado.');
+    renderSavingsList();
     renderDebtList();
 
     otherIncomeListEl.querySelectorAll('.fin-remove').forEach(btn => {
@@ -3369,14 +3523,11 @@ const db = getFirestore(firebaseApp);
     fixedListEl.querySelectorAll('.fin-remove').forEach(btn => {
       btn.addEventListener('click', () => { removeGenericItem(fixedExpenses, btn.dataset.id); renderFinance(); });
     });
-    savingsListEl.querySelectorAll('.fin-remove').forEach(btn => {
-      btn.addEventListener('click', () => { removeGenericItem(savings, btn.dataset.id); renderFinance(); });
-    });
 
     incomeTotalEl.textContent = formatMoney(totalIncome());
     fixedTotalEl.textContent = formatMoney(totalFixed());
     debtTotalEl.textContent = formatMoney(totalDebtMonthly()) + '/mes';
-    savingsTotalEl.textContent = formatMoney(totalSavings());
+    savingsTotalEl.textContent = formatMoney(totalSavings()) + '/mes';
 
     const free = freeMoney();
     freeMoneyAmountEl.textContent = formatMoney(free);
@@ -3404,7 +3555,7 @@ const db = getFirestore(firebaseApp);
 
   // Generic add-item forms (Otros ingresos / Gastos fijos / Ahorro) share the
   // same shape: a toggle button, a small form, cancel + save.
-  function wireSimpleAddForm(toggleBtn, form, nameInput, amountInput, cancelBtn, saveBtn, list){
+  function wireSimpleAddForm(toggleBtn, form, nameInput, amountInput, cancelBtn, saveBtn, getList){
     toggleBtn.addEventListener('click', () => {
       const showing = form.style.display !== 'none';
       form.style.display = showing ? 'none' : '';
@@ -3416,7 +3567,7 @@ const db = getFirestore(firebaseApp);
       amountInput.value = '';
     });
     saveBtn.addEventListener('click', () => {
-      const ok = addGenericItem(list, nameInput.value, amountInput.value);
+      const ok = addGenericItem(getList(), nameInput.value, amountInput.value);
       if (!ok) { nameInput.focus(); return; }
       nameInput.value = '';
       amountInput.value = '';
@@ -3424,12 +3575,15 @@ const db = getFirestore(firebaseApp);
       renderFinance();
     });
   }
-  wireSimpleAddForm(addIncomeToggle, addIncomeForm, newIncomeNameEl, newIncomeAmountEl, cancelIncomeBtn, saveIncomeBtn, otherIncomes);
-  wireSimpleAddForm(addFixedToggle, addFixedForm, newFixedNameEl, newFixedAmountEl, cancelFixedBtn, saveFixedBtn, fixedExpenses);
-  wireSimpleAddForm(addSavingsToggle, addSavingsForm, newSavingsNameEl, newSavingsAmountEl, cancelSavingsBtn, saveSavingsBtn, savings);
+  wireSimpleAddForm(addIncomeToggle, addIncomeForm, newIncomeNameEl, newIncomeAmountEl, cancelIncomeBtn, saveIncomeBtn, () => otherIncomes);
+  wireSimpleAddForm(addFixedToggle, addFixedForm, newFixedNameEl, newFixedAmountEl, cancelFixedBtn, saveFixedBtn, () => fixedExpenses);
 
   // Debt form: two entry modes that compute each other live.
   function updateDebtCalcPreview(){
+    if (debtKind === 'mensual' || debtKind === 'anual') {
+      debtCalcPreviewEl.textContent = '';
+      return;
+    }
     const n = parseInt(newDebtInstallmentsEl.value, 10);
     const val = parseFloat(debtEntryMode === 'monthly' ? newDebtMonthlyEl.value : newDebtTotalAmtEl.value);
     if (!isFinite(n) || n <= 0 || !isFinite(val) || val <= 0) {
@@ -3442,6 +3596,27 @@ const db = getFirestore(firebaseApp);
       debtCalcPreviewEl.textContent = `Cuota mensual: ${formatMoney(val / n)}`;
     }
   }
+
+  function clearDebtForm(){
+    newDebtNameEl.value = '';
+    newDebtMensualAmtEl.value = '';
+    newDebtAnualAmtEl.value = '';
+    newDebtMonthlyEl.value = '';
+    newDebtTotalAmtEl.value = '';
+    newDebtInstallmentsEl.value = '';
+    debtCalcPreviewEl.textContent = '';
+  }
+
+  document.querySelectorAll('[data-debt-kind]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      debtKind = btn.dataset.debtKind;
+      document.querySelectorAll('[data-debt-kind]').forEach(b => b.classList.toggle('active', b.dataset.debtKind === debtKind));
+      debtMensualFieldsEl.style.display = debtKind === 'mensual' ? '' : 'none';
+      debtAnualFieldsEl.style.display = debtKind === 'anual' ? '' : 'none';
+      debtPlazoFieldsEl.style.display = debtKind === 'plazo' ? '' : 'none';
+      updateDebtCalcPreview();
+    });
+  });
   document.querySelectorAll('[data-debt-mode]').forEach(btn => {
     btn.addEventListener('click', () => {
       debtEntryMode = btn.dataset.debtMode;
@@ -3462,22 +3637,84 @@ const db = getFirestore(firebaseApp);
   });
   cancelDebtBtn.addEventListener('click', () => {
     addDebtForm.style.display = 'none';
-    newDebtNameEl.value = '';
-    newDebtMonthlyEl.value = '';
-    newDebtTotalAmtEl.value = '';
-    newDebtInstallmentsEl.value = '';
-    debtCalcPreviewEl.textContent = '';
+    clearDebtForm();
   });
   saveDebtBtn.addEventListener('click', () => {
-    const val = debtEntryMode === 'monthly' ? newDebtMonthlyEl.value : newDebtTotalAmtEl.value;
-    const ok = addDebt(newDebtNameEl.value, debtEntryMode, val, newDebtInstallmentsEl.value);
+    const ok = addDebt(newDebtNameEl.value, debtKind, {
+      monthlyAmt: debtKind === 'mensual' ? newDebtMensualAmtEl.value : newDebtMonthlyEl.value,
+      annualAmt: newDebtAnualAmtEl.value,
+      totalAmt: newDebtTotalAmtEl.value,
+      installments: newDebtInstallmentsEl.value,
+      entryMode: debtEntryMode,
+    });
     if (!ok) { newDebtNameEl.focus(); return; }
-    newDebtNameEl.value = '';
-    newDebtMonthlyEl.value = '';
-    newDebtTotalAmtEl.value = '';
-    newDebtInstallmentsEl.value = '';
-    debtCalcPreviewEl.textContent = '';
+    clearDebtForm();
     addDebtForm.style.display = 'none';
+    renderFinance();
+  });
+
+  // ---- Ahorro form: diario / mensual / anual / plazo fijo ----
+  function updateSavingsCalcPreview(){
+    if (savingsKind === 'plazo') {
+      const goal = parseFloat(newSavingsGoalEl.value);
+      const months = parseInt(newSavingsMonthsEl.value, 10);
+      if (isFinite(goal) && goal > 0 && isFinite(months) && months > 0) {
+        savingsCalcPreviewEl.textContent = `Necesitas ahorrar ${formatMoney(goal / months)}/mes`;
+      } else {
+        savingsCalcPreviewEl.textContent = '';
+      }
+    } else {
+      savingsCalcPreviewEl.textContent = '';
+    }
+  }
+
+  function clearSavingsForm(){
+    newSavingsNameEl.value = '';
+    newSavingsDailyEl.value = '';
+    newSavingsAmountEl.value = '';
+    newSavingsAnualAmtEl.value = '';
+    newSavingsGoalEl.value = '';
+    newSavingsMonthsEl.value = '';
+    savingsCalcPreviewEl.textContent = '';
+  }
+
+  document.querySelectorAll('[data-savings-kind]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      savingsKind = btn.dataset.savingsKind;
+      document.querySelectorAll('[data-savings-kind]').forEach(b => b.classList.toggle('active', b.dataset.savingsKind === savingsKind));
+      savingsDiarioFieldsEl.style.display = savingsKind === 'diario' ? '' : 'none';
+      savingsMensualFieldsEl.style.display = savingsKind === 'mensual' ? '' : 'none';
+      savingsAnualFieldsEl.style.display = savingsKind === 'anual' ? '' : 'none';
+      savingsPlazoFieldsEl.style.display = savingsKind === 'plazo' ? '' : 'none';
+      updateSavingsCalcPreview();
+    });
+  });
+  newSavingsGoalEl.addEventListener('input', updateSavingsCalcPreview);
+  newSavingsMonthsEl.addEventListener('input', updateSavingsCalcPreview);
+
+  addSavingsToggle.addEventListener('click', () => {
+    const showing = addSavingsForm.style.display !== 'none';
+    addSavingsForm.style.display = showing ? 'none' : '';
+    if (!showing) newSavingsNameEl.focus();
+  });
+  cancelSavingsBtn.addEventListener('click', () => {
+    addSavingsForm.style.display = 'none';
+    clearSavingsForm();
+  });
+  saveSavingsBtn.addEventListener('click', () => {
+    const amountByKind = {
+      diario: newSavingsDailyEl.value,
+      mensual: newSavingsAmountEl.value,
+      anual: newSavingsAnualAmtEl.value,
+    };
+    const ok = addSaving(newSavingsNameEl.value, savingsKind, {
+      amount: amountByKind[savingsKind],
+      goal: newSavingsGoalEl.value,
+      months: newSavingsMonthsEl.value,
+    });
+    if (!ok) { newSavingsNameEl.focus(); return; }
+    clearSavingsForm();
+    addSavingsForm.style.display = 'none';
     renderFinance();
   });
 
