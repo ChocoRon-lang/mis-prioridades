@@ -1273,6 +1273,18 @@
         <input id="newDeckInput" type="text" placeholder="Nuevo mazo (tema)" maxlength="60" />
         <button class="add-btn" id="addDeckBtn" disabled>+</button>
       </div>
+
+      <button class="add-card-toggle" id="importToggle">⇩ Importar mazo (JSON)</button>
+      <div class="add-card-form" id="importForm" style="display:none;">
+        <div class="field-label">Pega aquí el JSON que te dé Claude</div>
+        <textarea class="notes" id="importTextarea" style="min-height:140px;" placeholder='{"deck": "Nombre", "cards": [{"front":"...","back":"..."}]}'></textarea>
+        <div class="auth-error" id="importError" style="display:none;"></div>
+        <div class="add-card-actions">
+          <button class="habit-edit-btn" id="importCancelBtn">Cancelar</button>
+          <button class="done-toggle" id="importSubmitBtn">Importar</button>
+        </div>
+      </div>
+
       <div class="deck-empty" id="deckEmpty" style="display:none;">
         <div class="glyph">🗂️</div>
         <p><strong>Sin mazos todavía</strong></p>
@@ -1530,6 +1542,12 @@ const db = getFirestore(firebaseApp);
   const cancelCardBtn = document.getElementById('cancelCardBtn');
   const saveCardBtn = document.getElementById('saveCardBtn');
   const cardEditToggle = document.getElementById('cardEditToggle');
+  const importToggle = document.getElementById('importToggle');
+  const importForm = document.getElementById('importForm');
+  const importTextarea = document.getElementById('importTextarea');
+  const importErrorEl = document.getElementById('importError');
+  const importCancelBtn = document.getElementById('importCancelBtn');
+  const importSubmitBtn = document.getElementById('importSubmitBtn');
   const cardEmptyEl = document.getElementById('cardEmpty');
   const cardListEl = document.getElementById('cardList');
   const studyExitBtn = document.getElementById('studyExitBtn');
@@ -2406,6 +2424,77 @@ const db = getFirestore(firebaseApp);
     renderDeckList();
   }
 
+  // Accepts either a single { deck, cards } object or an array of them.
+  function parseImportPayload(text){
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch(e) {
+      throw new Error('Ese texto no es JSON válido. Revisa que esté copiado completo, con todas las llaves { } y corchetes [ ].');
+    }
+    const list = Array.isArray(data) ? data : [data];
+    if (list.length === 0) throw new Error('No hay ningún mazo en ese JSON.');
+    list.forEach(entry => {
+      if (!entry || typeof entry.deck !== 'string' || !entry.deck.trim()) {
+        throw new Error('Cada mazo necesita un campo "deck" con el nombre, en texto.');
+      }
+      if (!Array.isArray(entry.cards) || entry.cards.length === 0) {
+        throw new Error(`El mazo "${entry.deck}" necesita un campo "cards" con al menos una tarjeta.`);
+      }
+      entry.cards.forEach(c => {
+        if (!c || typeof c.front !== 'string' || typeof c.back !== 'string' || !c.front.trim() || !c.back.trim()) {
+          throw new Error(`Cada tarjeta del mazo "${entry.deck}" necesita "front" y "back" con texto.`);
+        }
+      });
+    });
+    return list;
+  }
+
+  function importDecks(text){
+    let list;
+    try {
+      list = parseImportPayload(text);
+    } catch(e) {
+      showImportError(e.message);
+      return;
+    }
+
+    let totalCards = 0;
+    list.forEach(entry => {
+      const name = entry.deck.trim();
+      let deck = decks.find(d => d.name.trim().toLowerCase() === name.toLowerCase());
+      if (!deck) {
+        deck = { id: uid(), name, cards: [] };
+        decks.push(deck);
+      }
+      entry.cards.forEach(c => {
+        deck.cards.push(Object.assign(
+          { id: uid(), front: c.front.trim(), back: c.back.trim() },
+          newCardState()
+        ));
+        totalCards += 1;
+      });
+    });
+
+    scheduleSave();
+    hideImportError();
+    importTextarea.value = '';
+    importForm.style.display = 'none';
+    renderDeckList();
+
+    const original = importToggle.textContent;
+    importToggle.textContent = `✓ Se importaron ${totalCards} tarjeta${totalCards === 1 ? '' : 's'}`;
+    setTimeout(() => { importToggle.textContent = original; }, 2200);
+  }
+
+  function showImportError(msg){
+    importErrorEl.textContent = msg;
+    importErrorEl.style.display = '';
+  }
+  function hideImportError(){
+    importErrorEl.style.display = 'none';
+  }
+
   function deleteDeck(id){
     decks = decks.filter(d => d.id !== id);
     scheduleSave();
@@ -2644,6 +2733,22 @@ const db = getFirestore(firebaseApp);
     addDeckBtn.disabled = true;
   });
 
+  importToggle.addEventListener('click', () => {
+    const showing = importForm.style.display !== 'none';
+    importForm.style.display = showing ? 'none' : '';
+    hideImportError();
+    if (!showing) importTextarea.focus();
+  });
+  importCancelBtn.addEventListener('click', () => {
+    importForm.style.display = 'none';
+    importTextarea.value = '';
+    hideImportError();
+  });
+  importSubmitBtn.addEventListener('click', () => {
+    if (!importTextarea.value.trim()) { showImportError('Pega el JSON primero.'); return; }
+    importDecks(importTextarea.value);
+  });
+
   deckBackBtn.addEventListener('click', backToDecks);
   deckDeleteBtn.addEventListener('click', () => {
     const deck = activeDeck();
@@ -2709,7 +2814,7 @@ const db = getFirestore(firebaseApp);
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-03.2';
+  const APP_VERSION = '2026-08-03.3';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
