@@ -1082,6 +1082,32 @@
     flex-shrink: 0;
   }
 
+  .version-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 20px;
+    padding: 3px 9px 3px 7px;
+    font-size: 10px;
+    font-weight: 650;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+  .version-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--ink-soft);
+    box-shadow: 0 0 5px currentColor;
+    flex-shrink: 0;
+  }
+  .version-badge.current { color: #3FC373; }
+  .version-badge.current .version-dot { background: #3FC373; }
+  .version-badge.outdated { color: #F5A623; cursor: pointer; }
+  .version-badge.outdated .version-dot { background: #F5A623; }
+  .version-badge:active { opacity: 0.75; }
+
   ::-webkit-scrollbar { display: none; }
 </style>
 </head>
@@ -1111,6 +1137,9 @@
 <div id="app" style="display:none;">
   <header>
     <div>
+      <div class="version-badge" id="versionBadge" title="Comprobando versión…">
+        <span class="version-dot"></span><span id="versionText">Comprobando…</span>
+      </div>
       <h1>Prisma</h1>
       <p class="sub" id="subtitle">Cargando…</p>
     </div>
@@ -1394,6 +1423,8 @@ const db = getFirestore(firebaseApp);
   const authSubtitleEl = document.getElementById('authSubtitle');
   const accountEmailEl = document.getElementById('accountEmail');
   const signOutBtn = document.getElementById('signOutBtn');
+  const versionBadgeEl = document.getElementById('versionBadge');
+  const versionTextEl = document.getElementById('versionText');
   const recommendedViewEl = document.getElementById('recommendedView');
   const recommendedListEl = document.getElementById('recommendedList');
   const tabMineEl = document.getElementById('tabMine');
@@ -2562,6 +2593,51 @@ const db = getFirestore(firebaseApp);
   });
   studyExitBtn.addEventListener('click', exitStudy);
   studyDoneBackBtn.addEventListener('click', exitStudy);
+
+  // ---- Version check ----
+  // Bump APP_VERSION here *and* the number inside version.json together on every
+  // update. The badge compares this baked-in value against the live version.json
+  // on the server to know whether the currently loaded copy is out of date.
+  const APP_VERSION = '2026-08-03.1';
+
+  function setVersionBadge(state, label){
+    versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
+    versionBadgeEl.classList.add(state);
+    versionTextEl.textContent = label;
+    versionBadgeEl.title =
+      state === 'current' ? 'Tienes la última versión' :
+      state === 'outdated' ? 'Hay una versión nueva — toca para actualizar' :
+      'No se pudo comprobar si hay una versión nueva';
+  }
+
+  async function checkVersion(){
+    try {
+      const res = await fetch('version.json?t=' + Date.now(), { cache: 'no-store' });
+      if (!res.ok) throw new Error('sin version.json');
+      const data = await res.json();
+      if (data.version === APP_VERSION) {
+        setVersionBadge('current', 'Actualizado');
+      } else {
+        setVersionBadge('outdated', 'Nueva versión');
+      }
+    } catch(e) {
+      setVersionBadge('unknown', 'Sin comprobar');
+    }
+  }
+
+  versionBadgeEl.addEventListener('click', () => {
+    if (versionBadgeEl.classList.contains('outdated')) {
+      location.reload();
+    } else {
+      checkVersion();
+    }
+  });
+
+  checkVersion();
+  setInterval(checkVersion, 5 * 60 * 1000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') checkVersion();
+  });
 
   // ---- Authentication ----
   let authMode = 'login'; // 'login' | 'signup'
