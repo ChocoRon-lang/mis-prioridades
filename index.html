@@ -1189,59 +1189,36 @@
     margin-top: 3px;
   }
 
-  .envelope-item {
-    background: var(--card);
-    border: 1px solid var(--hairline);
-    border-radius: 13px;
-    padding: 12px 14px;
-    margin-bottom: 8px;
-    cursor: pointer;
-  }
-  .envelope-item-top {
-    display: flex; align-items: baseline; justify-content: space-between;
-    margin-bottom: 8px;
-  }
-  .envelope-item-name {
-    font-size: 14.5px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-  }
-  .envelope-item-amounts {
-    font-size: 12.5px;
-    color: var(--ink-soft);
-    font-variant-numeric: tabular-nums;
-  }
-  .envelope-item-amounts .spent { font-weight: 700; color: var(--ink); }
-  .envelope-bar-track {
-    height: 7px;
-    border-radius: 4px;
-    background: var(--field-bg);
-    overflow: hidden;
-  }
-  .envelope-bar-fill {
-    height: 100%;
-    border-radius: 4px;
-    background: #3FC373;
-    transition: width 220ms ease;
-  }
-  .envelope-bar-fill.warn { background: #F5A623; }
-  .envelope-bar-fill.over { background: var(--urgent); }
-
-  .envelope-detail-summary {
-    margin: 14px 20px 0 20px;
-    display: flex;
-    gap: 8px;
-  }
-  .envelope-detail-summary .habit-stat-box { flex: 1; }
-
-  .envelope-budget-edit {
+  .finance-section {
     margin: 12px 20px 0 20px;
     background: var(--card);
     border: 1px solid var(--hairline);
-    border-radius: 12px;
-    padding: 10px 12px 12px 12px;
+    border-radius: 14px;
+    overflow: hidden;
   }
-  .ebe-row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+  .finance-section-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px;
+    cursor: pointer;
+  }
+  .fs-icon { font-size: 17px; flex-shrink: 0; }
+  .finance-section-title {
+    flex: 1;
+    font-size: 14.5px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+  }
+  .finance-section-total {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  .finance-section.open .chevron { transform: rotate(90deg); }
+  .finance-section-body {
+    padding: 4px 14px 16px 14px;
+    border-top: 1px solid var(--hairline);
+  }
 
   .txn-type-toggle { display: flex; gap: 8px; margin-bottom: 4px; }
   .txn-type-btn {
@@ -1251,38 +1228,37 @@
     border: 1px solid var(--hairline);
     background: var(--field-bg);
     color: var(--ink-soft);
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 650;
   }
-  .txn-type-btn.expense.active { background: var(--urgent); color: #fff; border-color: transparent; }
-  .txn-type-btn.income.active { background: #3FC373; color: #fff; border-color: transparent; }
+  .txn-type-btn.expense.active { background: var(--accent); color: #fff; border-color: transparent; }
+  .txn-type-btn.income.active { background: var(--accent); color: #fff; border-color: transparent; }
 
-  .txn-item {
+  .fin-item {
     display: flex; align-items: center; gap: 8px;
-    background: var(--card);
+    background: var(--field-bg);
     border: 1px solid var(--hairline);
     border-radius: 12px;
     padding: 11px 12px;
     margin-bottom: 8px;
   }
-  .txn-item-info { flex: 1; min-width: 0; }
-  .txn-item-note {
+  .fin-item-info { flex: 1; min-width: 0; }
+  .fin-item-name {
     font-size: 13.5px;
     font-weight: 550;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .txn-item-date { font-size: 11px; color: var(--ink-soft); margin-top: 1px; }
-  .txn-item-amount {
+  .fin-item-sub { font-size: 11px; color: var(--ink-soft); margin-top: 1px; }
+  .fin-item-amount {
     font-size: 14px;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     flex-shrink: 0;
+    color: var(--ink);
   }
-  .txn-item-amount.expense { color: var(--urgent); }
-  .txn-item-amount.income { color: #3FC373; }
-  .txn-remove {
+  .fin-remove {
     width: 18px; height: 18px;
     border-radius: 50%;
     background: var(--urgent);
@@ -1290,12 +1266,10 @@
     border: none;
     font-size: 12px;
     line-height: 1;
-    display: none;
+    display: flex;
     align-items: center; justify-content: center;
     flex-shrink: 0;
   }
-  #txnList.editing .txn-remove { display: flex; }
-  #txnList.editing .txn-item-amount { display: none; }
 
   ::-webkit-scrollbar { display: none; }
 </style>
@@ -1546,89 +1520,124 @@
   </div>
 
   <div id="financePage" class="page" style="display:none;">
-
-    <!-- Level 1: envelope overview -->
-    <div id="envelopeListView" class="subview">
-      <div class="habits-toolbar">
-        <div class="month-switcher">
-          <button class="month-arrow" id="financePrevMonth" aria-label="Mes anterior">‹</button>
-          <span class="month-label" id="financeMonthLabel">—</span>
-          <button class="month-arrow" id="financeNextMonth" aria-label="Mes siguiente">›</button>
-        </div>
-      </div>
-
+    <main>
       <div class="safe-to-spend">
-        <div class="sts-label">Te queda para gastar</div>
-        <div class="sts-amount" id="safeToSpendAmount">$0</div>
-        <div class="sts-sub" id="safeToSpendSub">$0 presupuestado</div>
+        <div class="sts-label">Dinero libre de gasto</div>
+        <div class="sts-amount" id="freeMoneyAmount">$0</div>
+        <div class="sts-sub" id="freeMoneyBreakdown">$0 ingresos</div>
       </div>
 
-      <div class="add-bar">
-        <input id="newEnvelopeName" type="text" placeholder="Nombre del sobre" maxlength="40" />
-        <input id="newEnvelopeBudget" type="number" inputmode="decimal" placeholder="Presupuesto" style="max-width:110px; flex:none;" />
-        <button class="add-btn" id="addEnvelopeBtn" disabled>+</button>
-      </div>
+      <!-- Ingresos -->
+      <div class="finance-section" data-section="income">
+        <div class="finance-section-header" data-section-toggle="income">
+          <span class="fs-icon">💵</span>
+          <span class="finance-section-title">Ingresos</span>
+          <span class="finance-section-total" id="incomeTotal">$0</span>
+          <span class="chevron">›</span>
+        </div>
+        <div class="finance-section-body" id="incomeBody" style="display:none;">
+          <div class="field-label">Sueldo mensual</div>
+          <input class="due" id="salaryInput" type="number" inputmode="decimal" style="width:100%;" placeholder="0" />
 
-      <div class="deck-empty" id="envelopeEmpty" style="display:none;">
-        <div class="glyph">💰</div>
-        <p><strong>Sin sobres todavía</strong></p>
-        <p>Crea uno arriba para empezar a repartir tu presupuesto.</p>
-      </div>
-      <main>
-        <ul id="envelopeList"></ul>
-      </main>
-    </div>
-
-    <!-- Level 2: envelope detail (transactions inside an envelope) -->
-    <div id="envelopeDetailView" class="subview" style="display:none;">
-      <div class="cards-toolbar">
-        <button class="icon-btn" id="envelopeBackBtn" aria-label="Volver a sobres">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <h2 class="page-title" id="envelopeDetailName">—</h2>
-        <button class="icon-btn" id="envelopeDeleteBtn" aria-label="Eliminar sobre">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m-9 0 1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-      </div>
-
-      <div class="envelope-detail-summary" id="envelopeDetailSummary"></div>
-
-      <div class="envelope-budget-edit">
-        <span class="field-label" style="margin:0;">Presupuesto mensual</span>
-        <div class="ebe-row">
-          <input class="due" id="editEnvelopeBudget" type="number" inputmode="decimal" style="width:120px;" />
-          <button class="habit-edit-btn" id="saveEnvelopeBudgetBtn">Guardar</button>
+          <div class="field-label" style="margin-top:14px;">Otros ingresos</div>
+          <ul id="otherIncomeList"></ul>
+          <button class="add-card-toggle" id="addIncomeToggle">+ Agregar otro ingreso</button>
+          <div class="add-card-form" id="addIncomeForm" style="display:none;">
+            <input class="due" id="newIncomeName" type="text" style="width:100%;" placeholder="Nombre (ej. Freelance)" />
+            <input class="due" id="newIncomeAmount" type="number" inputmode="decimal" style="width:100%; margin-top:8px;" placeholder="Monto" />
+            <div class="add-card-actions">
+              <button class="habit-edit-btn" id="cancelIncomeBtn">Cancelar</button>
+              <button class="done-toggle" id="saveIncomeBtn">Guardar</button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <button class="add-card-toggle" id="addTxnToggle">+ Agregar movimiento</button>
-      <div class="add-card-form" id="addTxnForm" style="display:none;">
-        <div class="txn-type-toggle">
-          <button class="txn-type-btn expense active" data-type="expense">Gasto</button>
-          <button class="txn-type-btn income" data-type="income">Ingreso</button>
+      <!-- Gastos fijos -->
+      <div class="finance-section" data-section="fixed">
+        <div class="finance-section-header" data-section-toggle="fixed">
+          <span class="fs-icon">🧾</span>
+          <span class="finance-section-title">Gastos fijos</span>
+          <span class="finance-section-total" id="fixedTotal">$0</span>
+          <span class="chevron">›</span>
         </div>
-        <div class="field-label">Monto</div>
-        <input class="due" id="newTxnAmount" type="number" inputmode="decimal" style="width:100%;" placeholder="0" />
-        <div class="field-label">Descripción (opcional)</div>
-        <input class="due" id="newTxnNote" type="text" style="width:100%;" placeholder="Ej. Supermercado" />
-        <div class="add-card-actions">
-          <button class="habit-edit-btn" id="cancelTxnBtn">Cancelar</button>
-          <button class="done-toggle" id="saveTxnBtn">Guardar</button>
+        <div class="finance-section-body" id="fixedBody" style="display:none;">
+          <ul id="fixedList"></ul>
+          <button class="add-card-toggle" id="addFixedToggle">+ Agregar gasto fijo</button>
+          <div class="add-card-form" id="addFixedForm" style="display:none;">
+            <input class="due" id="newFixedName" type="text" style="width:100%;" placeholder="Nombre (ej. Arriendo)" />
+            <input class="due" id="newFixedAmount" type="number" inputmode="decimal" style="width:100%; margin-top:8px;" placeholder="Monto mensual" />
+            <div class="add-card-actions">
+              <button class="habit-edit-btn" id="cancelFixedBtn">Cancelar</button>
+              <button class="done-toggle" id="saveFixedBtn">Guardar</button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="cards-toolbar" style="margin-top:16px;">
-        <h2 class="page-title small">Movimientos de este mes</h2>
-        <button class="habit-edit-btn" id="txnEditToggle">Editar</button>
-      </div>
-      <main>
-        <div class="deck-empty" id="txnEmpty" style="display:none;">
-          <p>Sin movimientos este mes.</p>
+      <!-- Deudas -->
+      <div class="finance-section" data-section="debt">
+        <div class="finance-section-header" data-section-toggle="debt">
+          <span class="fs-icon">💳</span>
+          <span class="finance-section-title">Deudas</span>
+          <span class="finance-section-total" id="debtTotal">$0</span>
+          <span class="chevron">›</span>
         </div>
-        <ul id="txnList"></ul>
-      </main>
-    </div>
+        <div class="finance-section-body" id="debtBody" style="display:none;">
+          <ul id="debtList"></ul>
+          <button class="add-card-toggle" id="addDebtToggle">+ Agregar deuda</button>
+          <div class="add-card-form" id="addDebtForm" style="display:none;">
+            <input class="due" id="newDebtName" type="text" style="width:100%;" placeholder="Nombre (ej. Tarjeta de crédito)" />
 
+            <div class="txn-type-toggle" style="margin-top:10px;">
+              <button class="txn-type-btn expense active" data-debt-mode="monthly">Sé la cuota mensual</button>
+              <button class="txn-type-btn income" data-debt-mode="total">Sé el monto total</button>
+            </div>
+
+            <div id="debtMonthlyFields">
+              <div class="field-label">Cuota mensual</div>
+              <input class="due" id="newDebtMonthly" type="number" inputmode="decimal" style="width:100%;" placeholder="0" />
+            </div>
+            <div id="debtTotalFields" style="display:none;">
+              <div class="field-label">Monto total de la deuda</div>
+              <input class="due" id="newDebtTotalAmt" type="number" inputmode="decimal" style="width:100%;" placeholder="0" />
+            </div>
+
+            <div class="field-label">Número de cuotas</div>
+            <input class="due" id="newDebtInstallments" type="number" inputmode="numeric" style="width:100%;" placeholder="Ej. 12" />
+
+            <p class="rec-hint" id="debtCalcPreview" style="padding:8px 0 0 0;"></p>
+
+            <div class="add-card-actions">
+              <button class="habit-edit-btn" id="cancelDebtBtn">Cancelar</button>
+              <button class="done-toggle" id="saveDebtBtn">Guardar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ahorro -->
+      <div class="finance-section" data-section="savings">
+        <div class="finance-section-header" data-section-toggle="savings">
+          <span class="fs-icon">🐷</span>
+          <span class="finance-section-title">Ahorro</span>
+          <span class="finance-section-total" id="savingsTotal">$0</span>
+          <span class="chevron">›</span>
+        </div>
+        <div class="finance-section-body" id="savingsBody" style="display:none;">
+          <ul id="savingsList"></ul>
+          <button class="add-card-toggle" id="addSavingsToggle">+ Agregar ahorro</button>
+          <div class="add-card-form" id="addSavingsForm" style="display:none;">
+            <input class="due" id="newSavingsName" type="text" style="width:100%;" placeholder="Nombre (ej. Fondo de emergencia)" />
+            <input class="due" id="newSavingsAmount" type="number" inputmode="decimal" style="width:100%; margin-top:8px;" placeholder="Monto mensual" />
+            <div class="add-card-actions">
+              <button class="habit-edit-btn" id="cancelSavingsBtn">Cancelar</button>
+              <button class="done-toggle" id="saveSavingsBtn">Guardar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
   </div>
 
   <nav class="bottom-tabs">
@@ -1786,33 +1795,51 @@ const db = getFirestore(firebaseApp);
 
   const financePageEl = document.getElementById('financePage');
   const navFinanceBtn = document.getElementById('navFinance');
-  const envelopeListViewEl = document.getElementById('envelopeListView');
-  const envelopeDetailViewEl = document.getElementById('envelopeDetailView');
-  const financePrevMonthBtn = document.getElementById('financePrevMonth');
-  const financeNextMonthBtn = document.getElementById('financeNextMonth');
-  const financeMonthLabelEl = document.getElementById('financeMonthLabel');
-  const safeToSpendAmountEl = document.getElementById('safeToSpendAmount');
-  const safeToSpendSubEl = document.getElementById('safeToSpendSub');
-  const newEnvelopeNameEl = document.getElementById('newEnvelopeName');
-  const newEnvelopeBudgetEl = document.getElementById('newEnvelopeBudget');
-  const addEnvelopeBtn = document.getElementById('addEnvelopeBtn');
-  const envelopeEmptyEl = document.getElementById('envelopeEmpty');
-  const envelopeListEl = document.getElementById('envelopeList');
-  const envelopeBackBtn = document.getElementById('envelopeBackBtn');
-  const envelopeDeleteBtn = document.getElementById('envelopeDeleteBtn');
-  const envelopeDetailNameEl = document.getElementById('envelopeDetailName');
-  const envelopeDetailSummaryEl = document.getElementById('envelopeDetailSummary');
-  const editEnvelopeBudgetEl = document.getElementById('editEnvelopeBudget');
-  const saveEnvelopeBudgetBtn = document.getElementById('saveEnvelopeBudgetBtn');
-  const addTxnToggle = document.getElementById('addTxnToggle');
-  const addTxnForm = document.getElementById('addTxnForm');
-  const newTxnAmountEl = document.getElementById('newTxnAmount');
-  const newTxnNoteEl = document.getElementById('newTxnNote');
-  const cancelTxnBtn = document.getElementById('cancelTxnBtn');
-  const saveTxnBtn = document.getElementById('saveTxnBtn');
-  const txnEditToggle = document.getElementById('txnEditToggle');
-  const txnEmptyEl = document.getElementById('txnEmpty');
-  const txnListEl = document.getElementById('txnList');
+  const freeMoneyAmountEl = document.getElementById('freeMoneyAmount');
+  const freeMoneyBreakdownEl = document.getElementById('freeMoneyBreakdown');
+
+  const incomeTotalEl = document.getElementById('incomeTotal');
+  const salaryInputEl = document.getElementById('salaryInput');
+  const otherIncomeListEl = document.getElementById('otherIncomeList');
+  const addIncomeToggle = document.getElementById('addIncomeToggle');
+  const addIncomeForm = document.getElementById('addIncomeForm');
+  const newIncomeNameEl = document.getElementById('newIncomeName');
+  const newIncomeAmountEl = document.getElementById('newIncomeAmount');
+  const cancelIncomeBtn = document.getElementById('cancelIncomeBtn');
+  const saveIncomeBtn = document.getElementById('saveIncomeBtn');
+
+  const fixedTotalEl = document.getElementById('fixedTotal');
+  const fixedListEl = document.getElementById('fixedList');
+  const addFixedToggle = document.getElementById('addFixedToggle');
+  const addFixedForm = document.getElementById('addFixedForm');
+  const newFixedNameEl = document.getElementById('newFixedName');
+  const newFixedAmountEl = document.getElementById('newFixedAmount');
+  const cancelFixedBtn = document.getElementById('cancelFixedBtn');
+  const saveFixedBtn = document.getElementById('saveFixedBtn');
+
+  const debtTotalEl = document.getElementById('debtTotal');
+  const debtListEl = document.getElementById('debtList');
+  const addDebtToggle = document.getElementById('addDebtToggle');
+  const addDebtForm = document.getElementById('addDebtForm');
+  const newDebtNameEl = document.getElementById('newDebtName');
+  const debtMonthlyFieldsEl = document.getElementById('debtMonthlyFields');
+  const debtTotalFieldsEl = document.getElementById('debtTotalFields');
+  const newDebtMonthlyEl = document.getElementById('newDebtMonthly');
+  const newDebtTotalAmtEl = document.getElementById('newDebtTotalAmt');
+  const newDebtInstallmentsEl = document.getElementById('newDebtInstallments');
+  const debtCalcPreviewEl = document.getElementById('debtCalcPreview');
+  const cancelDebtBtn = document.getElementById('cancelDebtBtn');
+  const saveDebtBtn = document.getElementById('saveDebtBtn');
+
+  const savingsTotalEl = document.getElementById('savingsTotal');
+  const savingsListEl = document.getElementById('savingsList');
+  const addSavingsToggle = document.getElementById('addSavingsToggle');
+  const addSavingsForm = document.getElementById('addSavingsForm');
+  const newSavingsNameEl = document.getElementById('newSavingsName');
+  const newSavingsAmountEl = document.getElementById('newSavingsAmount');
+  const cancelSavingsBtn = document.getElementById('cancelSavingsBtn');
+  const saveSavingsBtn = document.getElementById('saveSavingsBtn');
+
   const deckListViewEl = document.getElementById('deckListView');
   const deckDetailViewEl = document.getElementById('deckDetailView');
   const studyViewEl = document.getElementById('studyView');
@@ -1884,12 +1911,12 @@ const db = getFirestore(firebaseApp);
   let freeMastered = 0;
   const FREE_MASTER_BOX = 2; // successes needed to retire a card for the session
 
-  let envelopes = [];
-  let transactions = [];
-  let activeEnvelopeId = null;
-  let txnEditMode = false;
-  let txnType = 'expense'; // 'expense' | 'income'
-  let financeMonthCursor = new Date();
+  let salary = 0;
+  let otherIncomes = [];
+  let fixedExpenses = [];
+  let debts = [];
+  let savings = [];
+  let debtEntryMode = 'monthly'; // 'monthly' | 'total'
 
 
   let tasks = [];
@@ -1944,8 +1971,11 @@ const db = getFirestore(firebaseApp);
       history = Array.isArray(state.history) ? state.history : [];
       habits = Array.isArray(state.habits) ? state.habits.map(migrateHabit) : [];
       decks = Array.isArray(state.decks) ? state.decks : [];
-      envelopes = Array.isArray(state.envelopes) ? state.envelopes : [];
-      transactions = Array.isArray(state.transactions) ? state.transactions : [];
+      salary = typeof state.salary === 'number' ? state.salary : 0;
+      otherIncomes = Array.isArray(state.otherIncomes) ? state.otherIncomes : [];
+      fixedExpenses = Array.isArray(state.fixedExpenses) ? state.fixedExpenses : [];
+      debts = Array.isArray(state.debts) ? state.debts : [];
+      savings = Array.isArray(state.savings) ? state.savings : [];
       applyTheme(state.theme || 'dark');
       dataLoadOk = true;
     } catch(e) {
@@ -1960,7 +1990,7 @@ const db = getFirestore(firebaseApp);
     render();
     renderHabits();
     renderDeckList();
-    renderEnvelopeList();
+    renderFinance();
   }
 
   // All data (tasks, history, theme, habits, decks) lives in one Firestore
@@ -1976,7 +2006,7 @@ const db = getFirestore(firebaseApp);
   async function persist(){
     if (!currentUserId || !dataLoadOk) return;
     try {
-      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, habits, decks, envelopes, transactions });
+      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, habits, decks, salary, otherIncomes, fixedExpenses, debts, savings });
     } catch(e) {
       console.error('No se pudo guardar', e);
     }
@@ -1984,7 +2014,7 @@ const db = getFirestore(firebaseApp);
 
   function resetLocalState(){
     tasks = []; history = []; habits = []; decks = [];
-    envelopes = []; transactions = []; activeEnvelopeId = null;
+    salary = 0; otherIncomes = []; fixedExpenses = []; debts = []; savings = [];
     openId = null; activeDeckId = null;
     loaded = false;
     dataLoadOk = false;
@@ -2004,9 +2034,6 @@ const db = getFirestore(firebaseApp);
     deckDetailViewEl.style.display = 'none';
     studyViewEl.style.display = 'none';
     deckListViewEl.style.display = 'flex';
-
-    envelopeDetailViewEl.style.display = 'none';
-    envelopeListViewEl.style.display = 'flex';
   }
 
   function logChange(taskTitle, action, detail){
@@ -2499,7 +2526,7 @@ const db = getFirestore(firebaseApp);
     navFinanceBtn.classList.toggle('active', page === 'finance');
     if (page === 'habits') renderHabits();
     if (page === 'cards') renderDeckList();
-    if (page === 'finance') renderEnvelopeList();
+    if (page === 'finance') renderFinance();
   }
   navTasksBtn.addEventListener('click', () => setPage('tasks'));
   navHabitsBtn.addEventListener('click', () => setPage('habits'));
@@ -3197,7 +3224,7 @@ const db = getFirestore(firebaseApp);
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-03.6';
+  const APP_VERSION = '2026-08-03.7';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -3240,235 +3267,218 @@ const db = getFirestore(firebaseApp);
 
   loadRetryBtn.addEventListener('click', load);
 
-  // ---- Finanzas: envelopes & transactions ----
+  // ---- Finanzas: fixed monthly budget plan ----
   function formatMoney(n){
-    const rounded = Math.round(n);
-    return '$' + rounded.toLocaleString('es-CL');
+    const rounded = Math.round(n || 0);
+    const sign = rounded < 0 ? '-' : '';
+    return sign + '$' + Math.abs(rounded).toLocaleString('es-CL');
   }
 
-  function financeMonthKey(){
-    const y = financeMonthCursor.getFullYear();
-    const m = financeMonthCursor.getMonth();
-    return y + '-' + pad2(m + 1);
+  function sumAmounts(list){
+    return list.reduce((s, item) => s + item.amount, 0);
   }
 
-  function monthOfKey(dateStr){
-    return dateStr.slice(0, 7); // "YYYY-MM"
-  }
+  function totalIncome(){ return salary + sumAmounts(otherIncomes); }
+  function totalFixed(){ return sumAmounts(fixedExpenses); }
+  function totalDebtMonthly(){ return debts.reduce((s, d) => s + d.monthlyPayment, 0); }
+  function totalSavings(){ return sumAmounts(savings); }
+  function freeMoney(){ return totalIncome() - totalFixed() - totalDebtMonthly() - totalSavings(); }
 
-  function envelopeTxns(envelopeId, monthKey){
-    return transactions.filter(t => t.envelopeId === envelopeId && monthOfKey(t.date) === monthKey);
-  }
-
-  function envelopeSpent(envelopeId, monthKey){
-    const txns = envelopeTxns(envelopeId, monthKey);
-    const expense = txns.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-    const income = txns.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-    return expense - income; // net spent (income offsets spend, e.g. a refund)
-  }
-
-  function activeEnvelope(){
-    return envelopes.find(e => e.id === activeEnvelopeId) || null;
-  }
-
-  function addEnvelope(name, budget){
+  function addGenericItem(list, name, amount){
     name = name.trim();
-    const b = parseFloat(budget);
-    if (!name || !isFinite(b) || b < 0) return;
-    envelopes.push({ id: uid(), name, budget: b });
-    scheduleSave();
-    renderEnvelopeList();
-  }
-
-  function deleteEnvelope(id){
-    envelopes = envelopes.filter(e => e.id !== id);
-    transactions = transactions.filter(t => t.envelopeId !== id);
-    scheduleSave();
-    backToEnvelopes();
-  }
-
-  function updateEnvelopeBudget(id, budget){
-    const e = envelopes.find(e => e.id === id);
-    const b = parseFloat(budget);
-    if (!e || !isFinite(b) || b < 0) return;
-    e.budget = b;
-    scheduleSave();
-    renderEnvelopeDetail();
-  }
-
-  function addTransaction(envelopeId, type, amount, note){
     const amt = parseFloat(amount);
-    if (!isFinite(amt) || amt <= 0) return false;
-    transactions.push({
-      id: uid(), envelopeId, type, amount: amt,
-      note: note.trim(), date: todayKey(),
-    });
+    if (!name || !isFinite(amt) || amt < 0) return false;
+    list.push({ id: uid(), name, amount: amt });
     scheduleSave();
-    renderEnvelopeDetail();
     return true;
   }
 
-  function deleteTransaction(id){
-    transactions = transactions.filter(t => t.id !== id);
+  function removeGenericItem(list, id){
+    const idx = list.findIndex(i => i.id === id);
+    if (idx !== -1) list.splice(idx, 1);
     scheduleSave();
-    renderEnvelopeDetail();
   }
 
-  function renderEnvelopeList(){
-    const mKey = financeMonthKey();
-    financeMonthLabelEl.textContent = MONTH_NAMES[financeMonthCursor.getMonth()] + ' ' + financeMonthCursor.getFullYear();
-
-    envelopeEmptyEl.style.display = envelopes.length === 0 ? '' : 'none';
-
-    let totalBudget = 0, totalSpent = 0;
-    envelopeListEl.innerHTML = envelopes.map(e => {
-      const spent = envelopeSpent(e.id, mKey);
-      totalBudget += e.budget;
-      totalSpent += spent;
-      const pct = e.budget > 0 ? Math.min(100, Math.round((spent / e.budget) * 100)) : (spent > 0 ? 100 : 0);
-      const over = spent > e.budget;
-      const barClass = over ? 'over' : (pct >= 80 ? 'warn' : '');
-      return `
-        <li class="envelope-item" data-id="${e.id}">
-          <div class="envelope-item-top">
-            <span class="envelope-item-name">${escapeHtml(e.name)}</span>
-            <span class="envelope-item-amounts"><span class="spent">${formatMoney(spent)}</span> / ${formatMoney(e.budget)}</span>
-          </div>
-          <div class="envelope-bar-track"><div class="envelope-bar-fill ${barClass}" style="width:${Math.max(4, pct)}%"></div></div>
-        </li>`;
-    }).join('');
-
-    envelopeListEl.querySelectorAll('.envelope-item').forEach(el => {
-      el.addEventListener('click', () => openEnvelope(el.dataset.id));
-    });
-
-    const safe = totalBudget - totalSpent;
-    safeToSpendAmountEl.textContent = formatMoney(safe);
-    safeToSpendAmountEl.classList.toggle('negative', safe < 0);
-    safeToSpendSubEl.textContent = `${formatMoney(totalBudget)} presupuestado · ${formatMoney(totalSpent)} gastado`;
-  }
-
-  function openEnvelope(id){
-    activeEnvelopeId = id;
-    envelopeListViewEl.style.display = 'none';
-    envelopeDetailViewEl.style.display = 'flex';
-    addTxnForm.style.display = 'none';
-    txnEditMode = false;
-    txnEditToggle.textContent = 'Editar';
-    renderEnvelopeDetail();
-  }
-
-  function backToEnvelopes(){
-    activeEnvelopeId = null;
-    envelopeDetailViewEl.style.display = 'none';
-    envelopeListViewEl.style.display = 'flex';
-    renderEnvelopeList();
-  }
-
-  function renderEnvelopeDetail(){
-    const e = activeEnvelope();
-    if (!e) { backToEnvelopes(); return; }
-
-    const mKey = financeMonthKey();
-    envelopeDetailNameEl.textContent = e.name;
-    editEnvelopeBudgetEl.value = e.budget;
-
-    const spent = envelopeSpent(e.id, mKey);
-    const remaining = e.budget - spent;
-    envelopeDetailSummaryEl.innerHTML = `
-      <div class="habit-stat-box">
-        <div class="habit-stat-num">${formatMoney(e.budget)}</div>
-        <div class="habit-stat-label">Presupuesto</div>
-      </div>
-      <div class="habit-stat-box accent">
-        <div class="habit-stat-num">${formatMoney(spent)}</div>
-        <div class="habit-stat-label">Gastado este mes</div>
-      </div>
-      <div class="habit-stat-box">
-        <div class="habit-stat-num" style="${remaining < 0 ? 'color:var(--urgent)' : ''}">${formatMoney(remaining)}</div>
-        <div class="habit-stat-label">Disponible</div>
-      </div>`;
-
-    const txns = envelopeTxns(e.id, mKey).slice().sort((a, b) => b.date < a.date ? -1 : 1);
-    txnEmptyEl.style.display = txns.length === 0 ? '' : 'none';
-    txnListEl.innerHTML = txns.map(t => `
-      <li class="txn-item" data-id="${t.id}">
-        <button class="txn-remove" data-id="${t.id}">✕</button>
-        <div class="txn-item-info">
-          <div class="txn-item-note">${escapeHtml(t.note || (t.type === 'expense' ? 'Gasto' : 'Ingreso'))}</div>
-          <div class="txn-item-date">${t.date}</div>
-        </div>
-        <div class="txn-item-amount ${t.type}">${t.type === 'expense' ? '−' : '+'}${formatMoney(t.amount)}</div>
+  function renderGenericList(container, list, emptyText){
+    if (list.length === 0) {
+      container.innerHTML = `<p class="fin-item-sub" style="padding:6px 0;">${emptyText}</p>`;
+      return;
+    }
+    container.innerHTML = list.map(item => `
+      <li class="fin-item" data-id="${item.id}">
+        <button class="fin-remove" data-id="${item.id}">✕</button>
+        <div class="fin-item-info"><div class="fin-item-name">${escapeHtml(item.name)}</div></div>
+        <div class="fin-item-amount">${formatMoney(item.amount)}</div>
       </li>`).join('');
-    txnListEl.classList.toggle('editing', txnEditMode);
+  }
 
-    txnListEl.querySelectorAll('.txn-remove').forEach(btn => {
-      btn.addEventListener('click', () => deleteTransaction(btn.dataset.id));
+  function addDebt(name, entryMode, monthlyOrTotal, installments){
+    name = name.trim();
+    const n = parseInt(installments, 10);
+    const val = parseFloat(monthlyOrTotal);
+    if (!name || !isFinite(val) || val <= 0 || !isFinite(n) || n <= 0) return false;
+    let monthlyPayment, totalAmount;
+    if (entryMode === 'monthly') {
+      monthlyPayment = val;
+      totalAmount = val * n;
+    } else {
+      totalAmount = val;
+      monthlyPayment = val / n;
+    }
+    debts.push({ id: uid(), name, monthlyPayment, totalAmount, installments: n });
+    scheduleSave();
+    return true;
+  }
+
+  function removeDebt(id){
+    debts = debts.filter(d => d.id !== id);
+    scheduleSave();
+    renderFinance();
+  }
+
+  function renderDebtList(){
+    if (debts.length === 0) {
+      debtListEl.innerHTML = `<p class="fin-item-sub" style="padding:6px 0;">Sin deudas registradas.</p>`;
+      return;
+    }
+    debtListEl.innerHTML = debts.map(d => `
+      <li class="fin-item" data-id="${d.id}">
+        <button class="fin-remove" data-id="${d.id}">✕</button>
+        <div class="fin-item-info">
+          <div class="fin-item-name">${escapeHtml(d.name)}</div>
+          <div class="fin-item-sub">${formatMoney(d.totalAmount)} total · ${d.installments} cuotas</div>
+        </div>
+        <div class="fin-item-amount">${formatMoney(d.monthlyPayment)}/mes</div>
+      </li>`).join('');
+    debtListEl.querySelectorAll('.fin-remove').forEach(btn => {
+      btn.addEventListener('click', () => removeDebt(btn.dataset.id));
     });
   }
 
-  financePrevMonthBtn.addEventListener('click', () => {
-    financeMonthCursor = new Date(financeMonthCursor.getFullYear(), financeMonthCursor.getMonth() - 1, 1);
-    renderEnvelopeList();
-  });
-  financeNextMonthBtn.addEventListener('click', () => {
-    financeMonthCursor = new Date(financeMonthCursor.getFullYear(), financeMonthCursor.getMonth() + 1, 1);
-    renderEnvelopeList();
-  });
+  function renderFinance(){
+    salaryInputEl.value = salary || '';
 
-  function updateAddEnvelopeBtn(){
-    addEnvelopeBtn.disabled = !(newEnvelopeNameEl.value.trim() && newEnvelopeBudgetEl.value !== '');
+    renderGenericList(otherIncomeListEl, otherIncomes, 'Sin otros ingresos.');
+    renderGenericList(fixedListEl, fixedExpenses, 'Sin gastos fijos registrados.');
+    renderGenericList(savingsListEl, savings, 'Sin ahorro planificado.');
+    renderDebtList();
+
+    otherIncomeListEl.querySelectorAll('.fin-remove').forEach(btn => {
+      btn.addEventListener('click', () => { removeGenericItem(otherIncomes, btn.dataset.id); renderFinance(); });
+    });
+    fixedListEl.querySelectorAll('.fin-remove').forEach(btn => {
+      btn.addEventListener('click', () => { removeGenericItem(fixedExpenses, btn.dataset.id); renderFinance(); });
+    });
+    savingsListEl.querySelectorAll('.fin-remove').forEach(btn => {
+      btn.addEventListener('click', () => { removeGenericItem(savings, btn.dataset.id); renderFinance(); });
+    });
+
+    incomeTotalEl.textContent = formatMoney(totalIncome());
+    fixedTotalEl.textContent = formatMoney(totalFixed());
+    debtTotalEl.textContent = formatMoney(totalDebtMonthly()) + '/mes';
+    savingsTotalEl.textContent = formatMoney(totalSavings());
+
+    const free = freeMoney();
+    freeMoneyAmountEl.textContent = formatMoney(free);
+    freeMoneyAmountEl.classList.toggle('negative', free < 0);
+    freeMoneyBreakdownEl.textContent =
+      `${formatMoney(totalIncome())} ingresos · ${formatMoney(totalFixed())} fijos · ${formatMoney(totalDebtMonthly())} deudas · ${formatMoney(totalSavings())} ahorro`;
   }
-  newEnvelopeNameEl.addEventListener('input', updateAddEnvelopeBtn);
-  newEnvelopeBudgetEl.addEventListener('input', updateAddEnvelopeBtn);
-  addEnvelopeBtn.addEventListener('click', () => {
-    addEnvelope(newEnvelopeNameEl.value, newEnvelopeBudgetEl.value);
-    newEnvelopeNameEl.value = '';
-    newEnvelopeBudgetEl.value = '';
-    addEnvelopeBtn.disabled = true;
+
+  // Accordion: tap a section header to expand/collapse its body.
+  document.querySelectorAll('.finance-section-header').forEach(header => {
+    header.addEventListener('click', () => {
+      const section = header.closest('.finance-section');
+      const body = section.querySelector('.finance-section-body');
+      const isOpen = section.classList.toggle('open');
+      body.style.display = isOpen ? '' : 'none';
+    });
   });
 
-  envelopeBackBtn.addEventListener('click', backToEnvelopes);
-  envelopeDeleteBtn.addEventListener('click', () => {
-    const e = activeEnvelope();
-    if (e) deleteEnvelope(e.id);
-  });
-  saveEnvelopeBudgetBtn.addEventListener('click', () => {
-    const e = activeEnvelope();
-    if (e) updateEnvelopeBudget(e.id, editEnvelopeBudgetEl.value);
+  salaryInputEl.addEventListener('change', () => {
+    const v = parseFloat(salaryInputEl.value);
+    salary = isFinite(v) && v >= 0 ? v : 0;
+    scheduleSave();
+    renderFinance();
   });
 
-  addTxnToggle.addEventListener('click', () => {
-    const showing = addTxnForm.style.display !== 'none';
-    addTxnForm.style.display = showing ? 'none' : '';
-    if (!showing) newTxnAmountEl.focus();
-  });
-  cancelTxnBtn.addEventListener('click', () => {
-    addTxnForm.style.display = 'none';
-    newTxnAmountEl.value = '';
-    newTxnNoteEl.value = '';
-  });
-  document.querySelectorAll('.txn-type-btn').forEach(btn => {
+  // Generic add-item forms (Otros ingresos / Gastos fijos / Ahorro) share the
+  // same shape: a toggle button, a small form, cancel + save.
+  function wireSimpleAddForm(toggleBtn, form, nameInput, amountInput, cancelBtn, saveBtn, list){
+    toggleBtn.addEventListener('click', () => {
+      const showing = form.style.display !== 'none';
+      form.style.display = showing ? 'none' : '';
+      if (!showing) nameInput.focus();
+    });
+    cancelBtn.addEventListener('click', () => {
+      form.style.display = 'none';
+      nameInput.value = '';
+      amountInput.value = '';
+    });
+    saveBtn.addEventListener('click', () => {
+      const ok = addGenericItem(list, nameInput.value, amountInput.value);
+      if (!ok) { nameInput.focus(); return; }
+      nameInput.value = '';
+      amountInput.value = '';
+      form.style.display = 'none';
+      renderFinance();
+    });
+  }
+  wireSimpleAddForm(addIncomeToggle, addIncomeForm, newIncomeNameEl, newIncomeAmountEl, cancelIncomeBtn, saveIncomeBtn, otherIncomes);
+  wireSimpleAddForm(addFixedToggle, addFixedForm, newFixedNameEl, newFixedAmountEl, cancelFixedBtn, saveFixedBtn, fixedExpenses);
+  wireSimpleAddForm(addSavingsToggle, addSavingsForm, newSavingsNameEl, newSavingsAmountEl, cancelSavingsBtn, saveSavingsBtn, savings);
+
+  // Debt form: two entry modes that compute each other live.
+  function updateDebtCalcPreview(){
+    const n = parseInt(newDebtInstallmentsEl.value, 10);
+    const val = parseFloat(debtEntryMode === 'monthly' ? newDebtMonthlyEl.value : newDebtTotalAmtEl.value);
+    if (!isFinite(n) || n <= 0 || !isFinite(val) || val <= 0) {
+      debtCalcPreviewEl.textContent = '';
+      return;
+    }
+    if (debtEntryMode === 'monthly') {
+      debtCalcPreviewEl.textContent = `Total a pagar: ${formatMoney(val * n)}`;
+    } else {
+      debtCalcPreviewEl.textContent = `Cuota mensual: ${formatMoney(val / n)}`;
+    }
+  }
+  document.querySelectorAll('[data-debt-mode]').forEach(btn => {
     btn.addEventListener('click', () => {
-      txnType = btn.dataset.type;
-      document.querySelectorAll('.txn-type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === txnType));
+      debtEntryMode = btn.dataset.debtMode;
+      document.querySelectorAll('[data-debt-mode]').forEach(b => b.classList.toggle('active', b.dataset.debtMode === debtEntryMode));
+      debtMonthlyFieldsEl.style.display = debtEntryMode === 'monthly' ? '' : 'none';
+      debtTotalFieldsEl.style.display = debtEntryMode === 'total' ? '' : 'none';
+      updateDebtCalcPreview();
     });
   });
-  saveTxnBtn.addEventListener('click', () => {
-    const e = activeEnvelope();
-    if (!e) return;
-    const ok = addTransaction(e.id, txnType, newTxnAmountEl.value, newTxnNoteEl.value);
-    if (!ok) { newTxnAmountEl.focus(); return; }
-    newTxnAmountEl.value = '';
-    newTxnNoteEl.value = '';
-    newTxnAmountEl.focus();
-  });
+  newDebtMonthlyEl.addEventListener('input', updateDebtCalcPreview);
+  newDebtTotalAmtEl.addEventListener('input', updateDebtCalcPreview);
+  newDebtInstallmentsEl.addEventListener('input', updateDebtCalcPreview);
 
-  txnEditToggle.addEventListener('click', () => {
-    txnEditMode = !txnEditMode;
-    txnEditToggle.textContent = txnEditMode ? 'Listo' : 'Editar';
-    txnEditToggle.classList.toggle('active', txnEditMode);
-    txnListEl.classList.toggle('editing', txnEditMode);
+  addDebtToggle.addEventListener('click', () => {
+    const showing = addDebtForm.style.display !== 'none';
+    addDebtForm.style.display = showing ? 'none' : '';
+    if (!showing) newDebtNameEl.focus();
+  });
+  cancelDebtBtn.addEventListener('click', () => {
+    addDebtForm.style.display = 'none';
+    newDebtNameEl.value = '';
+    newDebtMonthlyEl.value = '';
+    newDebtTotalAmtEl.value = '';
+    newDebtInstallmentsEl.value = '';
+    debtCalcPreviewEl.textContent = '';
+  });
+  saveDebtBtn.addEventListener('click', () => {
+    const val = debtEntryMode === 'monthly' ? newDebtMonthlyEl.value : newDebtTotalAmtEl.value;
+    const ok = addDebt(newDebtNameEl.value, debtEntryMode, val, newDebtInstallmentsEl.value);
+    if (!ok) { newDebtNameEl.focus(); return; }
+    newDebtNameEl.value = '';
+    newDebtMonthlyEl.value = '';
+    newDebtTotalAmtEl.value = '';
+    newDebtInstallmentsEl.value = '';
+    debtCalcPreviewEl.textContent = '';
+    addDebtForm.style.display = 'none';
+    renderFinance();
   });
 
   // ---- Authentication ----
