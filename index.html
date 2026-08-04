@@ -1278,6 +1278,88 @@
   .fh-sub { font-size: 11px; color: var(--ink-soft); margin-top: 1px; }
   .fh-amount { font-size: 13px; font-weight: 700; flex-shrink: 0; font-variant-numeric: tabular-nums; }
 
+  /* ---- Entreno ---- */
+  .wave-week-row { display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+  .wave-badge, .week-badge {
+    font-size: 12.5px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+  .wave-badge { background: var(--accent-soft); color: var(--accent-strong); }
+  .week-badge { background: var(--field-bg); color: var(--ink-soft); border: 1px solid var(--hairline); }
+  .wave-nav { display: flex; justify-content: space-between; margin-top: 10px; }
+
+  .lift-item {
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 13px;
+    padding: 13px 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+  }
+  .lift-item-top { display: flex; align-items: center; justify-content: space-between; }
+  .lift-item-name { font-size: 15px; font-weight: 650; letter-spacing: -0.01em; }
+  .lift-item-done { color: #3FC373; font-size: 12px; font-weight: 700; }
+  .lift-item-sets { font-size: 12.5px; color: var(--ink-soft); margin-top: 4px; }
+
+  .set-row {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+  .set-row.amrap { border-color: var(--accent); background: var(--accent-soft); }
+  .set-row-label { width: 66px; flex-shrink: 0; }
+  .set-row-num { font-size: 12px; font-weight: 700; color: var(--ink-soft); }
+  .set-row-target { font-size: 11px; color: var(--ink-soft); margin-top: 1px; }
+  .set-row.amrap .set-row-num, .set-row.amrap .set-row-target { color: var(--accent-strong); }
+  .set-row-inputs { flex: 1; display: flex; gap: 6px; }
+  .set-row-inputs input {
+    width: 100%;
+    border: 1px solid var(--hairline);
+    background: var(--field-bg);
+    border-radius: 8px;
+    padding: 7px 8px;
+    font-size: 13px;
+    color: var(--ink);
+    font-family: inherit;
+    text-align: center;
+  }
+  .set-row-check {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 1.5px solid var(--hairline);
+    background: var(--field-bg);
+    color: transparent;
+    flex-shrink: 0;
+    font-size: 13px;
+  }
+  .set-row-check.checked { background: #3FC373; border-color: #3FC373; color: #fff; }
+
+  .lift-setting-row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--field-bg);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+  .lift-setting-name { flex: 1; font-size: 13.5px; font-weight: 600; }
+  .lift-setting-row input {
+    width: 78px;
+    border: 1px solid var(--hairline);
+    background: var(--card);
+    border-radius: 8px;
+    padding: 7px 8px;
+    font-size: 13px;
+    text-align: center;
+    color: var(--ink);
+    font-family: inherit;
+  }
+
   .salary-current {
     background: var(--field-bg);
     border: 1px solid var(--hairline);
@@ -1853,6 +1935,97 @@
     </main>
   </div>
 
+  <div id="trainingPage" class="page" style="display:none;">
+
+    <!-- Level 1: wave overview + the 4 lifts + trabajo extra -->
+    <div id="trainingOverviewView" class="subview">
+      <div class="cards-toolbar">
+        <h2 class="page-title">Entreno</h2>
+        <button class="icon-btn" id="trainingHistoryBtn" aria-label="Historial de entrenamiento">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M12 8v4.5l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4 4v5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4.6 15a8 8 0 1 0 1.5-8.5L4 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="icon-btn" id="trainingSettingsBtn" aria-label="Ajustes de entrenamiento">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M19.4 13.5a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V19.5a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H4.5a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 6.1 8.6a1.65 1.65 0 0 0-.33-1.82l-.06-.06A2 2 0 1 1 8.54 3.9l.06.06a1.65 1.65 0 0 0 1.82.33H10.5a1.65 1.65 0 0 0 1-1.51V2.5a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V8.5a1.65 1.65 0 0 0 1.51 1h.09a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="safe-to-spend" style="text-align:left; padding:14px 16px;">
+        <div class="sts-label">Ciclo Juggernaut</div>
+        <div class="wave-week-row">
+          <span class="wave-badge" id="waveLabel">Oleada de 8 Reps</span>
+          <span class="week-badge" id="weekLabel">Acumulación</span>
+        </div>
+        <div class="wave-nav">
+          <button class="habit-edit-btn" id="prevWeekBtn">‹ Semana anterior</button>
+          <button class="habit-edit-btn" id="nextWeekBtn">Siguiente semana ›</button>
+        </div>
+      </div>
+
+      <div class="field-label" style="margin:16px 20px 4px 20px;">Levantamientos de hoy</div>
+      <main style="padding-top:0;">
+        <ul id="liftList"></ul>
+
+        <div class="finance-section" data-section="extra" style="margin-top:14px;">
+          <div class="finance-section-header" data-section-toggle="extra">
+            <span class="fs-icon">➕</span>
+            <span class="finance-section-title">Trabajo extra</span>
+            <span class="finance-section-total"></span>
+            <span class="chevron">›</span>
+          </div>
+          <div class="finance-section-body" id="extraBody" style="display:none;">
+            <p class="rec-hint" style="padding:0 0 8px 0;">Ejercicios accesorios de tu programa (los que no vienen del Juggernaut). Pídele a Claude en "Entrenamiento Total Hans" que te los pase en JSON para importarlos.</p>
+            <ul id="extraList"></ul>
+            <button class="add-card-toggle" id="addExtraToggle">+ Agregar ejercicio extra</button>
+            <div class="add-card-form" id="addExtraForm" style="display:none;">
+              <input class="due" id="newExtraName" type="text" style="width:100%;" placeholder="Nombre del ejercicio" />
+              <input class="due" id="newExtraDetail" type="text" style="width:100%; margin-top:8px;" placeholder="Ej. 3x12 con mancuernas" />
+              <div class="add-card-actions">
+                <button class="habit-edit-btn" id="cancelExtraBtn">Cancelar</button>
+                <button class="done-toggle" id="saveExtraBtn">Guardar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button class="add-card-toggle" id="importRoutineToggle">⇩ Importar rutina (JSON)</button>
+        <div class="add-card-form" id="importRoutineForm" style="display:none;">
+          <div class="field-label">Pega aquí el JSON que te dé Claude</div>
+          <textarea class="notes" id="importRoutineTextarea" style="min-height:120px;" placeholder='{"extra": [{"name":"...","detail":"..."}]}'></textarea>
+          <div class="auth-error" id="importRoutineError" style="display:none;"></div>
+          <div class="add-card-actions">
+            <button class="habit-edit-btn" id="importRoutineCancelBtn">Cancelar</button>
+            <button class="done-toggle" id="importRoutineSubmitBtn">Importar</button>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Level 2: log a lift's current-week sets -->
+    <div id="liftSessionView" class="subview" style="display:none;">
+      <div class="cards-toolbar">
+        <button class="icon-btn" id="liftBackBtn" aria-label="Volver">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <h2 class="page-title" id="liftSessionName">—</h2>
+        <div style="width:38px;"></div>
+      </div>
+      <p class="rec-hint" id="liftSessionSub" style="padding:0 20px 8px 20px;"></p>
+      <main>
+        <ul id="liftSetList"></ul>
+        <button class="done-toggle" id="finishLiftBtn" style="display:block; width:100%; margin-top:10px; padding:14px;">✓ Guardar sesión</button>
+      </main>
+    </div>
+
+
+  </div>
+
   <nav class="bottom-tabs">
     <button class="bottom-tab active" id="navTasks" data-page="tasks">
       <svg width="21" height="21" viewBox="0 0 24 24" fill="none">
@@ -1887,6 +2060,16 @@
       </svg>
       <span>Finanzas</span>
     </button>
+    <button class="bottom-tab" id="navTraining" data-page="training">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none">
+        <path d="M3 12h2M19 12h2M6 12h1M17 12h1" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+        <rect x="1.5" y="9" width="3" height="6" rx="1" fill="currentColor"/>
+        <rect x="19.5" y="9" width="3" height="6" rx="1" fill="currentColor"/>
+        <rect x="5.5" y="7" width="2.4" height="10" rx="1" fill="currentColor"/>
+        <rect x="16.1" y="7" width="2.4" height="10" rx="1" fill="currentColor"/>
+      </svg>
+      <span>Entreno</span>
+    </button>
   </nav>
 </div>
 
@@ -1916,6 +2099,31 @@
         <span class="signout-email" id="accountEmail">—</span>
         <button class="signout-btn" id="signOutBtn">Cerrar sesión</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="history-overlay" id="trainingHistoryOverlay">
+  <div class="history-panel" id="trainingHistoryPanel">
+    <div class="history-header">
+      <span class="grabber"></span>
+      <h2>Historial de entrenamiento</h2>
+      <button class="history-close" id="trainingHistoryCloseBtn" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="history-list" id="trainingHistoryList"></div>
+  </div>
+</div>
+
+<div class="history-overlay" id="trainingSettingsOverlay">
+  <div class="history-panel" id="trainingSettingsPanel">
+    <div class="history-header">
+      <span class="grabber"></span>
+      <h2>Ajustes de entrenamiento</h2>
+      <button class="history-close" id="trainingSettingsCloseBtn" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="history-list">
+      <p class="rec-hint" style="padding-bottom:8px;">El 1RM de Entrenamiento es la base desde la que se calculan todos los pesos de la oleada actual (igual que en tu planilla).</p>
+      <div id="liftSettingsList"></div>
     </div>
   </div>
 </div>
@@ -2008,6 +2216,45 @@ const db = getFirestore(firebaseApp);
 
   const financePageEl = document.getElementById('financePage');
   const navFinanceBtn = document.getElementById('navFinance');
+
+  const trainingPageEl = document.getElementById('trainingPage');
+  const navTrainingBtn = document.getElementById('navTraining');
+  const trainingOverviewViewEl = document.getElementById('trainingOverviewView');
+  const liftSessionViewEl = document.getElementById('liftSessionView');
+  const waveLabelEl = document.getElementById('waveLabel');
+  const weekLabelEl = document.getElementById('weekLabel');
+  const prevWeekBtn = document.getElementById('prevWeekBtn');
+  const nextWeekBtn = document.getElementById('nextWeekBtn');
+  const liftListEl = document.getElementById('liftList');
+  const extraListEl = document.getElementById('extraList');
+  const addExtraToggle = document.getElementById('addExtraToggle');
+  const addExtraForm = document.getElementById('addExtraForm');
+  const newExtraNameEl = document.getElementById('newExtraName');
+  const newExtraDetailEl = document.getElementById('newExtraDetail');
+  const cancelExtraBtn = document.getElementById('cancelExtraBtn');
+  const saveExtraBtn = document.getElementById('saveExtraBtn');
+  const importRoutineToggle = document.getElementById('importRoutineToggle');
+  const importRoutineForm = document.getElementById('importRoutineForm');
+  const importRoutineTextarea = document.getElementById('importRoutineTextarea');
+  const importRoutineErrorEl = document.getElementById('importRoutineError');
+  const importRoutineCancelBtn = document.getElementById('importRoutineCancelBtn');
+  const importRoutineSubmitBtn = document.getElementById('importRoutineSubmitBtn');
+
+  const liftBackBtn = document.getElementById('liftBackBtn');
+  const liftSessionNameEl = document.getElementById('liftSessionName');
+  const liftSessionSubEl = document.getElementById('liftSessionSub');
+  const liftSetListEl = document.getElementById('liftSetList');
+  const finishLiftBtn = document.getElementById('finishLiftBtn');
+
+  const trainingHistoryBtn = document.getElementById('trainingHistoryBtn');
+  const trainingHistoryOverlay = document.getElementById('trainingHistoryOverlay');
+  const trainingHistoryCloseBtn = document.getElementById('trainingHistoryCloseBtn');
+  const trainingHistoryListEl = document.getElementById('trainingHistoryList');
+
+  const trainingSettingsBtn = document.getElementById('trainingSettingsBtn');
+  const trainingSettingsOverlay = document.getElementById('trainingSettingsOverlay');
+  const trainingSettingsCloseBtn = document.getElementById('trainingSettingsCloseBtn');
+  const liftSettingsListEl = document.getElementById('liftSettingsList');
   const freeMoneyAmountEl = document.getElementById('freeMoneyAmount');
   const freeMoneyBreakdownEl = document.getElementById('freeMoneyBreakdown');
 
@@ -2170,6 +2417,62 @@ const db = getFirestore(firebaseApp);
   let freeExpenses = [];
   let financeHistory = [];
 
+  // ---- Entreno: Juggernaut Method engine ----
+  const LIFT_NAMES = ['Press de Banca', 'Sentadilla', 'Press Militar', 'Peso Muerto'];
+  const WAVE_ORDER = ['oleada10', 'oleada8', 'oleada5', 'oleada3'];
+  const WAVE_NUMBER = { oleada10: 10, oleada8: 8, oleada5: 5, oleada3: 3 };
+  const WAVE_LABEL = { oleada10: 'Oleada de 10 Reps', oleada8: 'Oleada de 8 Reps', oleada5: 'Oleada de 5 Reps', oleada3: 'Oleada de 3 Reps' };
+  const WEEK_ORDER = ['acumulacion', 'transformacion', 'realizacion', 'descarga'];
+  const WEEK_LABEL = { acumulacion: 'Acumulación', transformacion: 'Transformación', realizacion: 'Realización', descarga: 'Descarga' };
+
+  // Percentages of the current wave's Training Max, extracted directly from
+  // the real formulas in the user's Juggernaut spreadsheet (one set per row;
+  // amrap:true = last set, logged reps free / target is "reps to beat").
+  const WAVE_TABLES = {
+    oleada10: {
+      acumulacion:   [{pct:60,reps:10},{pct:60,reps:10},{pct:60,reps:10},{pct:60,reps:10},{pct:60,reps:10,amrap:true}],
+      transformacion:[{pct:55,reps:5},{pct:65.5,reps:5},{pct:67.5,reps:10},{pct:67.5,reps:10},{pct:67.5,reps:10,amrap:true}],
+      realizacion:   [{pct:50,reps:5},{pct:60,reps:3},{pct:70,reps:1},{pct:75,reps:0,amrap:true}],
+      descarga:      [{pct:40,reps:5},{pct:50,reps:5},{pct:60,reps:5}],
+    },
+    oleada8: {
+      acumulacion:   [{pct:65,reps:8},{pct:65,reps:8},{pct:65,reps:8},{pct:65,reps:8},{pct:65,reps:0,amrap:true}],
+      transformacion:[{pct:60,reps:3},{pct:67.5,reps:3},{pct:72.5,reps:8},{pct:72.5,reps:8},{pct:72.5,reps:0,amrap:true}],
+      realizacion:   [{pct:50,reps:5},{pct:60,reps:3},{pct:70,reps:2},{pct:75,reps:1},{pct:80,reps:0,amrap:true}],
+      descarga:      [{pct:40,reps:5},{pct:50,reps:5},{pct:60,reps:5}],
+    },
+    oleada5: {
+      acumulacion:   [{pct:70,reps:5},{pct:70,reps:5},{pct:70,reps:5},{pct:70,reps:5},{pct:70,reps:5},{pct:70,reps:0,amrap:true}],
+      transformacion:[{pct:65,reps:2},{pct:72.5,reps:2},{pct:77.5,reps:5},{pct:77.5,reps:5},{pct:77.5,reps:5},{pct:77.5,reps:0,amrap:true}],
+      realizacion:   [{pct:50,reps:5},{pct:60,reps:3},{pct:70,reps:2},{pct:75,reps:1},{pct:80,reps:1},{pct:85,reps:0,amrap:true}],
+      descarga:      [{pct:40,reps:5},{pct:50,reps:5},{pct:60,reps:5}],
+    },
+    oleada3: {
+      acumulacion:   [{pct:75,reps:3},{pct:75,reps:3},{pct:75,reps:3},{pct:75,reps:3},{pct:75,reps:3},{pct:75,reps:3},{pct:75,reps:0,amrap:true}],
+      transformacion:[{pct:70,reps:1},{pct:77.5,reps:1},{pct:82.5,reps:3},{pct:82.5,reps:3},{pct:82.5,reps:3},{pct:82.5,reps:3},{pct:82.5,reps:0,amrap:true}],
+      realizacion:   [{pct:50,reps:5},{pct:60,reps:3},{pct:70,reps:2},{pct:75,reps:1},{pct:80,reps:1},{pct:85,reps:1},{pct:90,reps:0,amrap:true}],
+      descarga:      [{pct:40,reps:5},{pct:50,reps:5},{pct:60,reps:5}],
+    },
+  };
+
+  let currentWave = 'oleada8';
+  let currentWeek = 'acumulacion';
+  let lifts = {}; // { [name]: { trainingMax, incrementPerRep, lastEstimated1RM, lastAmrapReps } }
+  let extraExercises = []; // [{id, name, detail}]
+  let trainingLog = []; // completed set-logs: [{id, ts, date, wave, week, lift, sets:[{pct,targetWeight,targetReps,actualReps,amrap}], estimated1RM}]
+  let activeLiftName = null;
+  let activeLiftDraftSets = null; // working copy of sets being logged in liftSessionView
+
+  function defaultLifts(){
+    return {
+      'Press de Banca': { trainingMax: 95,    incrementPerRep: 1.25, lastEstimated1RM: 96.4575, lastAmrapReps: null },
+      'Sentadilla':     { trainingMax: 112.5, incrementPerRep: 2.5,  lastEstimated1RM: 112.4475, lastAmrapReps: null },
+      'Press Militar':  { trainingMax: 62.5,  incrementPerRep: 1.25, lastEstimated1RM: 62.82,   lastAmrapReps: null },
+      'Peso Muerto':    { trainingMax: 137.5, incrementPerRep: 2.5,  lastEstimated1RM: 139.65,  lastAmrapReps: null },
+    };
+  }
+
+
 
   let tasks = [];
   let history = [];
@@ -2230,6 +2533,11 @@ const db = getFirestore(firebaseApp);
       savings = Array.isArray(state.savings) ? state.savings : [];
       freeExpenses = Array.isArray(state.freeExpenses) ? state.freeExpenses : [];
       financeHistory = Array.isArray(state.financeHistory) ? state.financeHistory : [];
+      currentWave = state.currentWave || 'oleada8';
+      currentWeek = state.currentWeek || 'acumulacion';
+      lifts = (state.lifts && Object.keys(state.lifts).length) ? state.lifts : defaultLifts();
+      extraExercises = Array.isArray(state.extraExercises) ? state.extraExercises : [];
+      trainingLog = Array.isArray(state.trainingLog) ? state.trainingLog : [];
       applyTheme(state.theme || 'dark');
       dataLoadOk = true;
     } catch(e) {
@@ -2245,6 +2553,7 @@ const db = getFirestore(firebaseApp);
     renderHabits();
     renderDeckList();
     renderFinance();
+    renderTraining();
   }
 
   // All data (tasks, history, theme, habits, decks) lives in one Firestore
@@ -2260,7 +2569,7 @@ const db = getFirestore(firebaseApp);
   async function persist(){
     if (!currentUserId || !dataLoadOk) return;
     try {
-      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, habits, decks, salaryEntries, otherIncomes, fixedExpenses, debts, savings, freeExpenses, financeHistory });
+      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, habits, decks, salaryEntries, otherIncomes, fixedExpenses, debts, savings, freeExpenses, financeHistory, currentWave, currentWeek, lifts, extraExercises, trainingLog });
     } catch(e) {
       console.error('No se pudo guardar', e);
     }
@@ -2270,6 +2579,8 @@ const db = getFirestore(firebaseApp);
     tasks = []; history = []; habits = []; decks = [];
     salaryEntries = []; otherIncomes = []; fixedExpenses = []; debts = []; savings = [];
     freeExpenses = []; financeHistory = [];
+    currentWave = 'oleada8'; currentWeek = 'acumulacion';
+    lifts = defaultLifts(); extraExercises = []; trainingLog = []; activeLiftName = null;
     openId = null; activeDeckId = null;
     loaded = false;
     dataLoadOk = false;
@@ -2281,14 +2592,19 @@ const db = getFirestore(firebaseApp);
     habitsPageEl.style.display = 'none';
     cardsPageEl.style.display = 'none';
     financePageEl.style.display = 'none';
+    trainingPageEl.style.display = 'none';
     navTasksBtn.classList.add('active');
     navHabitsBtn.classList.remove('active');
     navCardsBtn.classList.remove('active');
     navFinanceBtn.classList.remove('active');
+    navTrainingBtn.classList.remove('active');
 
     deckDetailViewEl.style.display = 'none';
     studyViewEl.style.display = 'none';
     deckListViewEl.style.display = 'flex';
+
+    liftSessionViewEl.style.display = 'none';
+    trainingOverviewViewEl.style.display = 'flex';
   }
 
   function logChange(taskTitle, action, detail){
@@ -2775,18 +3091,22 @@ const db = getFirestore(firebaseApp);
     habitsPageEl.style.display = page === 'habits' ? 'flex' : 'none';
     cardsPageEl.style.display = page === 'cards' ? 'flex' : 'none';
     financePageEl.style.display = page === 'finance' ? 'flex' : 'none';
+    trainingPageEl.style.display = page === 'training' ? 'flex' : 'none';
     navTasksBtn.classList.toggle('active', page === 'tasks');
     navHabitsBtn.classList.toggle('active', page === 'habits');
     navCardsBtn.classList.toggle('active', page === 'cards');
     navFinanceBtn.classList.toggle('active', page === 'finance');
+    navTrainingBtn.classList.toggle('active', page === 'training');
     if (page === 'habits') renderHabits();
     if (page === 'cards') renderDeckList();
     if (page === 'finance') renderFinance();
+    if (page === 'training') renderTraining();
   }
   navTasksBtn.addEventListener('click', () => setPage('tasks'));
   navHabitsBtn.addEventListener('click', () => setPage('habits'));
   navCardsBtn.addEventListener('click', () => setPage('cards'));
   navFinanceBtn.addEventListener('click', () => setPage('finance'));
+  navTrainingBtn.addEventListener('click', () => setPage('training'));
 
   // ---- Habit tracker ----
   const MONTH_NAMES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -3479,7 +3799,7 @@ const db = getFirestore(firebaseApp);
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-04.1';
+  const APP_VERSION = '2026-08-04.2';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -4189,6 +4509,323 @@ const db = getFirestore(firebaseApp);
     clearSavingsForm();
     addSavingsForm.style.display = 'none';
     renderFinance();
+  });
+
+  // ---- Entreno: calculation engine ----
+  function ceilingTo(val, step){ return Math.ceil(val / step) * step; }
+  function calcSetWeight(trainingMax, pct){ return ceilingTo(trainingMax * pct / 100, 2.5); }
+  function calcEstimated1RM(weight, reps){ return weight * reps * 0.033 + weight; }
+  function calcRepsObjetivo(prevEstimated1RM, amrapWeight){
+    return Math.ceil(30 * (prevEstimated1RM / amrapWeight - 1));
+  }
+
+  function buildWeekSets(liftName, wave, week){
+    const table = WAVE_TABLES[wave][week];
+    const lift = lifts[liftName];
+    return table.map(s => {
+      const targetWeight = calcSetWeight(lift.trainingMax, s.pct);
+      const amrap = !!s.amrap;
+      let repsObjetivo = null;
+      if (amrap && lift.lastEstimated1RM) repsObjetivo = calcRepsObjetivo(lift.lastEstimated1RM, targetWeight);
+      return { pct: s.pct, targetWeight, targetReps: s.reps, amrap, repsObjetivo };
+    });
+  }
+
+  function summarizeSets(sets){
+    return sets.map(s => s.amrap
+      ? `${s.targetWeight}kg × AMRAP${s.repsObjetivo ? ' (obj. ' + s.repsObjetivo + '+)' : ''}`
+      : `${s.targetWeight}kg × ${s.targetReps}`
+    ).join(' · ');
+  }
+
+  function renderTraining(){
+    waveLabelEl.textContent = WAVE_LABEL[currentWave];
+    weekLabelEl.textContent = WEEK_LABEL[currentWeek];
+
+    liftListEl.innerHTML = LIFT_NAMES.map(name => {
+      const sets = buildWeekSets(name, currentWave, currentWeek);
+      const doneToday = trainingLog.some(l => l.lift === name && l.wave === currentWave && l.week === currentWeek);
+      return `
+        <li class="lift-item" data-lift="${escapeHtml(name)}">
+          <div class="lift-item-top">
+            <span class="lift-item-name">${escapeHtml(name)}</span>
+            ${doneToday ? '<span class="lift-item-done">✓ Hecho</span>' : ''}
+          </div>
+          <div class="lift-item-sets">${summarizeSets(sets)}</div>
+        </li>`;
+    }).join('');
+    liftListEl.querySelectorAll('.lift-item').forEach(el => {
+      el.addEventListener('click', () => openLiftSession(el.dataset.lift));
+    });
+
+    renderExtraList();
+  }
+
+  function renderExtraList(){
+    if (extraExercises.length === 0) {
+      extraListEl.innerHTML = `<p class="fin-item-sub" style="padding:6px 0;">Sin ejercicios extra agregados.</p>`;
+      return;
+    }
+    extraListEl.innerHTML = extraExercises.map(e => `
+      <li class="fin-item" data-id="${e.id}">
+        <button class="fin-remove" data-id="${e.id}">✕</button>
+        <div class="fin-item-info">
+          <div class="fin-item-name">${escapeHtml(e.name)}</div>
+          ${e.detail ? `<div class="fin-item-sub">${escapeHtml(e.detail)}</div>` : ''}
+        </div>
+      </li>`).join('');
+    extraListEl.querySelectorAll('.fin-remove').forEach(btn => {
+      btn.addEventListener('click', () => {
+        extraExercises = extraExercises.filter(e => e.id !== btn.dataset.id);
+        scheduleSave();
+        renderTraining();
+      });
+    });
+  }
+
+  function openLiftSession(name){
+    activeLiftName = name;
+    activeLiftDraftSets = buildWeekSets(name, currentWave, currentWeek).map(s => Object.assign({}, s, { actualReps: '', done: false }));
+    liftSessionNameEl.textContent = name;
+    liftSessionSubEl.textContent = WAVE_LABEL[currentWave] + ' · ' + WEEK_LABEL[currentWeek];
+    trainingOverviewViewEl.style.display = 'none';
+    liftSessionViewEl.style.display = 'flex';
+    renderLiftSetList();
+  }
+
+  function exitLiftSession(){
+    liftSessionViewEl.style.display = 'none';
+    trainingOverviewViewEl.style.display = 'flex';
+    activeLiftName = null;
+    activeLiftDraftSets = null;
+  }
+
+  function renderLiftSetList(){
+    liftSetListEl.innerHTML = activeLiftDraftSets.map((s, i) => `
+      <li class="set-row ${s.amrap ? 'amrap' : ''}" data-idx="${i}">
+        <div class="set-row-label">
+          <div class="set-row-num">Serie ${i + 1}${s.amrap ? ' AMRAP' : ''}</div>
+          <div class="set-row-target">${s.targetWeight}kg × ${s.amrap ? (s.repsObjetivo ? s.repsObjetivo + '+' : '¿?') : s.targetReps}</div>
+        </div>
+        <div class="set-row-inputs">
+          <input type="number" inputmode="numeric" placeholder="Reps hechas" value="${s.actualReps}" data-set-idx="${i}" />
+        </div>
+        <button class="set-row-check ${s.done ? 'checked' : ''}" data-check-idx="${i}">✓</button>
+      </li>`).join('');
+
+    liftSetListEl.querySelectorAll('input[data-set-idx]').forEach(inp => {
+      inp.addEventListener('input', () => {
+        activeLiftDraftSets[+inp.dataset.setIdx].actualReps = inp.value;
+      });
+    });
+    liftSetListEl.querySelectorAll('[data-check-idx]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = +btn.dataset.checkIdx;
+        activeLiftDraftSets[idx].done = !activeLiftDraftSets[idx].done;
+        renderLiftSetList();
+      });
+    });
+  }
+
+  function finishLiftSession(){
+    const name = activeLiftName;
+    const lift = lifts[name];
+    const amrapSet = activeLiftDraftSets.find(s => s.amrap);
+    let estimated1RM = null;
+
+    if (amrapSet && amrapSet.actualReps) {
+      const reps = parseInt(amrapSet.actualReps, 10);
+      if (isFinite(reps) && reps > 0) {
+        estimated1RM = calcEstimated1RM(amrapSet.targetWeight, reps);
+        lift.lastEstimated1RM = Math.round(estimated1RM * 100) / 100;
+        lift.lastAmrapReps = reps;
+      }
+    }
+
+    trainingLog.unshift({
+      id: uid(), ts: Date.now(), date: todayKey(),
+      wave: currentWave, week: currentWeek, lift: name,
+      sets: activeLiftDraftSets.map(s => ({
+        pct: s.pct, targetWeight: s.targetWeight, targetReps: s.targetReps, amrap: s.amrap,
+        actualReps: s.actualReps ? parseInt(s.actualReps, 10) : null,
+      })),
+      estimated1RM,
+    });
+    if (trainingLog.length > 400) trainingLog = trainingLog.slice(0, 400);
+    scheduleSave();
+    exitLiftSession();
+    renderTraining();
+  }
+
+  function advanceWeek(dir){
+    const idx = WEEK_ORDER.indexOf(currentWeek);
+    const newIdx = idx + dir;
+    if (newIdx < 0) return; // already at the first week
+    if (newIdx >= WEEK_ORDER.length) { advanceWave(); return; }
+    currentWeek = WEEK_ORDER[newIdx];
+    scheduleSave();
+    renderTraining();
+  }
+
+  function advanceWave(){
+    const waveNum = WAVE_NUMBER[currentWave];
+    LIFT_NAMES.forEach(name => {
+      const lift = lifts[name];
+      if (lift.lastAmrapReps != null) {
+        lift.trainingMax = ceilingTo((lift.lastAmrapReps - waveNum) * lift.incrementPerRep + lift.trainingMax, 2.5);
+      }
+    });
+    const waveIdx = WAVE_ORDER.indexOf(currentWave);
+    currentWave = WAVE_ORDER[(waveIdx + 1) % WAVE_ORDER.length];
+    currentWeek = 'acumulacion';
+    scheduleSave();
+    renderTraining();
+  }
+
+  function renderTrainingHistory(){
+    if (trainingLog.length === 0) {
+      trainingHistoryListEl.innerHTML = `<p class="fin-item-sub" style="padding:6px 0;">Sin sesiones registradas todavía.</p>`;
+      return;
+    }
+    trainingHistoryListEl.innerHTML = trainingLog.map(l => {
+      const setsStr = l.sets.map(s =>
+        `${s.targetWeight}kg×${s.actualReps != null ? s.actualReps : (s.amrap ? '?' : s.targetReps)}${s.amrap ? ' (AMRAP)' : ''}`
+      ).join(', ');
+      const oneRm = l.estimated1RM ? ' · 1RM est.: ' + (Math.round(l.estimated1RM * 100) / 100) + 'kg' : '';
+      return `
+        <div class="fh-item">
+          <span class="fh-dot" style="background:var(--accent); color:var(--accent)"></span>
+          <div class="fh-info">
+            <div class="fh-name">${escapeHtml(l.lift)} — ${WAVE_LABEL[l.wave]} · ${WEEK_LABEL[l.week]}</div>
+            <div class="fh-sub">${setsStr}${oneRm}</div>
+          </div>
+          <div class="fh-amount">${l.date}</div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderLiftSettings(){
+    liftSettingsListEl.innerHTML = LIFT_NAMES.map(name => {
+      const l = lifts[name];
+      return `
+        <div class="lift-setting-row">
+          <span class="lift-setting-name">${escapeHtml(name)}</span>
+          <input type="number" inputmode="decimal" value="${l.trainingMax}" data-lift-tm="${escapeHtml(name)}" title="1RM de Entrenamiento (kg)" />
+          <input type="number" inputmode="decimal" value="${l.incrementPerRep}" data-lift-inc="${escapeHtml(name)}" title="Incremento por rep" />
+        </div>`;
+    }).join('');
+    liftSettingsListEl.querySelectorAll('[data-lift-tm]').forEach(inp => {
+      inp.addEventListener('change', () => {
+        const v = parseFloat(inp.value);
+        if (isFinite(v) && v > 0) { lifts[inp.dataset.liftTm].trainingMax = v; scheduleSave(); renderTraining(); }
+      });
+    });
+    liftSettingsListEl.querySelectorAll('[data-lift-inc]').forEach(inp => {
+      inp.addEventListener('change', () => {
+        const v = parseFloat(inp.value);
+        if (isFinite(v) && v > 0) { lifts[inp.dataset.liftInc].incrementPerRep = v; scheduleSave(); }
+      });
+    });
+  }
+
+  function parseTrainingImport(text){
+    let data;
+    try { data = JSON.parse(text); } catch(e) { throw new Error('Ese texto no es JSON válido. Revisa que esté copiado completo.'); }
+    if (data.extra && !Array.isArray(data.extra)) throw new Error('El campo "extra" debe ser una lista.');
+    return data;
+  }
+
+  function applyTrainingImport(data){
+    let count = 0;
+    if (Array.isArray(data.extra)) {
+      data.extra.forEach(e => {
+        if (e && typeof e.name === 'string' && e.name.trim()) {
+          extraExercises.push({ id: uid(), name: e.name.trim(), detail: (e.detail || '').toString().trim() });
+          count++;
+        }
+      });
+    }
+    if (data.lifts && typeof data.lifts === 'object') {
+      Object.keys(data.lifts).forEach(name => {
+        if (lifts[name]) {
+          const d = data.lifts[name];
+          if (typeof d.trainingMax === 'number') lifts[name].trainingMax = d.trainingMax;
+          if (typeof d.incrementPerRep === 'number') lifts[name].incrementPerRep = d.incrementPerRep;
+        }
+      });
+    }
+    scheduleSave();
+    renderTraining();
+    return count;
+  }
+
+  // Wiring
+  prevWeekBtn.addEventListener('click', () => advanceWeek(-1));
+  nextWeekBtn.addEventListener('click', () => advanceWeek(1));
+  liftBackBtn.addEventListener('click', exitLiftSession);
+  finishLiftBtn.addEventListener('click', finishLiftSession);
+
+  trainingHistoryBtn.addEventListener('click', () => {
+    renderTrainingHistory();
+    trainingHistoryOverlay.classList.add('open');
+  });
+  trainingHistoryCloseBtn.addEventListener('click', () => trainingHistoryOverlay.classList.remove('open'));
+  trainingHistoryOverlay.addEventListener('click', (e) => { if (e.target === trainingHistoryOverlay) trainingHistoryOverlay.classList.remove('open'); });
+
+  trainingSettingsBtn.addEventListener('click', () => {
+    renderLiftSettings();
+    trainingSettingsOverlay.classList.add('open');
+  });
+  trainingSettingsCloseBtn.addEventListener('click', () => trainingSettingsOverlay.classList.remove('open'));
+  trainingSettingsOverlay.addEventListener('click', (e) => { if (e.target === trainingSettingsOverlay) trainingSettingsOverlay.classList.remove('open'); });
+
+  addExtraToggle.addEventListener('click', () => {
+    const showing = addExtraForm.style.display !== 'none';
+    addExtraForm.style.display = showing ? 'none' : '';
+    if (!showing) newExtraNameEl.focus();
+  });
+  cancelExtraBtn.addEventListener('click', () => {
+    addExtraForm.style.display = 'none';
+    newExtraNameEl.value = '';
+    newExtraDetailEl.value = '';
+  });
+  saveExtraBtn.addEventListener('click', () => {
+    const nm = newExtraNameEl.value.trim();
+    if (!nm) { newExtraNameEl.focus(); return; }
+    extraExercises.push({ id: uid(), name: nm, detail: newExtraDetailEl.value.trim() });
+    scheduleSave();
+    newExtraNameEl.value = '';
+    newExtraDetailEl.value = '';
+    addExtraForm.style.display = 'none';
+    renderTraining();
+  });
+
+  importRoutineToggle.addEventListener('click', () => {
+    const showing = importRoutineForm.style.display !== 'none';
+    importRoutineForm.style.display = showing ? 'none' : '';
+    importRoutineErrorEl.style.display = 'none';
+    if (!showing) importRoutineTextarea.focus();
+  });
+  importRoutineCancelBtn.addEventListener('click', () => {
+    importRoutineForm.style.display = 'none';
+    importRoutineTextarea.value = '';
+    importRoutineErrorEl.style.display = 'none';
+  });
+  importRoutineSubmitBtn.addEventListener('click', () => {
+    try {
+      if (!importRoutineTextarea.value.trim()) throw new Error('Pega el JSON primero.');
+      const data = parseTrainingImport(importRoutineTextarea.value);
+      const count = applyTrainingImport(data);
+      importRoutineTextarea.value = '';
+      importRoutineForm.style.display = 'none';
+      importRoutineErrorEl.style.display = 'none';
+      const original = importRoutineToggle.textContent;
+      importRoutineToggle.textContent = `✓ Importado (${count} ejercicio${count === 1 ? '' : 's'})`;
+      setTimeout(() => { importRoutineToggle.textContent = original; }, 2200);
+    } catch(e) {
+      importRoutineErrorEl.textContent = e.message;
+      importRoutineErrorEl.style.display = '';
+    }
   });
 
   // ---- Authentication ----
