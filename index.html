@@ -1303,41 +1303,136 @@
   .lift-item-done { color: #3FC373; font-size: 12px; font-weight: 700; }
   .lift-item-sets { font-size: 12.5px; color: var(--ink-soft); margin-top: 4px; }
 
-  .set-row {
-    display: flex; align-items: center; gap: 8px;
+  .ex-card {
     background: var(--card);
     border: 1px solid var(--hairline);
-    border-radius: 12px;
-    padding: 10px 12px;
-    margin-bottom: 8px;
+    border-radius: 16px;
+    padding: 16px;
   }
-  .set-row.amrap { border-color: var(--accent); background: var(--accent-soft); }
-  .set-row-label { width: 66px; flex-shrink: 0; }
-  .set-row-num { font-size: 12px; font-weight: 700; color: var(--ink-soft); }
-  .set-row-target { font-size: 11px; color: var(--ink-soft); margin-top: 1px; }
-  .set-row.amrap .set-row-num, .set-row.amrap .set-row-target { color: var(--accent-strong); }
-  .set-row-inputs { flex: 1; display: flex; gap: 6px; }
-  .set-row-inputs input {
-    width: 100%;
+  .ex-card-header { display: flex; align-items: center; gap: 12px; }
+  .ex-icon {
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 21px;
+    flex-shrink: 0;
+  }
+  .ex-name { font-size: 17px; font-weight: 700; color: var(--accent-strong); letter-spacing: -0.01em; }
+  .ex-sub { font-size: 12px; color: var(--ink-soft); margin-top: 1px; }
+
+  .rest-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    border: none;
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 12.5px;
+    font-weight: 650;
+    margin-top: 12px;
+  }
+  .rest-edit-row {
+    display: flex; align-items: center; gap: 6px;
+    margin-top: 10px;
+  }
+  .rest-edit-row input {
+    width: 52px;
     border: 1px solid var(--hairline);
     background: var(--field-bg);
     border-radius: 8px;
-    padding: 7px 8px;
+    padding: 7px 6px;
     font-size: 13px;
+    text-align: center;
+    color: var(--ink);
+    font-family: inherit;
+  }
+  .rest-edit-row span { font-size: 12px; color: var(--ink-soft); }
+  .rest-edit-row button {
+    margin-left: auto;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-size: 12.5px;
+    font-weight: 650;
+    padding: 7px 14px;
+    border-radius: 9px;
+  }
+
+  .set-table-header {
+    display: grid;
+    grid-template-columns: 56px 1fr 1fr 40px;
+    gap: 6px;
+    margin-top: 16px;
+    padding: 0 4px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+  }
+  .set-table-header span:nth-child(2), .set-table-header span:nth-child(3) { text-align: center; }
+
+  .set-row {
+    display: grid;
+    grid-template-columns: 56px 1fr 1fr 40px;
+    gap: 6px;
+    align-items: center;
+    padding: 10px 4px;
+    border-radius: 10px;
+  }
+  .set-row:nth-child(even) { background: var(--field-bg); }
+  .set-row.amrap { background: var(--accent-soft); }
+  .set-row-num { font-size: 14px; font-weight: 700; }
+  .set-row.amrap .set-row-num { color: var(--accent-strong); }
+  .set-row-target-mini { font-size: 9.5px; color: var(--ink-soft); margin-top: 1px; }
+  .set-row input {
+    width: 100%;
+    border: 1px solid var(--hairline);
+    background: var(--card);
+    border-radius: 8px;
+    padding: 8px 4px;
+    font-size: 14px;
     color: var(--ink);
     font-family: inherit;
     text-align: center;
   }
+  .set-row input::placeholder { color: var(--ink-soft); }
   .set-row-check {
-    width: 26px; height: 26px;
+    width: 28px; height: 28px;
     border-radius: 50%;
     border: 1.5px solid var(--hairline);
-    background: var(--field-bg);
+    background: var(--card);
     color: transparent;
-    flex-shrink: 0;
     font-size: 13px;
+    justify-self: center;
   }
   .set-row-check.checked { background: #3FC373; border-color: #3FC373; color: #fff; }
+
+  .rest-timer-banner {
+    position: fixed;
+    left: 16px; right: 16px;
+    bottom: calc(var(--safe-bottom) + 78px);
+    background: var(--card);
+    border: 1px solid var(--accent);
+    border-radius: 18px;
+    padding: 14px 18px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+    text-align: center;
+    z-index: 12;
+  }
+  .rtb-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); }
+  .rtb-time { font-size: 32px; font-weight: 750; color: var(--accent-strong); font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .rtb-actions { display: flex; justify-content: center; gap: 10px; margin-top: 8px; }
+  .rtb-actions button {
+    border: 1px solid var(--hairline);
+    background: var(--field-bg);
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 650;
+    padding: 7px 12px;
+    border-radius: 9px;
+  }
+  .rtb-actions #rtbSkip { border-color: var(--urgent); color: var(--urgent); }
 
   .lift-setting-row {
     display: flex; align-items: center; gap: 10px;
@@ -2013,14 +2108,49 @@
         <button class="icon-btn" id="liftBackBtn" aria-label="Volver">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-        <h2 class="page-title" id="liftSessionName">—</h2>
+        <h2 class="page-title">Registrar serie</h2>
         <div style="width:38px;"></div>
       </div>
-      <p class="rec-hint" id="liftSessionSub" style="padding:0 20px 8px 20px;"></p>
       <main>
-        <ul id="liftSetList"></ul>
-        <button class="done-toggle" id="finishLiftBtn" style="display:block; width:100%; margin-top:10px; padding:14px;">✓ Guardar sesión</button>
+        <div class="ex-card">
+          <div class="ex-card-header">
+            <div class="ex-icon" id="liftIcon">💪</div>
+            <div class="ex-header-info">
+              <div class="ex-name" id="liftSessionName">—</div>
+              <div class="ex-sub" id="liftSessionSub"></div>
+            </div>
+          </div>
+
+          <button class="rest-badge" id="restBadge">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M12 9v4l2.5 1.5M9.5 3h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span id="restBadgeText">Descanso: 1min 30s</span>
+          </button>
+          <div class="rest-edit-row" id="restEditRow" style="display:none;">
+            <input type="number" inputmode="numeric" id="restMinInput" placeholder="min" />
+            <span>min</span>
+            <input type="number" inputmode="numeric" id="restSecInput" placeholder="seg" />
+            <span>seg</span>
+            <button id="restSaveBtn">Guardar</button>
+          </div>
+
+          <div class="set-table-header">
+            <span>SERIE</span><span>KG</span><span>REPS</span><span></span>
+          </div>
+          <div id="liftSetList"></div>
+        </div>
+
+        <button class="done-toggle" id="finishLiftBtn" style="display:block; width:100%; margin-top:14px; padding:14px;">✓ Guardar sesión</button>
       </main>
+
+      <div class="rest-timer-banner" id="restTimerBanner" style="display:none;">
+        <div class="rtb-label">Descanso</div>
+        <div class="rtb-time" id="rtbTime">1:30</div>
+        <div class="rtb-actions">
+          <button id="rtbMinus15">−15s</button>
+          <button id="rtbSkip">Saltar</button>
+          <button id="rtbPlus15">+15s</button>
+        </div>
+      </div>
     </div>
 
 
@@ -2245,6 +2375,18 @@ const db = getFirestore(firebaseApp);
   const liftSessionSubEl = document.getElementById('liftSessionSub');
   const liftSetListEl = document.getElementById('liftSetList');
   const finishLiftBtn = document.getElementById('finishLiftBtn');
+  const liftIconEl = document.getElementById('liftIcon');
+  const restBadge = document.getElementById('restBadge');
+  const restBadgeText = document.getElementById('restBadgeText');
+  const restEditRow = document.getElementById('restEditRow');
+  const restMinInput = document.getElementById('restMinInput');
+  const restSecInput = document.getElementById('restSecInput');
+  const restSaveBtn = document.getElementById('restSaveBtn');
+  const restTimerBanner = document.getElementById('restTimerBanner');
+  const rtbTime = document.getElementById('rtbTime');
+  const rtbMinus15 = document.getElementById('rtbMinus15');
+  const rtbSkip = document.getElementById('rtbSkip');
+  const rtbPlus15 = document.getElementById('rtbPlus15');
 
   const trainingHistoryBtn = document.getElementById('trainingHistoryBtn');
   const trainingHistoryOverlay = document.getElementById('trainingHistoryOverlay');
@@ -2465,11 +2607,16 @@ const db = getFirestore(firebaseApp);
 
   function defaultLifts(){
     return {
-      'Press de Banca': { trainingMax: 95,    incrementPerRep: 1.25, lastEstimated1RM: 96.4575, lastAmrapReps: null },
-      'Sentadilla':     { trainingMax: 112.5, incrementPerRep: 2.5,  lastEstimated1RM: 112.4475, lastAmrapReps: null },
-      'Press Militar':  { trainingMax: 62.5,  incrementPerRep: 1.25, lastEstimated1RM: 62.82,   lastAmrapReps: null },
-      'Peso Muerto':    { trainingMax: 137.5, incrementPerRep: 2.5,  lastEstimated1RM: 139.65,  lastAmrapReps: null },
+      'Press de Banca': { trainingMax: 95,    incrementPerRep: 1.25, lastEstimated1RM: 96.4575, lastAmrapReps: null, restSeconds: 120 },
+      'Sentadilla':     { trainingMax: 112.5, incrementPerRep: 2.5,  lastEstimated1RM: 112.4475, lastAmrapReps: null, restSeconds: 150 },
+      'Press Militar':  { trainingMax: 62.5,  incrementPerRep: 1.25, lastEstimated1RM: 62.82,   lastAmrapReps: null, restSeconds: 120 },
+      'Peso Muerto':    { trainingMax: 137.5, incrementPerRep: 2.5,  lastEstimated1RM: 139.65,  lastAmrapReps: null, restSeconds: 150 },
     };
+  }
+
+  const LIFT_ICONS = { 'Press de Banca': '🏋️', 'Sentadilla': '🦵', 'Press Militar': '💪', 'Peso Muerto': '🏋️‍♂️' };
+  function ensureRestSeconds(name){
+    if (typeof lifts[name].restSeconds !== 'number') lifts[name].restSeconds = 90;
   }
 
 
@@ -3799,7 +3946,7 @@ const db = getFirestore(firebaseApp);
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-04.2';
+  const APP_VERSION = '2026-08-04.3';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -4583,17 +4730,38 @@ const db = getFirestore(firebaseApp);
     });
   }
 
+  function formatRest(totalSeconds){
+    totalSeconds = Math.max(0, totalSeconds);
+    const m = Math.floor(totalSeconds / 60);
+    const s = totalSeconds % 60;
+    return m + ':' + (s < 10 ? '0' : '') + s;
+  }
+  function formatRestLong(totalSeconds){
+    const m = Math.floor(totalSeconds / 60);
+    const s = totalSeconds % 60;
+    return (m > 0 ? m + 'min ' : '') + s + 's';
+  }
+
   function openLiftSession(name){
+    ensureRestSeconds(name);
     activeLiftName = name;
-    activeLiftDraftSets = buildWeekSets(name, currentWave, currentWeek).map(s => Object.assign({}, s, { actualReps: '', done: false }));
+    activeLiftDraftSets = buildWeekSets(name, currentWave, currentWeek).map(s => Object.assign({}, s, {
+      actualWeight: s.targetWeight,
+      actualReps: s.amrap ? '' : s.targetReps,
+      done: false,
+    }));
+    liftIconEl.textContent = LIFT_ICONS[name] || '💪';
     liftSessionNameEl.textContent = name;
     liftSessionSubEl.textContent = WAVE_LABEL[currentWave] + ' · ' + WEEK_LABEL[currentWeek];
+    restBadgeText.textContent = 'Descanso: ' + formatRestLong(lifts[name].restSeconds);
+    restEditRow.style.display = 'none';
     trainingOverviewViewEl.style.display = 'none';
     liftSessionViewEl.style.display = 'flex';
     renderLiftSetList();
   }
 
   function exitLiftSession(){
+    cancelRestTimer();
     liftSessionViewEl.style.display = 'none';
     trainingOverviewViewEl.style.display = 'flex';
     activeLiftName = null;
@@ -4602,27 +4770,31 @@ const db = getFirestore(firebaseApp);
 
   function renderLiftSetList(){
     liftSetListEl.innerHTML = activeLiftDraftSets.map((s, i) => `
-      <li class="set-row ${s.amrap ? 'amrap' : ''}" data-idx="${i}">
-        <div class="set-row-label">
-          <div class="set-row-num">Serie ${i + 1}${s.amrap ? ' AMRAP' : ''}</div>
-          <div class="set-row-target">${s.targetWeight}kg × ${s.amrap ? (s.repsObjetivo ? s.repsObjetivo + '+' : '¿?') : s.targetReps}</div>
+      <div class="set-row ${s.amrap ? 'amrap' : ''}" data-idx="${i}">
+        <div>
+          <div class="set-row-num">${i + 1}${s.amrap ? ' 🔥' : ''}</div>
+          <div class="set-row-target-mini">obj. ${s.amrap ? (s.repsObjetivo ? s.repsObjetivo + '+' : '¿?') : s.targetReps}</div>
         </div>
-        <div class="set-row-inputs">
-          <input type="number" inputmode="numeric" placeholder="Reps hechas" value="${s.actualReps}" data-set-idx="${i}" />
-        </div>
+        <input type="number" inputmode="decimal" value="${s.actualWeight}" data-kg-idx="${i}" />
+        <input type="number" inputmode="numeric" placeholder="${s.amrap ? 'AMRAP' : ''}" value="${s.actualReps}" data-reps-idx="${i}" />
         <button class="set-row-check ${s.done ? 'checked' : ''}" data-check-idx="${i}">✓</button>
-      </li>`).join('');
+      </div>`).join('');
 
-    liftSetListEl.querySelectorAll('input[data-set-idx]').forEach(inp => {
-      inp.addEventListener('input', () => {
-        activeLiftDraftSets[+inp.dataset.setIdx].actualReps = inp.value;
-      });
+    liftSetListEl.querySelectorAll('input[data-kg-idx]').forEach(inp => {
+      inp.addEventListener('input', () => { activeLiftDraftSets[+inp.dataset.kgIdx].actualWeight = inp.value; });
+    });
+    liftSetListEl.querySelectorAll('input[data-reps-idx]').forEach(inp => {
+      inp.addEventListener('input', () => { activeLiftDraftSets[+inp.dataset.repsIdx].actualReps = inp.value; });
     });
     liftSetListEl.querySelectorAll('[data-check-idx]').forEach(btn => {
       btn.addEventListener('click', () => {
         const idx = +btn.dataset.checkIdx;
-        activeLiftDraftSets[idx].done = !activeLiftDraftSets[idx].done;
+        const wasDone = activeLiftDraftSets[idx].done;
+        activeLiftDraftSets[idx].done = !wasDone;
         renderLiftSetList();
+        if (!wasDone && idx < activeLiftDraftSets.length - 1) {
+          startRestTimer(lifts[activeLiftName].restSeconds);
+        }
       });
     });
   }
@@ -4635,8 +4807,9 @@ const db = getFirestore(firebaseApp);
 
     if (amrapSet && amrapSet.actualReps) {
       const reps = parseInt(amrapSet.actualReps, 10);
+      const weight = parseFloat(amrapSet.actualWeight) || amrapSet.targetWeight;
       if (isFinite(reps) && reps > 0) {
-        estimated1RM = calcEstimated1RM(amrapSet.targetWeight, reps);
+        estimated1RM = calcEstimated1RM(weight, reps);
         lift.lastEstimated1RM = Math.round(estimated1RM * 100) / 100;
         lift.lastAmrapReps = reps;
       }
@@ -4647,6 +4820,7 @@ const db = getFirestore(firebaseApp);
       wave: currentWave, week: currentWeek, lift: name,
       sets: activeLiftDraftSets.map(s => ({
         pct: s.pct, targetWeight: s.targetWeight, targetReps: s.targetReps, amrap: s.amrap,
+        actualWeight: s.actualWeight ? parseFloat(s.actualWeight) : null,
         actualReps: s.actualReps ? parseInt(s.actualReps, 10) : null,
       })),
       estimated1RM,
@@ -4656,6 +4830,90 @@ const db = getFirestore(firebaseApp);
     exitLiftSession();
     renderTraining();
   }
+
+  // ---- Rest timer: countdown + audible beep (foreground only — see note to user) ----
+  let restTimerInterval = null;
+  let restTimerEndsAt = null;
+  let restTimerTotal = 90;
+
+  function playBeep(){
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [0, 160, 320].forEach(delay => {
+        setTimeout(() => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = 880;
+          gain.gain.setValueAtTime(0.3, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.35);
+        }, delay);
+      });
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+    } catch(e) { /* Web Audio unavailable — silently skip */ }
+  }
+
+  function startRestTimer(seconds){
+    restTimerTotal = seconds;
+    restTimerEndsAt = Date.now() + seconds * 1000;
+    restTimerBanner.style.display = 'block';
+    tickRestTimer();
+    clearInterval(restTimerInterval);
+    restTimerInterval = setInterval(tickRestTimer, 250);
+  }
+
+  function tickRestTimer(){
+    const remaining = Math.round((restTimerEndsAt - Date.now()) / 1000);
+    if (remaining <= 0) {
+      rtbTime.textContent = '0:00';
+      clearInterval(restTimerInterval);
+      restTimerInterval = null;
+      playBeep();
+      setTimeout(() => { restTimerBanner.style.display = 'none'; }, 900);
+      return;
+    }
+    rtbTime.textContent = formatRest(remaining);
+  }
+
+  function cancelRestTimer(){
+    clearInterval(restTimerInterval);
+    restTimerInterval = null;
+    restTimerBanner.style.display = 'none';
+  }
+
+  function adjustRestTimer(delta){
+    if (!restTimerEndsAt) return;
+    restTimerEndsAt += delta * 1000;
+    tickRestTimer();
+  }
+
+  restBadge.addEventListener('click', () => {
+    const showing = restEditRow.style.display !== 'none';
+    if (!showing) {
+      const secs = lifts[activeLiftName].restSeconds;
+      restMinInput.value = Math.floor(secs / 60);
+      restSecInput.value = secs % 60;
+    }
+    restEditRow.style.display = showing ? 'none' : 'flex';
+  });
+  restSaveBtn.addEventListener('click', () => {
+    const m = parseInt(restMinInput.value, 10) || 0;
+    const s = parseInt(restSecInput.value, 10) || 0;
+    const total = Math.max(0, m * 60 + s);
+    lifts[activeLiftName].restSeconds = total;
+    restBadgeText.textContent = 'Descanso: ' + formatRestLong(total);
+    restEditRow.style.display = 'none';
+    scheduleSave();
+  });
+
+  rtbMinus15.addEventListener('click', () => adjustRestTimer(-15));
+  rtbPlus15.addEventListener('click', () => adjustRestTimer(15));
+  rtbSkip.addEventListener('click', cancelRestTimer);
+
 
   function advanceWeek(dir){
     const idx = WEEK_ORDER.indexOf(currentWeek);
