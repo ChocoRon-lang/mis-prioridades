@@ -1600,6 +1600,30 @@
   }
   .offline-badge.show { display: inline-flex; }
 
+  .day-chip-row { display: flex; gap: 5px; flex-wrap: wrap; }
+  .day-chip {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--hairline);
+    background: var(--field-bg);
+    color: var(--ink-soft);
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .day-chip.active { background: var(--accent); border-color: transparent; color: #fff; }
+
+  .today-extra-item {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 8px 10px;
+    margin-top: 6px;
+    font-size: 12.5px;
+  }
+  .today-extra-item .tei-name { font-weight: 650; flex: 1; }
+  .today-extra-item .tei-detail { color: var(--ink-soft); font-size: 11.5px; }
+  .extra-item-days { font-size: 10.5px; color: var(--accent-strong); margin-top: 2px; font-weight: 650; }
+
   .lift-setting-row {
     display: flex; align-items: center; gap: 10px;
     background: var(--field-bg);
@@ -2228,6 +2252,7 @@
         <div class="th-label" id="thLabel">HOY · MARTES</div>
         <div class="th-activity" id="thActivity">Press de Banca</div>
         <button class="study-cta" id="todayStartBtn" style="width:100%; margin-top:10px;">▶ Empezar sesión de hoy</button>
+        <div id="todayExtraList" style="margin-top:10px;"></div>
       </div>
 
       <div class="safe-to-spend" style="text-align:left; padding:14px 16px;">
@@ -2254,12 +2279,14 @@
             <span class="chevron">›</span>
           </div>
           <div class="finance-section-body" id="extraBody" style="display:none;">
-            <p class="rec-hint" style="padding:0 0 8px 0;">Ejercicios accesorios de tu programa (los que no vienen del Juggernaut). Pídele a Claude en "Entrenamiento Total Hans" que te los pase en JSON para importarlos.</p>
+            <p class="rec-hint" style="padding:0 0 8px 0;">Ejercicios accesorios de tu programa (los que no vienen del Juggernaut). Asígnalos a días específicos para que aparezcan en "Hoy" — sin días marcados, se muestran todos los días. Pídele a Claude en "Entrenamiento Total Hans" que te los pase en JSON (con sus días) para importarlos.</p>
             <ul id="extraList"></ul>
             <button class="add-card-toggle" id="addExtraToggle">+ Agregar ejercicio extra</button>
             <div class="add-card-form" id="addExtraForm" style="display:none;">
               <input class="due" id="newExtraName" type="text" style="width:100%;" placeholder="Nombre del ejercicio" />
               <input class="due" id="newExtraDetail" type="text" style="width:100%; margin-top:8px;" placeholder="Ej. 3x12 con mancuernas" />
+              <div class="field-label">¿Qué días? (ninguno = todos los días)</div>
+              <div class="day-chip-row" id="newExtraDays"></div>
               <div class="add-card-actions">
                 <button class="habit-edit-btn" id="cancelExtraBtn">Cancelar</button>
                 <button class="done-toggle" id="saveExtraBtn">Guardar</button>
@@ -2271,7 +2298,7 @@
         <button class="add-card-toggle" id="importRoutineToggle">⇩ Importar rutina (JSON)</button>
         <div class="add-card-form" id="importRoutineForm" style="display:none;">
           <div class="field-label">Pega aquí el JSON que te dé Claude</div>
-          <textarea class="notes" id="importRoutineTextarea" style="min-height:120px;" placeholder='{"extra": [{"name":"...","detail":"..."}]}'></textarea>
+          <textarea class="notes" id="importRoutineTextarea" style="min-height:120px;" placeholder='{"extra": [{"name":"...","detail":"...","days":["martes","jueves"]}]}'></textarea>
           <div class="auth-error" id="importRoutineError" style="display:none;"></div>
           <div class="add-card-actions">
             <button class="habit-edit-btn" id="importRoutineCancelBtn">Cancelar</button>
@@ -2596,6 +2623,7 @@ const db = initializeFirestore(firebaseApp, {
   const addExtraForm = document.getElementById('addExtraForm');
   const newExtraNameEl = document.getElementById('newExtraName');
   const newExtraDetailEl = document.getElementById('newExtraDetail');
+  const newExtraDaysEl = document.getElementById('newExtraDays');
   const cancelExtraBtn = document.getElementById('cancelExtraBtn');
   const saveExtraBtn = document.getElementById('saveExtraBtn');
   const importRoutineToggle = document.getElementById('importRoutineToggle');
@@ -2638,6 +2666,7 @@ const db = initializeFirestore(firebaseApp, {
   const thLabelEl = document.getElementById('thLabel');
   const thActivityEl = document.getElementById('thActivity');
   const todayStartBtn = document.getElementById('todayStartBtn');
+  const todayExtraListEl = document.getElementById('todayExtraList');
 
   const scheduleSetupOverlay = document.getElementById('scheduleSetupOverlay');
   const scheduleSetupListEl = document.getElementById('scheduleSetupList');
@@ -2958,6 +2987,14 @@ const db = initializeFirestore(firebaseApp, {
 
   const DAY_NAMES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
   const SCHEDULE_OPTIONS = ['Descanso', ...LIFT_NAMES, 'Otro'];
+  const DAY_ABBR = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
+  function normalizeDayName(s){
+    return s.toString().trim().toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // strip accents
+  }
+  const DAY_NAME_TO_INDEX = {};
+  DAY_NAMES.forEach((name, idx) => { DAY_NAME_TO_INDEX[normalizeDayName(name)] = idx; });
+  let newExtraSelectedDays = [];
   let weeklySchedule = { 0: 'Descanso', 1: 'Descanso', 2: 'Descanso', 3: 'Descanso', 4: 'Descanso', 5: 'Descanso', 6: 'Descanso' };
   let scheduleConfigured = false;
   let selectedRpe = null;
@@ -4296,7 +4333,7 @@ const db = initializeFirestore(firebaseApp, {
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-05.1';
+  const APP_VERSION = '2026-08-05.2';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -5077,6 +5114,22 @@ const db = initializeFirestore(firebaseApp, {
       thActivityEl.textContent = activity; // custom activity, e.g. "Rugby"
       todayStartBtn.style.display = 'none';
     }
+
+    const todaysExtras = extraExercises.filter(e => !Array.isArray(e.days) || e.days.length === 0 || e.days.includes(dayIdx));
+    if (todaysExtras.length === 0) {
+      todayExtraListEl.innerHTML = '';
+    } else {
+      todayExtraListEl.innerHTML = todaysExtras.map(e => `
+        <div class="today-extra-item">
+          <span class="tei-name">${escapeHtml(e.name)}</span>
+          ${e.detail ? `<span class="tei-detail">${escapeHtml(e.detail)}</span>` : ''}
+        </div>`).join('');
+    }
+  }
+
+  function daysLabel(days){
+    if (!Array.isArray(days) || days.length === 0) return 'Todos los días';
+    return days.slice().sort((a, b) => a - b).map(d => DAY_NAMES[d]).join(', ');
   }
 
   function renderExtraList(){
@@ -5090,6 +5143,7 @@ const db = initializeFirestore(firebaseApp, {
         <div class="fin-item-info">
           <div class="fin-item-name">${escapeHtml(e.name)}</div>
           ${e.detail ? `<div class="fin-item-sub">${escapeHtml(e.detail)}</div>` : ''}
+          <div class="extra-item-days">${daysLabel(e.days)}</div>
         </div>
       </li>`).join('');
     extraListEl.querySelectorAll('.fin-remove').forEach(btn => {
@@ -5546,12 +5600,27 @@ const db = initializeFirestore(firebaseApp, {
     return data;
   }
 
+  function parseDayNames(daysField){
+    if (!Array.isArray(daysField)) return [];
+    const result = [];
+    daysField.forEach(d => {
+      const idx = DAY_NAME_TO_INDEX[normalizeDayName(d)];
+      if (idx !== undefined && !result.includes(idx)) result.push(idx);
+    });
+    return result;
+  }
+
   function applyTrainingImport(data){
     let count = 0;
     if (Array.isArray(data.extra)) {
       data.extra.forEach(e => {
         if (e && typeof e.name === 'string' && e.name.trim()) {
-          extraExercises.push({ id: uid(), name: e.name.trim(), detail: (e.detail || '').toString().trim() });
+          extraExercises.push({
+            id: uid(),
+            name: e.name.trim(),
+            detail: (e.detail || '').toString().trim(),
+            days: parseDayNames(e.days),
+          });
           count++;
         }
       });
@@ -5591,23 +5660,39 @@ const db = initializeFirestore(firebaseApp, {
   trainingSettingsCloseBtn.addEventListener('click', () => trainingSettingsOverlay.classList.remove('open'));
   trainingSettingsOverlay.addEventListener('click', (e) => { if (e.target === trainingSettingsOverlay) trainingSettingsOverlay.classList.remove('open'); });
 
+  function renderNewExtraDayChips(){
+    newExtraDaysEl.innerHTML = DAY_ABBR.map((abbr, idx) => `
+      <button type="button" class="day-chip ${newExtraSelectedDays.includes(idx) ? 'active' : ''}" data-day-chip="${idx}">${abbr}</button>
+    `).join('');
+    newExtraDaysEl.querySelectorAll('[data-day-chip]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = +btn.dataset.dayChip;
+        const pos = newExtraSelectedDays.indexOf(idx);
+        if (pos === -1) newExtraSelectedDays.push(idx); else newExtraSelectedDays.splice(pos, 1);
+        renderNewExtraDayChips();
+      });
+    });
+  }
+
   addExtraToggle.addEventListener('click', () => {
     const showing = addExtraForm.style.display !== 'none';
     addExtraForm.style.display = showing ? 'none' : '';
-    if (!showing) newExtraNameEl.focus();
+    if (!showing) { newExtraSelectedDays = []; renderNewExtraDayChips(); newExtraNameEl.focus(); }
   });
   cancelExtraBtn.addEventListener('click', () => {
     addExtraForm.style.display = 'none';
     newExtraNameEl.value = '';
     newExtraDetailEl.value = '';
+    newExtraSelectedDays = [];
   });
   saveExtraBtn.addEventListener('click', () => {
     const nm = newExtraNameEl.value.trim();
     if (!nm) { newExtraNameEl.focus(); return; }
-    extraExercises.push({ id: uid(), name: nm, detail: newExtraDetailEl.value.trim() });
+    extraExercises.push({ id: uid(), name: nm, detail: newExtraDetailEl.value.trim(), days: newExtraSelectedDays.slice() });
     scheduleSave();
     newExtraNameEl.value = '';
     newExtraDetailEl.value = '';
+    newExtraSelectedDays = [];
     addExtraForm.style.display = 'none';
     renderTraining();
   });
