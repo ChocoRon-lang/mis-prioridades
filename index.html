@@ -1624,6 +1624,75 @@
   .today-extra-item .tei-detail { color: var(--ink-soft); font-size: 11.5px; }
   .extra-item-days { font-size: 10.5px; color: var(--accent-strong); margin-top: 2px; font-weight: 650; }
 
+  /* ---- Missed-session banner ---- */
+  .missed-banner {
+    margin: 14px 20px 0 20px;
+    background: rgba(245,166,35,0.14);
+    border: 1px solid #F5A623;
+    border-radius: 13px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .missed-banner .mb-text { flex: 1; font-size: 12.5px; font-weight: 600; color: #F5A623; }
+  .missed-banner button {
+    border: none;
+    background: #F5A623;
+    color: #1C1C1E;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 7px 12px;
+    border-radius: 9px;
+    flex-shrink: 0;
+  }
+
+  /* ---- Training calendar ---- */
+  .cal-grid-table { width: 100%; border-collapse: collapse; }
+  .cal-grid-table th {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    padding-bottom: 6px;
+  }
+  .cal-day-cell {
+    text-align: center;
+    padding: 3px;
+  }
+  .cal-day-inner {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 9px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 650;
+    background: var(--field-bg);
+    border: 1px solid transparent;
+  }
+  .cal-day-inner.today { border-color: var(--accent); }
+  .cal-day-inner.done { background: rgba(63,195,115,0.18); color: #3FC373; }
+  .cal-day-inner.missed { background: rgba(242,85,90,0.16); color: var(--urgent); }
+  .cal-day-inner.empty { visibility: hidden; }
+  .cal-dot-mini { width: 5px; height: 5px; border-radius: 50%; margin-top: 2px; background: currentColor; }
+  .cal-legend { display: flex; gap: 14px; justify-content: center; margin-top: 12px; font-size: 11px; color: var(--ink-soft); }
+  .cal-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+  .cal-dot.done { background: #3FC373; }
+  .cal-dot.missed { background: var(--urgent); }
+  .cal-dot.rest { background: var(--ink-soft); }
+
+  /* ---- Wave-complete summary ---- */
+  .wave-complete-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .wcr-name { font-size: 13.5px; font-weight: 650; }
+  .wcr-change { font-size: 15px; font-weight: 750; font-variant-numeric: tabular-nums; }
+  .wcr-arrow { font-size: 11px; color: var(--ink-soft); margin: 0 6px; }
+
   .lift-setting-row {
     display: flex; align-items: center; gap: 10px;
     background: var(--field-bg);
@@ -2227,6 +2296,13 @@
     <div id="trainingOverviewView" class="subview">
       <div class="cards-toolbar">
         <h2 class="page-title">Entreno</h2>
+        <button class="icon-btn" id="trainingCalendarBtn" aria-label="Calendario">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <rect x="3.5" y="5" width="17" height="15" rx="2.5" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M3.5 9.5h17" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M8 3v3.5M16 3v3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
         <button class="icon-btn" id="trainingProgressBtn" aria-label="Progreso">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
             <path d="M4 19V5M4 19h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -2247,6 +2323,8 @@
           </svg>
         </button>
       </div>
+
+      <div class="missed-banner" id="missedBanner" style="display:none;"></div>
 
       <div class="today-hero" id="todayHero">
         <div class="th-label" id="thLabel">HOY · MARTES</div>
@@ -2513,6 +2591,40 @@
   </div>
 </div>
 
+<div class="history-overlay" id="trainingCalendarOverlay">
+  <div class="history-panel" id="trainingCalendarPanel">
+    <div class="history-header">
+      <span class="grabber"></span>
+      <h2>Calendario</h2>
+      <button class="history-close" id="trainingCalendarCloseBtn" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="history-list">
+      <div class="month-switcher" style="justify-content:center; margin-bottom:12px;">
+        <button class="month-arrow" id="calPrevMonth">‹</button>
+        <span class="month-label" id="calMonthLabel">—</span>
+        <button class="month-arrow" id="calNextMonth">›</button>
+      </div>
+      <div id="calGrid"></div>
+      <div class="cal-legend">
+        <span><span class="cal-dot done"></span> Hecho</span>
+        <span><span class="cal-dot missed"></span> No registrado</span>
+        <span><span class="cal-dot rest"></span> Descanso/otro</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="history-overlay" id="waveCompleteOverlay">
+  <div class="history-panel" id="waveCompletePanel">
+    <div class="history-header">
+      <span class="grabber"></span>
+      <h2>🎉 ¡Oleada completada!</h2>
+      <button class="history-close" id="waveCompleteCloseBtn" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="history-list" id="waveCompleteBody"></div>
+  </div>
+</div>
+
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js';
 import {
@@ -2667,6 +2779,19 @@ const db = initializeFirestore(firebaseApp, {
   const thActivityEl = document.getElementById('thActivity');
   const todayStartBtn = document.getElementById('todayStartBtn');
   const todayExtraListEl = document.getElementById('todayExtraList');
+  const missedBannerEl = document.getElementById('missedBanner');
+
+  const trainingCalendarBtn = document.getElementById('trainingCalendarBtn');
+  const trainingCalendarOverlay = document.getElementById('trainingCalendarOverlay');
+  const trainingCalendarCloseBtn = document.getElementById('trainingCalendarCloseBtn');
+  const calPrevMonthBtn = document.getElementById('calPrevMonth');
+  const calNextMonthBtn = document.getElementById('calNextMonth');
+  const calMonthLabelEl = document.getElementById('calMonthLabel');
+  const calGridEl = document.getElementById('calGrid');
+
+  const waveCompleteOverlay = document.getElementById('waveCompleteOverlay');
+  const waveCompleteCloseBtn = document.getElementById('waveCompleteCloseBtn');
+  const waveCompleteBodyEl = document.getElementById('waveCompleteBody');
 
   const scheduleSetupOverlay = document.getElementById('scheduleSetupOverlay');
   const scheduleSetupListEl = document.getElementById('scheduleSetupList');
@@ -2999,6 +3124,7 @@ const db = initializeFirestore(firebaseApp, {
   let scheduleConfigured = false;
   let selectedRpe = null;
   let warmupOpen = false;
+  let calMonthCursor = new Date();
 
 
   let tasks = [];
@@ -4333,7 +4459,7 @@ const db = initializeFirestore(firebaseApp, {
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-05.3';
+  const APP_VERSION = '2026-08-05.4';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -5076,6 +5202,7 @@ const db = initializeFirestore(firebaseApp, {
     waveLabelEl.textContent = WAVE_LABEL[currentWave];
     weekLabelEl.textContent = WEEK_LABEL[currentWeek];
     renderTodayHero();
+    renderMissedBanner();
 
     const tKey = todayKey();
     liftListEl.innerHTML = LIFT_NAMES.map(name => {
@@ -5534,18 +5661,133 @@ const db = initializeFirestore(firebaseApp, {
 
   function advanceWave(){
     const waveNum = WAVE_NUMBER[currentWave];
+    const completedWaveLabel = WAVE_LABEL[currentWave];
+    const changes = [];
     LIFT_NAMES.forEach(name => {
       const lift = lifts[name];
+      const oldMax = lift.trainingMax;
       if (lift.lastAmrapReps != null) {
         lift.trainingMax = ceilingTo((lift.lastAmrapReps - waveNum) * lift.incrementPerRep + lift.trainingMax, 2.5);
       }
+      changes.push({ name, oldMax, newMax: lift.trainingMax });
     });
     const waveIdx = WAVE_ORDER.indexOf(currentWave);
     currentWave = WAVE_ORDER[(waveIdx + 1) % WAVE_ORDER.length];
     currentWeek = 'acumulacion';
     scheduleSave();
     renderTraining();
+    showWaveCompleteSummary(completedWaveLabel, changes);
   }
+
+  function showWaveCompleteSummary(completedWaveLabel, changes){
+    waveCompleteBodyEl.innerHTML = `
+      <p class="rec-hint" style="padding-bottom:10px;">Terminaste la <strong>${completedWaveLabel}</strong>. Estos son tus nuevos 1RM de Entrenamiento:</p>
+      ${changes.map(c => {
+        const delta = Math.round((c.newMax - c.oldMax) * 10) / 10;
+        const deltaColor = delta > 0 ? '#3FC373' : (delta < 0 ? 'var(--urgent)' : 'var(--ink-soft)');
+        const deltaText = delta > 0 ? '+' + delta : (delta === 0 ? 'sin cambio' : delta);
+        return `
+        <div class="wave-complete-row">
+          <span class="wcr-name">${escapeHtml(c.name)}</span>
+          <span>
+            ${c.oldMax}kg <span class="wcr-arrow">→</span> <span class="wcr-change">${c.newMax}kg</span>
+            <span style="color:${deltaColor}; font-size:12px; font-weight:700; margin-left:6px;">(${deltaText}${typeof delta === 'number' && delta !== 0 ? 'kg' : ''})</span>
+          </span>
+        </div>`;
+      }).join('')}
+    `;
+    waveCompleteOverlay.classList.add('open');
+  }
+
+  waveCompleteCloseBtn.addEventListener('click', () => waveCompleteOverlay.classList.remove('open'));
+  waveCompleteOverlay.addEventListener('click', (e) => { if (e.target === waveCompleteOverlay) waveCompleteOverlay.classList.remove('open'); });
+
+  // ---- Missed-session reminder ----
+  function renderMissedBanner(){
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yIdx = yesterday.getDay();
+    const yKey = dateKey(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate());
+    const activity = weeklySchedule[yIdx];
+
+    if (LIFT_NAMES.includes(activity)) {
+      const wasLogged = trainingLog.some(l => l.lift === activity && l.date === yKey);
+      if (!wasLogged) {
+        missedBannerEl.style.display = 'flex';
+        missedBannerEl.innerHTML = `
+          <span class="mb-text">Ayer (${DAY_NAMES[yIdx]}) te tocaba ${escapeHtml(activity)} y no quedó registrado.</span>
+          <button id="missedRegisterBtn">Registrar</button>`;
+        document.getElementById('missedRegisterBtn').addEventListener('click', () => openLiftSession(activity));
+        return;
+      }
+    }
+    missedBannerEl.style.display = 'none';
+    missedBannerEl.innerHTML = '';
+  }
+
+  // ---- Training calendar ----
+  function renderTrainingCalendar(){
+    const y = calMonthCursor.getFullYear();
+    const m = calMonthCursor.getMonth();
+    calMonthLabelEl.textContent = MONTH_NAMES[m] + ' ' + y;
+
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    const firstWeekday = new Date(y, m, 1).getDay();
+    const tKey = todayKey();
+
+    let cells = '';
+    for (let i = 0; i < firstWeekday; i++) cells += `<td class="cal-day-cell"><div class="cal-day-inner empty"></div></td>`;
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dow = new Date(y, m, d).getDay();
+      const key = dateKey(y, m, d);
+      const isToday = key === tKey;
+      const isFuture = key > tKey;
+      const activity = weeklySchedule[dow];
+      let cls = '';
+      if (!isFuture && LIFT_NAMES.includes(activity)) {
+        const done = trainingLog.some(l => l.lift === activity && l.date === key);
+        cls = done ? 'done' : 'missed';
+      }
+      cells += `<td class="cal-day-cell"><div class="cal-day-inner ${cls} ${isToday ? 'today' : ''}">${d}${cls ? '<span class="cal-dot-mini"></span>' : ''}</div></td>`;
+    }
+
+    // pad to complete the final week row
+    const totalCells = firstWeekday + daysInMonth;
+    const remainder = totalCells % 7;
+    if (remainder !== 0) {
+      for (let i = 0; i < 7 - remainder; i++) cells += `<td class="cal-day-cell"><div class="cal-day-inner empty"></div></td>`;
+    }
+
+    // chunk into rows of 7
+    const cellArr = cells.match(/<td[\s\S]*?<\/td>/g) || [];
+    let rows = '';
+    for (let i = 0; i < cellArr.length; i += 7) {
+      rows += '<tr>' + cellArr.slice(i, i + 7).join('') + '</tr>';
+    }
+
+    calGridEl.innerHTML = `
+      <table class="cal-grid-table">
+        <thead><tr>${DAY_ABBR.map(a => `<th>${a}</th>`).join('')}</tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }
+
+  trainingCalendarBtn.addEventListener('click', () => {
+    calMonthCursor = new Date();
+    renderTrainingCalendar();
+    trainingCalendarOverlay.classList.add('open');
+  });
+  trainingCalendarCloseBtn.addEventListener('click', () => trainingCalendarOverlay.classList.remove('open'));
+  trainingCalendarOverlay.addEventListener('click', (e) => { if (e.target === trainingCalendarOverlay) trainingCalendarOverlay.classList.remove('open'); });
+  calPrevMonthBtn.addEventListener('click', () => {
+    calMonthCursor = new Date(calMonthCursor.getFullYear(), calMonthCursor.getMonth() - 1, 1);
+    renderTrainingCalendar();
+  });
+  calNextMonthBtn.addEventListener('click', () => {
+    calMonthCursor = new Date(calMonthCursor.getFullYear(), calMonthCursor.getMonth() + 1, 1);
+    renderTrainingCalendar();
+  });
 
   function renderTrainingHistory(){
     if (trainingLog.length === 0) {
