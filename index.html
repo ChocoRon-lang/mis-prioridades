@@ -1488,6 +1488,118 @@
   }
   .rtb-actions #rtbSkip { border-color: var(--urgent); color: var(--urgent); }
 
+  /* ---- Today hero ---- */
+  .today-hero {
+    margin: 14px 20px 0 20px;
+    background: linear-gradient(135deg, var(--accent-soft), var(--field-bg));
+    border: 1px solid var(--accent);
+    border-radius: 16px;
+    padding: 16px;
+  }
+  .th-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--accent-strong);
+  }
+  .th-activity {
+    font-size: 20px;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+    margin-top: 3px;
+  }
+
+  /* ---- Warm-up ---- */
+  .warmup-header {
+    display: flex; align-items: center; gap: 8px;
+    cursor: pointer;
+    margin-top: 4px;
+    padding: 4px 0;
+  }
+  .warmup-header .finance-section-title { font-size: 13.5px; }
+  .warmup-header.open .chevron { transform: rotate(90deg); }
+  #warmupList { padding: 8px 0 4px 0; }
+  .warmup-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 7px 4px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .warmup-row:last-child { border-bottom: none; }
+  .warmup-row-name { color: var(--ink-soft); font-weight: 600; }
+  .warmup-row-detail { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* ---- RPE ---- */
+  .rpe-card {
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 14px;
+    margin-top: 14px;
+  }
+  .rpe-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .rpe-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    border: 1px solid var(--hairline);
+    background: var(--field-bg);
+    border-radius: 10px;
+    padding: 8px 2px;
+    color: var(--ink);
+  }
+  .rpe-btn .rpe-num { font-size: 12px; font-weight: 700; }
+  .rpe-btn .rpe-emoji { font-size: 16px; }
+  .rpe-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* ---- Schedule setup ---- */
+  .schedule-day-row {
+    background: var(--field-bg);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+  .schedule-day-name { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+  .schedule-day-options { display: flex; flex-wrap: wrap; gap: 6px; }
+  .schedule-opt-btn {
+    border: 1px solid var(--hairline);
+    background: var(--card);
+    color: var(--ink-soft);
+    font-size: 11.5px;
+    font-weight: 650;
+    padding: 6px 10px;
+    border-radius: 20px;
+  }
+  .schedule-opt-btn.active { background: var(--accent); color: #fff; border-color: transparent; }
+  .schedule-other-input {
+    width: 100%;
+    margin-top: 8px;
+    border: 1px solid var(--hairline);
+    background: var(--card);
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 13px;
+    color: var(--ink);
+    font-family: inherit;
+  }
+
+  /* ---- Progress chart ---- */
+  .chart-empty { text-align: center; color: var(--ink-soft); font-size: 13px; padding: 40px 0; }
+  .chart-stats { display: flex; gap: 8px; margin-top: 10px; }
+
+  /* ---- Offline indicator ---- */
+  .offline-badge {
+    display: none;
+    align-items: center; gap: 5px;
+    background: rgba(245,166,35,0.15);
+    color: #F5A623;
+    border-radius: 20px;
+    padding: 3px 9px;
+    font-size: 10px;
+    font-weight: 650;
+    margin-bottom: 6px;
+  }
+  .offline-badge.show { display: inline-flex; }
+
   .lift-setting-row {
     display: flex; align-items: center; gap: 10px;
     background: var(--field-bg);
@@ -1656,6 +1768,7 @@
       <div class="version-badge" id="versionBadge" title="Comprobando versión…">
         <span class="version-dot"></span><span id="versionText">Comprobando…</span>
       </div>
+      <div class="offline-badge" id="offlineBadge">🔴 Sin conexión</div>
       <h1>Prisma</h1>
       <p class="sub" id="subtitle">Cargando…</p>
     </div>
@@ -2090,6 +2203,12 @@
     <div id="trainingOverviewView" class="subview">
       <div class="cards-toolbar">
         <h2 class="page-title">Entreno</h2>
+        <button class="icon-btn" id="trainingProgressBtn" aria-label="Progreso">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M4 19V5M4 19h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M7 15l4-5 3 3 5-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
         <button class="icon-btn" id="trainingHistoryBtn" aria-label="Historial de entrenamiento">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
             <path d="M12 8v4.5l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -2105,6 +2224,12 @@
         </button>
       </div>
 
+      <div class="today-hero" id="todayHero">
+        <div class="th-label" id="thLabel">HOY · MARTES</div>
+        <div class="th-activity" id="thActivity">Press de Banca</div>
+        <button class="study-cta" id="todayStartBtn" style="width:100%; margin-top:10px;">▶ Empezar sesión de hoy</button>
+      </div>
+
       <div class="safe-to-spend" style="text-align:left; padding:14px 16px;">
         <div class="sts-label">Ciclo Juggernaut</div>
         <div class="wave-week-row">
@@ -2117,7 +2242,7 @@
         </div>
       </div>
 
-      <div class="field-label" style="margin:16px 20px 4px 20px;">Levantamientos de hoy</div>
+      <div class="field-label" style="margin:16px 20px 4px 20px;">Todos los levantamientos</div>
       <main style="padding-top:0;">
         <ul id="liftList"></ul>
 
@@ -2187,10 +2312,24 @@
             <button id="restSaveBtn">Guardar</button>
           </div>
 
+          <div class="warmup-section" id="warmupSection">
+            <div class="warmup-header" id="warmupToggle">
+              <span class="fs-icon">🔥</span>
+              <span class="finance-section-title">Calentamiento</span>
+              <span class="chevron">›</span>
+            </div>
+            <div id="warmupList" style="display:none;"></div>
+          </div>
+
           <div class="set-table-header">
             <span>SERIE</span><span>KG</span><span>REPS</span><span></span>
           </div>
           <div id="liftSetList"></div>
+        </div>
+
+        <div class="rpe-card">
+          <div class="field-label" style="margin:0 0 8px 0;">¿Qué tan duro estuvo?</div>
+          <div class="rpe-grid" id="rpeGrid"></div>
         </div>
 
         <button class="done-toggle" id="finishLiftBtn" style="display:block; width:100%; margin-top:14px; padding:14px;">✓ Guardar sesión</button>
@@ -2312,6 +2451,37 @@
     <div class="history-list">
       <p class="rec-hint" style="padding-bottom:8px;">El 1RM de Entrenamiento es la base desde la que se calculan todos los pesos de la oleada actual (igual que en tu planilla).</p>
       <div id="liftSettingsList"></div>
+
+      <div class="settings-section-label" style="margin-top:16px;">Horario semanal</div>
+      <div id="scheduleSettingsList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="history-overlay" id="scheduleSetupOverlay">
+  <div class="history-panel" id="scheduleSetupPanel">
+    <div class="history-header">
+      <span class="grabber"></span>
+      <h2>Configura tu semana</h2>
+    </div>
+    <div class="history-list">
+      <p class="rec-hint" style="padding-bottom:10px;">¿Qué haces cada día? Esto define qué te muestra la app como "el entreno de hoy".</p>
+      <div id="scheduleSetupList"></div>
+      <button class="done-toggle" id="scheduleSetupSaveBtn" style="width:100%; margin-top:14px; padding:14px;">Guardar horario</button>
+    </div>
+  </div>
+</div>
+
+<div class="history-overlay" id="progressOverlay">
+  <div class="history-panel" id="progressPanel">
+    <div class="history-header">
+      <span class="grabber"></span>
+      <h2>Progreso</h2>
+      <button class="history-close" id="progressCloseBtn" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="history-list">
+      <div class="view-tabs" id="progressLiftTabs" style="margin:0 0 12px 0;"></div>
+      <div id="progressChartArea"></div>
     </div>
   </div>
 </div>
@@ -2323,7 +2493,8 @@ import {
   onAuthStateChanged, signOut
 } from 'https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js';
 import {
-  getFirestore, doc, getDoc, setDoc
+  getFirestore, doc, getDoc, setDoc,
+  initializeFirestore, persistentLocalCache, persistentSingleTabManager
 } from 'https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js';
 
 const firebaseConfig = {
@@ -2336,7 +2507,11 @@ const firebaseConfig = {
 };
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
-const db = getFirestore(firebaseApp);
+// Offline-first: Firestore caches reads locally and queues writes while
+// offline, syncing automatically once the connection comes back.
+const db = initializeFirestore(firebaseApp, {
+  localCache: persistentLocalCache({ tabManager: persistentSingleTabManager() }),
+});
 
 (function(){
   // Eisenhower matrix: every task is urgent (yes/no) × important (yes/no),
@@ -2457,6 +2632,28 @@ const db = getFirestore(firebaseApp);
   const trainingSettingsOverlay = document.getElementById('trainingSettingsOverlay');
   const trainingSettingsCloseBtn = document.getElementById('trainingSettingsCloseBtn');
   const liftSettingsListEl = document.getElementById('liftSettingsList');
+  const scheduleSettingsListEl = document.getElementById('scheduleSettingsList');
+
+  const todayHeroEl = document.getElementById('todayHero');
+  const thLabelEl = document.getElementById('thLabel');
+  const thActivityEl = document.getElementById('thActivity');
+  const todayStartBtn = document.getElementById('todayStartBtn');
+
+  const scheduleSetupOverlay = document.getElementById('scheduleSetupOverlay');
+  const scheduleSetupListEl = document.getElementById('scheduleSetupList');
+  const scheduleSetupSaveBtn = document.getElementById('scheduleSetupSaveBtn');
+
+  const trainingProgressBtn = document.getElementById('trainingProgressBtn');
+  const progressOverlay = document.getElementById('progressOverlay');
+  const progressCloseBtn = document.getElementById('progressCloseBtn');
+  const progressLiftTabsEl = document.getElementById('progressLiftTabs');
+  const progressChartAreaEl = document.getElementById('progressChartArea');
+
+  const warmupToggle = document.getElementById('warmupToggle');
+  const warmupListEl = document.getElementById('warmupList');
+  const rpeGridEl = document.getElementById('rpeGrid');
+
+  const offlineBadgeEl = document.getElementById('offlineBadge');
   const freeMoneyAmountEl = document.getElementById('freeMoneyAmount');
   const freeMoneyBreakdownEl = document.getElementById('freeMoneyBreakdown');
 
@@ -2759,6 +2956,12 @@ const db = getFirestore(firebaseApp);
     if (typeof lifts[name].restSeconds !== 'number') lifts[name].restSeconds = 90;
   }
 
+  const DAY_NAMES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+  const SCHEDULE_OPTIONS = ['Descanso', ...LIFT_NAMES, 'Otro'];
+  let weeklySchedule = { 0: 'Descanso', 1: 'Descanso', 2: 'Descanso', 3: 'Descanso', 4: 'Descanso', 5: 'Descanso', 6: 'Descanso' };
+  let scheduleConfigured = false;
+  let selectedRpe = null;
+  let warmupOpen = false;
 
 
   let tasks = [];
@@ -2825,6 +3028,8 @@ const db = getFirestore(firebaseApp);
       lifts = (state.lifts && Object.keys(state.lifts).length) ? state.lifts : defaultLifts();
       extraExercises = Array.isArray(state.extraExercises) ? state.extraExercises : [];
       trainingLog = Array.isArray(state.trainingLog) ? state.trainingLog : [];
+      if (state.weeklySchedule && typeof state.weeklySchedule === 'object') weeklySchedule = state.weeklySchedule;
+      scheduleConfigured = !!state.scheduleConfigured;
       applyTheme(state.theme || 'dark');
       notificationSound = state.notificationSound || 'clasico';
       dataLoadOk = true;
@@ -2842,6 +3047,7 @@ const db = getFirestore(firebaseApp);
     renderDeckList();
     renderFinance();
     renderTraining();
+    if (!scheduleConfigured) maybeShowScheduleSetup();
   }
 
   // All data (tasks, history, theme, habits, decks) lives in one Firestore
@@ -2857,7 +3063,7 @@ const db = getFirestore(firebaseApp);
   async function persist(){
     if (!currentUserId || !dataLoadOk) return;
     try {
-      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, notificationSound, habits, decks, salaryEntries, otherIncomes, fixedExpenses, debts, savings, freeExpenses, financeHistory, currentWave, currentWeek, lifts, extraExercises, trainingLog });
+      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, notificationSound, habits, decks, salaryEntries, otherIncomes, fixedExpenses, debts, savings, freeExpenses, financeHistory, currentWave, currentWeek, lifts, extraExercises, trainingLog, weeklySchedule, scheduleConfigured });
     } catch(e) {
       console.error('No se pudo guardar', e);
     }
@@ -2869,6 +3075,8 @@ const db = getFirestore(firebaseApp);
     freeExpenses = []; financeHistory = [];
     currentWave = 'oleada8'; currentWeek = 'acumulacion';
     lifts = defaultLifts(); extraExercises = []; trainingLog = []; activeLiftName = null;
+    weeklySchedule = { 0: 'Descanso', 1: 'Descanso', 2: 'Descanso', 3: 'Descanso', 4: 'Descanso', 5: 'Descanso', 6: 'Descanso' };
+    scheduleConfigured = false;
     openId = null; activeDeckId = null;
     loaded = false;
     dataLoadOk = false;
@@ -4088,7 +4296,7 @@ const db = getFirestore(firebaseApp);
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-04.8';
+  const APP_VERSION = '2026-08-05.1';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -4830,6 +5038,7 @@ const db = getFirestore(firebaseApp);
   function renderTraining(){
     waveLabelEl.textContent = WAVE_LABEL[currentWave];
     weekLabelEl.textContent = WEEK_LABEL[currentWeek];
+    renderTodayHero();
 
     const tKey = todayKey();
     liftListEl.innerHTML = LIFT_NAMES.map(name => {
@@ -4847,6 +5056,27 @@ const db = getFirestore(firebaseApp);
     });
 
     renderExtraList();
+  }
+
+  function renderTodayHero(){
+    const dayIdx = new Date().getDay();
+    const activity = weeklySchedule[dayIdx] || 'Descanso';
+    thLabelEl.textContent = 'HOY · ' + DAY_NAMES[dayIdx].toUpperCase();
+    const tKey = todayKey();
+
+    if (LIFT_NAMES.includes(activity)) {
+      const doneToday = trainingLog.some(l => l.lift === activity && l.wave === currentWave && l.week === currentWeek && l.date === tKey);
+      thActivityEl.textContent = activity;
+      todayStartBtn.style.display = '';
+      todayStartBtn.textContent = doneToday ? '✓ Ya registrada — ver/editar' : '▶ Empezar sesión de hoy';
+      todayStartBtn.onclick = () => openLiftSession(activity);
+    } else if (activity === 'Descanso') {
+      thActivityEl.textContent = 'Descanso';
+      todayStartBtn.style.display = 'none';
+    } else {
+      thActivityEl.textContent = activity; // custom activity, e.g. "Rugby"
+      todayStartBtn.style.display = 'none';
+    }
   }
 
   function renderExtraList(){
@@ -4902,12 +5132,14 @@ const db = getFirestore(firebaseApp);
         actualReps: s.actualReps != null ? s.actualReps : '',
         done: true,
       }));
+      selectedRpe = typeof existing.rpe === 'number' ? existing.rpe : null;
     } else {
       activeLiftDraftSets = buildWeekSets(name, currentWave, currentWeek).map(s => Object.assign({}, s, {
         actualWeight: s.targetWeight,
         actualReps: s.amrap ? '' : s.targetReps,
         done: false,
       }));
+      selectedRpe = null;
     }
 
     liftIconEl.innerHTML = LIFT_ANIMATIONS[name] || '';
@@ -4915,9 +5147,12 @@ const db = getFirestore(firebaseApp);
     liftSessionSubEl.textContent = WAVE_LABEL[currentWave] + ' · ' + WEEK_LABEL[currentWeek] + (existing ? ' · ya registrada hoy' : '');
     restBadgeText.textContent = 'Descanso: ' + formatRestLong(lifts[name].restSeconds);
     restEditRow.style.display = 'none';
+    warmupOpen = false;
     trainingOverviewViewEl.style.display = 'none';
     liftSessionViewEl.style.display = 'flex';
+    renderWarmups();
     renderLiftSetList();
+    renderRpeGrid();
   }
 
   function exitLiftSession(){
@@ -4927,6 +5162,57 @@ const db = getFirestore(firebaseApp);
     activeLiftName = null;
     activeLiftDraftSets = null;
   }
+
+  // ---- Warm-up ramp: bar, ~40%, ~60%, ~80% of the day's heaviest set ----
+  function buildWarmups(){
+    const topWeight = Math.max(...activeLiftDraftSets.map(s => s.targetWeight));
+    const barWeight = 20;
+    const steps = [
+      { label: 'Barra', weight: barWeight, reps: 8 },
+      { label: '40%', weight: Math.max(barWeight, ceilingTo(topWeight * 0.4, 2.5)), reps: 5 },
+      { label: '60%', weight: ceilingTo(topWeight * 0.6, 2.5), reps: 3 },
+      { label: '80%', weight: ceilingTo(topWeight * 0.8, 2.5), reps: 2 },
+    ];
+    // de-duplicate steps that end up at the same weight as the bar for light lifts
+    return steps.filter((s, i) => i === 0 || s.weight > steps[i - 1].weight);
+  }
+
+  function renderWarmups(){
+    const steps = buildWarmups();
+    warmupListEl.innerHTML = steps.map(s => `
+      <div class="warmup-row">
+        <span class="warmup-row-name">${s.label}</span>
+        <span class="warmup-row-detail">${s.weight}kg × ${s.reps}</span>
+      </div>`).join('');
+    warmupListEl.style.display = warmupOpen ? '' : 'none';
+    warmupToggle.classList.toggle('open', warmupOpen);
+  }
+
+  // ---- RPE (session effort, 1–10 with matching emoji) ----
+  const RPE_SCALE = [
+    { v: 1, e: '😴', l: 'Muy fácil' }, { v: 2, e: '😌', l: 'Fácil' },
+    { v: 3, e: '🙂', l: 'Cómodo' }, { v: 4, e: '😊', l: 'Llevadero' },
+    { v: 5, e: '😐', l: 'Moderado' }, { v: 6, e: '😅', l: 'Algo duro' },
+    { v: 7, e: '😓', l: 'Duro' }, { v: 8, e: '😖', l: 'Muy duro' },
+    { v: 9, e: '🥵', l: 'Al límite' }, { v: 10, e: '🤯', l: 'Máximo' },
+  ];
+  function renderRpeGrid(){
+    rpeGridEl.innerHTML = RPE_SCALE.map(r => `
+      <button class="rpe-btn ${selectedRpe === r.v ? 'active' : ''}" data-rpe="${r.v}" title="${r.l}">
+        <span class="rpe-emoji">${r.e}</span><span class="rpe-num">${r.v}</span>
+      </button>`).join('');
+    rpeGridEl.querySelectorAll('[data-rpe]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectedRpe = +btn.dataset.rpe;
+        renderRpeGrid();
+      });
+    });
+  }
+
+  warmupToggle.addEventListener('click', () => {
+    warmupOpen = !warmupOpen;
+    renderWarmups();
+  });
 
   function renderLiftSetList(){
     liftSetListEl.innerHTML = activeLiftDraftSets.map((s, i) => `
@@ -4985,6 +5271,7 @@ const db = getFirestore(firebaseApp);
         actualReps: s.actualReps ? parseInt(s.actualReps, 10) : null,
       })),
       estimated1RM,
+      rpe: selectedRpe,
     };
 
     // Editing the same lift/wave/week again today updates that entry instead
@@ -4996,6 +5283,7 @@ const db = getFirestore(firebaseApp);
       existing.ts = entry.ts;
       existing.sets = entry.sets;
       existing.estimated1RM = entry.estimated1RM;
+      existing.rpe = entry.rpe;
     } else {
       trainingLog.unshift(Object.assign({ id: uid() }, entry));
       if (trainingLog.length > 400) trainingLog = trainingLog.slice(0, 400);
@@ -5297,6 +5585,7 @@ const db = getFirestore(firebaseApp);
 
   trainingSettingsBtn.addEventListener('click', () => {
     renderLiftSettings();
+    renderScheduleRows(scheduleSettingsListEl, () => scheduleSave());
     trainingSettingsOverlay.classList.add('open');
   });
   trainingSettingsCloseBtn.addEventListener('click', () => trainingSettingsOverlay.classList.remove('open'));
@@ -5400,6 +5689,141 @@ const db = getFirestore(firebaseApp);
   if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
     notifEnableBtn.textContent = '✓ Notificaciones activadas';
   }
+
+  // ---- Weekly schedule (which day = which lift / rest / other) ----
+  function renderScheduleRows(container, onChange){
+    container.innerHTML = DAY_NAMES.map((dayName, idx) => {
+      const current = weeklySchedule[idx] || 'Descanso';
+      const isOther = !SCHEDULE_OPTIONS.includes(current);
+      return `
+        <div class="schedule-day-row" data-day="${idx}">
+          <div class="schedule-day-name">${dayName}</div>
+          <div class="schedule-day-options">
+            ${SCHEDULE_OPTIONS.map(opt => `
+              <button class="schedule-opt-btn ${(!isOther && current === opt) || (isOther && opt === 'Otro') ? 'active' : ''}" data-day="${idx}" data-opt="${escapeHtml(opt)}">${escapeHtml(opt)}</button>
+            `).join('')}
+          </div>
+          <input type="text" class="schedule-other-input" data-day-other="${idx}" placeholder="Ej. Rugby" value="${isOther ? escapeHtml(current) : ''}" style="display:${isOther ? '' : 'none'};" />
+        </div>`;
+    }).join('');
+
+    container.querySelectorAll('.schedule-opt-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const day = +btn.dataset.day;
+        const opt = btn.dataset.opt;
+        const otherInput = container.querySelector(`[data-day-other="${day}"]`);
+        if (opt === 'Otro') {
+          weeklySchedule[day] = otherInput.value.trim() || 'Otro';
+          otherInput.style.display = '';
+          otherInput.focus();
+        } else {
+          weeklySchedule[day] = opt;
+          otherInput.style.display = 'none';
+        }
+        renderScheduleRows(container, onChange);
+        if (onChange) onChange();
+      });
+    });
+    container.querySelectorAll('[data-day-other]').forEach(inp => {
+      inp.addEventListener('input', () => {
+        weeklySchedule[+inp.dataset.dayOther] = inp.value.trim() || 'Otro';
+      });
+    });
+  }
+
+  function maybeShowScheduleSetup(){
+    renderScheduleRows(scheduleSetupListEl, null);
+    scheduleSetupOverlay.classList.add('open');
+  }
+
+  scheduleSetupSaveBtn.addEventListener('click', () => {
+    scheduleConfigured = true;
+    scheduleSetupOverlay.classList.remove('open');
+    scheduleSave();
+    renderTraining();
+  });
+
+  // ---- Progress chart ----
+  let progressLift = 'Press de Banca';
+
+  function renderProgressTabs(){
+    progressLiftTabsEl.innerHTML = LIFT_NAMES.map(name => `
+      <button class="view-tab ${name === progressLift ? 'active' : ''}" data-plift="${escapeHtml(name)}">${escapeHtml(name.split(' ').slice(-1)[0])}</button>
+    `).join('');
+    progressLiftTabsEl.querySelectorAll('[data-plift]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        progressLift = btn.dataset.plift;
+        renderProgressTabs();
+        renderProgressChart();
+      });
+    });
+  }
+
+  function renderProgressChart(){
+    const points = trainingLog
+      .filter(l => l.lift === progressLift && typeof l.estimated1RM === 'number')
+      .slice()
+      .sort((a, b) => a.ts - b.ts);
+
+    if (points.length < 2) {
+      progressChartAreaEl.innerHTML = `<p class="chart-empty">Necesitas al menos 2 sesiones con serie AMRAP registrada en ${escapeHtml(progressLift)} para ver el gráfico.</p>`;
+      return;
+    }
+
+    const W = 320, H = 160, PAD = 24;
+    const values = points.map(p => p.estimated1RM);
+    const minV = Math.min(...values) - 2;
+    const maxV = Math.max(...values) + 2;
+    const range = Math.max(1, maxV - minV);
+    const xStep = (W - PAD * 2) / (points.length - 1);
+    const coords = points.map((p, i) => {
+      const x = PAD + i * xStep;
+      const y = H - PAD - ((p.estimated1RM - minV) / range) * (H - PAD * 2);
+      return [x, y];
+    });
+    const pathD = coords.map((c, i) => (i === 0 ? 'M' : 'L') + c[0].toFixed(1) + ',' + c[1].toFixed(1)).join(' ');
+
+    const dots = coords.map(([x, y]) => `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5" fill="var(--accent)" />`).join('');
+    const first = points[0].estimated1RM, last = points[points.length - 1].estimated1RM;
+    const delta = Math.round((last - first) * 10) / 10;
+
+    progressChartAreaEl.innerHTML = `
+      <svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}">
+        <line x1="${PAD}" y1="${H - PAD}" x2="${W - PAD}" y2="${H - PAD}" stroke="var(--hairline)" stroke-width="1"/>
+        <path d="${pathD}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        ${dots}
+      </svg>
+      <div class="chart-stats">
+        <div class="habit-stat-box">
+          <div class="habit-stat-num">${Math.round(first * 10) / 10}kg</div>
+          <div class="habit-stat-label">Primer registro</div>
+        </div>
+        <div class="habit-stat-box accent">
+          <div class="habit-stat-num">${Math.round(last * 10) / 10}kg</div>
+          <div class="habit-stat-label">Último registro</div>
+        </div>
+        <div class="habit-stat-box">
+          <div class="habit-stat-num" style="${delta >= 0 ? 'color:#3FC373' : 'color:var(--urgent)'}">${delta >= 0 ? '+' : ''}${delta}kg</div>
+          <div class="habit-stat-label">Cambio total</div>
+        </div>
+      </div>`;
+  }
+
+  trainingProgressBtn.addEventListener('click', () => {
+    renderProgressTabs();
+    renderProgressChart();
+    progressOverlay.classList.add('open');
+  });
+  progressCloseBtn.addEventListener('click', () => progressOverlay.classList.remove('open'));
+  progressOverlay.addEventListener('click', (e) => { if (e.target === progressOverlay) progressOverlay.classList.remove('open'); });
+
+  // ---- Offline indicator ----
+  function updateOfflineBadge(){
+    offlineBadgeEl.classList.toggle('show', !navigator.onLine);
+  }
+  window.addEventListener('online', updateOfflineBadge);
+  window.addEventListener('offline', updateOfflineBadge);
+  updateOfflineBadge();
 
   // ---- Authentication ----
   let authMode = 'login'; // 'login' | 'signup'
