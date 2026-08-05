@@ -4000,7 +4000,7 @@ const db = getFirestore(firebaseApp);
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-04.4';
+  const APP_VERSION = '2026-08-04.5';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -4909,9 +4909,23 @@ const db = getFirestore(firebaseApp);
     { key: 'timbre',  name: 'Timbre',  desc: 'Campanilla "ding-dong"' },
   ];
 
+  // iOS only allows creating/resuming an AudioContext directly inside a user
+  // gesture (a tap). We create ONE context the first time it's needed and
+  // reuse it — scheduling tones on an already-running context later (e.g.
+  // from a timer) still works, even though creating a fresh one wouldn't.
+  let sharedAudioCtx = null;
+  function unlockAudio(){
+    try {
+      if (!sharedAudioCtx) sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (sharedAudioCtx.state === 'suspended') sharedAudioCtx.resume();
+    } catch(e) { /* Web Audio unavailable */ }
+  }
+
   function playSound(key){
     try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      unlockAudio();
+      const ctx = sharedAudioCtx;
+      if (!ctx) return;
       if (key === 'suave') {
         playTone(ctx, 660, 0, 0.9, 'sine');
       } else if (key === 'timbre') {
@@ -4928,19 +4942,22 @@ const db = getFirestore(firebaseApp);
 
   function fireRestAlert(){
     playSound(notificationSound);
+    // silent:true stops iOS from playing its own generic chime on top of ours —
+    // the banner still appears, just without a competing built-in sound.
     if ('serviceWorker' in navigator && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
       navigator.serviceWorker.ready.then(reg => {
         reg.showNotification('Descanso terminado 💪', {
           body: '¡Hora de tu próxima serie!',
           icon: 'icon-180.png',
           tag: 'rest-timer',
-          vibrate: [200, 100, 200],
+          silent: true,
         }).catch(() => {});
       }).catch(() => {});
     }
   }
 
   function startRestTimer(seconds){
+    unlockAudio(); // must happen inside this direct tap for iOS to allow audio later
     restTimerTotal = seconds;
     restTimerEndsAt = Date.now() + seconds * 1000;
     restTimerBanner.style.display = 'block';
