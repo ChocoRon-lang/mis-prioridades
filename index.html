@@ -4000,7 +4000,7 @@ const db = getFirestore(firebaseApp);
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-04.5';
+  const APP_VERSION = '2026-08-04.6';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -4903,10 +4903,46 @@ const db = getFirestore(firebaseApp);
     osc.stop(ctx.currentTime + startTime + duration);
   }
 
+  function playWhistle(ctx, startTime){
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'square';
+    const t0 = ctx.currentTime + startTime;
+    osc.frequency.setValueAtTime(1800, t0);
+    osc.frequency.linearRampToValueAtTime(2200, t0 + 0.12);
+    osc.frequency.linearRampToValueAtTime(2100, t0 + 0.5);
+    gain.gain.setValueAtTime(0.22, t0);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.55);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(t0);
+    osc.stop(t0 + 0.55);
+  }
+
+  function playBell(ctx, startTime){
+    const t0 = ctx.currentTime + startTime;
+    [440, 880, 1320].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = freq;
+      const vol = 0.28 / (i + 1);
+      gain.gain.setValueAtTime(vol, t0);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + 1.3);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t0);
+      osc.stop(t0 + 1.3);
+    });
+  }
+
   const SOUND_OPTIONS = [
-    { key: 'clasico', name: 'Clásico', desc: '3 pitidos cortos' },
-    { key: 'suave',   name: 'Suave',   desc: 'Un tono largo y calmado' },
-    { key: 'timbre',  name: 'Timbre',  desc: 'Campanilla "ding-dong"' },
+    { key: 'clasico',   name: 'Clásico',         desc: '3 pitidos cortos' },
+    { key: 'suave',     name: 'Suave',           desc: 'Un tono largo y calmado' },
+    { key: 'timbre',    name: 'Timbre',          desc: 'Campanilla "ding-dong"' },
+    { key: 'silbato',   name: 'Silbato',         desc: 'Como el pito de un entrenador' },
+    { key: 'campana',   name: 'Campana de boxeo', desc: 'El "ding" clásico de cuadrilátero' },
+    { key: 'cuenta',    name: 'Cuenta regresiva', desc: '3, 2, 1... ¡ya!' },
   ];
 
   // iOS only allows creating/resuming an AudioContext directly inside a user
@@ -4931,6 +4967,15 @@ const db = getFirestore(firebaseApp);
       } else if (key === 'timbre') {
         playTone(ctx, 1046, 0, 0.5, 'triangle');
         playTone(ctx, 784, 0.25, 0.6, 'triangle');
+      } else if (key === 'silbato') {
+        playWhistle(ctx, 0);
+      } else if (key === 'campana') {
+        playBell(ctx, 0);
+      } else if (key === 'cuenta') {
+        playTone(ctx, 440, 0, 0.18, 'square');
+        playTone(ctx, 550, 0.32, 0.18, 'square');
+        playTone(ctx, 660, 0.6, 0.18, 'square');
+        playTone(ctx, 990, 0.85, 0.5, 'square');
       } else { // 'clasico'
         playTone(ctx, 880, 0, 0.3, 'sine');
         playTone(ctx, 880, 0.16, 0.3, 'sine');
