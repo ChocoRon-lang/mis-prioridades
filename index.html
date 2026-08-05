@@ -4333,7 +4333,7 @@ const db = initializeFirestore(firebaseApp, {
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-05.2';
+  const APP_VERSION = '2026-08-05.3';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -5595,8 +5595,23 @@ const db = initializeFirestore(firebaseApp, {
 
   function parseTrainingImport(text){
     let data;
-    try { data = JSON.parse(text); } catch(e) { throw new Error('Ese texto no es JSON válido. Revisa que esté copiado completo.'); }
-    if (data.extra && !Array.isArray(data.extra)) throw new Error('El campo "extra" debe ser una lista.');
+    try { data = JSON.parse(text); } catch(e) { throw new Error('Ese texto no es JSON válido. Revisa que esté copiado completo, con todas las llaves { } y corchetes [ ].'); }
+    if (typeof data !== 'object' || data === null || Array.isArray(data)) {
+      throw new Error('El JSON debe ser un objeto con una clave "extra" (lista) y/o "lifts". Revisa la plantilla.');
+    }
+    if (!('extra' in data) && !('lifts' in data)) {
+      throw new Error('No encontré ni "extra" ni "lifts" en el JSON. Debe tener al menos uno de esos dos campos exactos (revisa mayúsculas/minúsculas y el nombre del campo).');
+    }
+    if ('extra' in data && !Array.isArray(data.extra)) {
+      throw new Error('El campo "extra" debe ser una lista [ ], no un texto ni un objeto suelto.');
+    }
+    if (Array.isArray(data.extra)) {
+      data.extra.forEach((e, i) => {
+        if (!e || typeof e !== 'object' || typeof e.name !== 'string' || !e.name.trim()) {
+          throw new Error(`El ejercicio en la posición ${i + 1} de "extra" necesita al menos un campo "name" con texto.`);
+        }
+      });
+    }
     return data;
   }
 
@@ -5631,8 +5646,12 @@ const db = initializeFirestore(firebaseApp, {
           const d = data.lifts[name];
           if (typeof d.trainingMax === 'number') lifts[name].trainingMax = d.trainingMax;
           if (typeof d.incrementPerRep === 'number') lifts[name].incrementPerRep = d.incrementPerRep;
+          count++;
         }
       });
+    }
+    if (count === 0) {
+      throw new Error('El JSON es válido pero no pude importar nada de él — revisa que los nombres de ejercicios/levantamientos coincidan y que los campos tengan el nombre exacto de la plantilla.');
     }
     scheduleSave();
     renderTraining();
