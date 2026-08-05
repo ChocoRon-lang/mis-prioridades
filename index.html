@@ -1109,6 +1109,51 @@
     padding: 4px;
   }
 
+  .notif-enable-btn {
+    display: block;
+    width: 100%;
+    border: 1px solid var(--hairline);
+    background: var(--field-bg);
+    color: var(--accent-strong);
+    font-size: 13px;
+    font-weight: 650;
+    padding: 11px;
+    border-radius: 11px;
+    margin-bottom: 10px;
+  }
+  .sound-option-row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--field-bg);
+    border: 1px solid var(--hairline);
+    border-radius: 11px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+  .sound-option-radio {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid var(--hairline);
+    flex-shrink: 0;
+    position: relative;
+  }
+  .sound-option-row.active .sound-option-radio { border-color: var(--accent); }
+  .sound-option-row.active .sound-option-radio::after {
+    content: '';
+    position: absolute; inset: 3px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .sound-option-name { flex: 1; font-size: 13.5px; font-weight: 600; }
+  .sound-option-play {
+    border: none;
+    background: var(--card);
+    color: var(--accent-strong);
+    font-size: 12px;
+    font-weight: 650;
+    padding: 6px 10px;
+    border-radius: 8px;
+  }
+
   .signout-row {
     display: flex; align-items: center; justify-content: space-between;
     margin-top: 6px;
@@ -2225,6 +2270,10 @@
       <div class="settings-section-label">Temas</div>
       <div class="theme-grid" id="themeGrid"></div>
 
+      <div class="settings-section-label" style="margin-top:18px;">Notificaciones</div>
+      <button class="notif-enable-btn" id="notifEnableBtn">🔔 Activar notificaciones</button>
+      <div id="soundOptionList"></div>
+
       <div class="signout-row">
         <span class="signout-email" id="accountEmail">—</span>
         <button class="signout-btn" id="signOutBtn">Cerrar sesión</button>
@@ -2326,6 +2375,8 @@ const db = getFirestore(firebaseApp);
   const settingsOverlay = document.getElementById('settingsOverlay');
   const settingsCloseBtn = document.getElementById('settingsCloseBtn');
   const themeGridEl = document.getElementById('themeGrid');
+  const notifEnableBtn = document.getElementById('notifEnableBtn');
+  const soundOptionListEl = document.getElementById('soundOptionList');
 
   const tasksPageEl = document.getElementById('tasksPage');
   const habitsPageEl = document.getElementById('habitsPage');
@@ -2531,6 +2582,7 @@ const db = getFirestore(firebaseApp);
     { key: 'forest', name: 'Bosque',     bg: '#EFF6EF', accent: '#22874F' },
   ];
   let currentTheme = 'dark';
+  let notificationSound = 'clasico'; // 'clasico' | 'suave' | 'timbre'
   let currentPage = 'tasks'; // 'tasks' | 'habits'
   let habits = [];
   let habitEditMode = false;
@@ -2686,6 +2738,7 @@ const db = getFirestore(firebaseApp);
       extraExercises = Array.isArray(state.extraExercises) ? state.extraExercises : [];
       trainingLog = Array.isArray(state.trainingLog) ? state.trainingLog : [];
       applyTheme(state.theme || 'dark');
+      notificationSound = state.notificationSound || 'clasico';
       dataLoadOk = true;
     } catch(e) {
       console.error('No se pudieron cargar los datos', e);
@@ -2716,7 +2769,7 @@ const db = getFirestore(firebaseApp);
   async function persist(){
     if (!currentUserId || !dataLoadOk) return;
     try {
-      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, habits, decks, salaryEntries, otherIncomes, fixedExpenses, debts, savings, freeExpenses, financeHistory, currentWave, currentWeek, lifts, extraExercises, trainingLog });
+      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, notificationSound, habits, decks, salaryEntries, otherIncomes, fixedExpenses, debts, savings, freeExpenses, financeHistory, currentWave, currentWeek, lifts, extraExercises, trainingLog });
     } catch(e) {
       console.error('No se pudo guardar', e);
     }
@@ -3217,6 +3270,7 @@ const db = getFirestore(firebaseApp);
 
   function openSettings(){
     renderThemeGrid();
+    renderSoundOptions();
     settingsOverlay.classList.add('open');
   }
 
@@ -3946,7 +4000,7 @@ const db = getFirestore(firebaseApp);
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-04.3';
+  const APP_VERSION = '2026-08-04.4';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -4836,25 +4890,54 @@ const db = getFirestore(firebaseApp);
   let restTimerEndsAt = null;
   let restTimerTotal = 90;
 
-  function playBeep(){
+  function playTone(ctx, freq, startTime, duration, type){
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.3, ctx.currentTime + startTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(ctx.currentTime + startTime);
+    osc.stop(ctx.currentTime + startTime + duration);
+  }
+
+  const SOUND_OPTIONS = [
+    { key: 'clasico', name: 'Clásico', desc: '3 pitidos cortos' },
+    { key: 'suave',   name: 'Suave',   desc: 'Un tono largo y calmado' },
+    { key: 'timbre',  name: 'Timbre',  desc: 'Campanilla "ding-dong"' },
+  ];
+
+  function playSound(key){
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      [0, 160, 320].forEach(delay => {
-        setTimeout(() => {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.value = 880;
-          gain.gain.setValueAtTime(0.3, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start();
-          osc.stop(ctx.currentTime + 0.35);
-        }, delay);
-      });
+      if (key === 'suave') {
+        playTone(ctx, 660, 0, 0.9, 'sine');
+      } else if (key === 'timbre') {
+        playTone(ctx, 1046, 0, 0.5, 'triangle');
+        playTone(ctx, 784, 0.25, 0.6, 'triangle');
+      } else { // 'clasico'
+        playTone(ctx, 880, 0, 0.3, 'sine');
+        playTone(ctx, 880, 0.16, 0.3, 'sine');
+        playTone(ctx, 880, 0.32, 0.3, 'sine');
+      }
       if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
     } catch(e) { /* Web Audio unavailable — silently skip */ }
+  }
+
+  function fireRestAlert(){
+    playSound(notificationSound);
+    if ('serviceWorker' in navigator && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      navigator.serviceWorker.ready.then(reg => {
+        reg.showNotification('Descanso terminado 💪', {
+          body: '¡Hora de tu próxima serie!',
+          icon: 'icon-180.png',
+          tag: 'rest-timer',
+          vibrate: [200, 100, 200],
+        }).catch(() => {});
+      }).catch(() => {});
+    }
   }
 
   function startRestTimer(seconds){
@@ -4872,7 +4955,7 @@ const db = getFirestore(firebaseApp);
       rtbTime.textContent = '0:00';
       clearInterval(restTimerInterval);
       restTimerInterval = null;
-      playBeep();
+      fireRestAlert();
       setTimeout(() => { restTimerBanner.style.display = 'none'; }, 900);
       return;
     }
@@ -5085,6 +5168,56 @@ const db = getFirestore(firebaseApp);
       importRoutineErrorEl.style.display = '';
     }
   });
+
+  // ---- Notification sound picker ----
+  function renderSoundOptions(){
+    soundOptionListEl.innerHTML = SOUND_OPTIONS.map(opt => `
+      <div class="sound-option-row ${opt.key === notificationSound ? 'active' : ''}" data-sound="${opt.key}">
+        <span class="sound-option-radio"></span>
+        <div>
+          <div class="sound-option-name">${opt.name}</div>
+          <div class="fin-item-sub">${opt.desc}</div>
+        </div>
+        <button class="sound-option-play" data-play="${opt.key}">▶ Probar</button>
+      </div>`).join('');
+
+    soundOptionListEl.querySelectorAll('.sound-option-row').forEach(row => {
+      row.addEventListener('click', (e) => {
+        if (e.target.closest('.sound-option-play')) return;
+        notificationSound = row.dataset.sound;
+        scheduleSave();
+        renderSoundOptions();
+      });
+    });
+    soundOptionListEl.querySelectorAll('[data-play]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        playSound(btn.dataset.play);
+      });
+    });
+  }
+
+  notifEnableBtn.addEventListener('click', () => {
+    if (typeof Notification === 'undefined') {
+      notifEnableBtn.textContent = 'Tu navegador no soporta notificaciones';
+      return;
+    }
+    Notification.requestPermission().then(perm => {
+      if (perm === 'granted') {
+        notifEnableBtn.textContent = '✓ Notificaciones activadas';
+        new Notification('Prisma', { body: 'Así se verán tus avisos de descanso.', icon: 'icon-180.png' });
+      } else {
+        notifEnableBtn.textContent = 'Permiso no concedido — revisa los ajustes de Safari';
+      }
+    });
+  });
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+  if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+    notifEnableBtn.textContent = '✓ Notificaciones activadas';
+  }
 
   // ---- Authentication ----
   let authMode = 'login'; // 'login' | 'signup'
