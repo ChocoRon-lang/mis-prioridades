@@ -1693,6 +1693,28 @@
   .wcr-change { font-size: 15px; font-weight: 750; font-variant-numeric: tabular-nums; }
   .wcr-arrow { font-size: 11px; color: var(--ink-soft); margin: 0 6px; }
 
+  .extra-set-row {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 11px;
+    padding: 9px 10px;
+    margin-bottom: 8px;
+  }
+  .extra-set-row .esr-num { font-size: 12.5px; font-weight: 700; color: var(--ink-soft); width: 22px; }
+  .extra-set-row input {
+    flex: 1;
+    border: 1px solid var(--hairline);
+    background: var(--field-bg);
+    border-radius: 8px;
+    padding: 7px 8px;
+    font-size: 13px;
+    text-align: center;
+    color: var(--ink);
+    font-family: inherit;
+  }
+  .today-extra-item { cursor: pointer; }
+
   .lift-setting-row {
     display: flex; align-items: center; gap: 10px;
     background: var(--field-bg);
@@ -2324,29 +2346,29 @@
         </button>
       </div>
 
-      <div class="missed-banner" id="missedBanner" style="display:none;"></div>
+      <main>
+        <div class="missed-banner" id="missedBanner" style="display:none;"></div>
 
-      <div class="today-hero" id="todayHero">
-        <div class="th-label" id="thLabel">HOY · MARTES</div>
-        <div class="th-activity" id="thActivity">Press de Banca</div>
-        <button class="study-cta" id="todayStartBtn" style="width:100%; margin-top:10px;">▶ Empezar sesión de hoy</button>
-        <div id="todayExtraList" style="margin-top:10px;"></div>
-      </div>
-
-      <div class="safe-to-spend" style="text-align:left; padding:14px 16px;">
-        <div class="sts-label">Ciclo Juggernaut</div>
-        <div class="wave-week-row">
-          <span class="wave-badge" id="waveLabel">Oleada de 8 Reps</span>
-          <span class="week-badge" id="weekLabel">Acumulación</span>
+        <div class="today-hero" id="todayHero">
+          <div class="th-label" id="thLabel">HOY · MARTES</div>
+          <div class="th-activity" id="thActivity">Press de Banca</div>
+          <button class="study-cta" id="todayStartBtn" style="width:100%; margin-top:10px;">▶ Empezar sesión de hoy</button>
+          <div id="todayExtraList" style="margin-top:10px;"></div>
         </div>
-        <div class="wave-nav">
-          <button class="habit-edit-btn" id="prevWeekBtn">‹ Semana anterior</button>
-          <button class="habit-edit-btn" id="nextWeekBtn">Siguiente semana ›</button>
-        </div>
-      </div>
 
-      <div class="field-label" style="margin:16px 20px 4px 20px;">Todos los levantamientos</div>
-      <main style="padding-top:0;">
+        <div class="safe-to-spend" style="text-align:left; padding:14px 16px; margin-left:0; margin-right:0;">
+          <div class="sts-label">Ciclo Juggernaut</div>
+          <div class="wave-week-row">
+            <span class="wave-badge" id="waveLabel">Oleada de 8 Reps</span>
+            <span class="week-badge" id="weekLabel">Acumulación</span>
+          </div>
+          <div class="wave-nav">
+            <button class="habit-edit-btn" id="prevWeekBtn">‹ Semana anterior</button>
+            <button class="habit-edit-btn" id="nextWeekBtn">Siguiente semana ›</button>
+          </div>
+        </div>
+
+        <div class="field-label" style="margin:16px 4px 4px 4px;">Todos los levantamientos</div>
         <ul id="liftList"></ul>
 
         <div class="finance-section" data-section="extra" style="margin-top:14px;">
@@ -2357,12 +2379,12 @@
             <span class="chevron">›</span>
           </div>
           <div class="finance-section-body" id="extraBody" style="display:none;">
-            <p class="rec-hint" style="padding:0 0 8px 0;">Ejercicios accesorios de tu programa (los que no vienen del Juggernaut). Asígnalos a días específicos para que aparezcan en "Hoy" — sin días marcados, se muestran todos los días. Pídele a Claude en "Entrenamiento Total Hans" que te los pase en JSON (con sus días) para importarlos.</p>
+            <p class="rec-hint" style="padding:0 0 8px 0;">Ejercicios accesorios de tu programa (los que no vienen del Juggernaut). Asígnalos a días específicos para que aparezcan en "Hoy" — sin días marcados, se muestran todos los días. Tócalos para configurar series, peso y descanso. Pídele a Claude en "Entrenamiento Total Hans" que te los pase en JSON (con sus días) para importarlos.</p>
             <ul id="extraList"></ul>
             <button class="add-card-toggle" id="addExtraToggle">+ Agregar ejercicio extra</button>
             <div class="add-card-form" id="addExtraForm" style="display:none;">
               <input class="due" id="newExtraName" type="text" style="width:100%;" placeholder="Nombre del ejercicio" />
-              <input class="due" id="newExtraDetail" type="text" style="width:100%; margin-top:8px;" placeholder="Ej. 3x12 con mancuernas" />
+              <input class="due" id="newExtraDetail" type="text" style="width:100%; margin-top:8px;" placeholder="Nota opcional (ej. con mancuernas)" />
               <div class="field-label">¿Qué días? (ninguno = todos los días)</div>
               <div class="day-chip-row" id="newExtraDays"></div>
               <div class="add-card-actions">
@@ -2383,6 +2405,71 @@
             <button class="done-toggle" id="importRoutineSubmitBtn">Importar</button>
           </div>
         </div>
+      </main>
+    </div>
+
+    <!-- Level 1.5: configure an extra exercise's sets + rest time -->
+    <div id="extraConfigView" class="subview" style="display:none;">
+      <div class="cards-toolbar">
+        <button class="icon-btn" id="extraConfigBackBtn" aria-label="Volver">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <h2 class="page-title" id="extraConfigName">—</h2>
+        <button class="icon-btn" id="extraConfigDeleteBtn" aria-label="Eliminar ejercicio">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m-9 0 1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <main>
+        <button class="study-cta" id="extraStartSessionBtn" style="width:100%;">▶ Iniciar sesión</button>
+
+        <button class="rest-badge" id="extraRestBadge" style="margin-top:14px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M12 9v4l2.5 1.5M9.5 3h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span id="extraRestBadgeText">Descanso: 1min 30s</span>
+        </button>
+        <div class="rest-edit-row" id="extraRestEditRow" style="display:none;">
+          <input type="number" inputmode="numeric" id="extraRestMinInput" placeholder="min" />
+          <span>min</span>
+          <input type="number" inputmode="numeric" id="extraRestSecInput" placeholder="seg" />
+          <span>seg</span>
+          <button id="extraRestSaveBtn">Guardar</button>
+        </div>
+
+        <div class="field-label" style="margin-top:14px;">Series objetivo</div>
+        <div id="extraSetConfigList"></div>
+        <button class="add-card-toggle" id="addExtraSetBtn">+ Agregar serie</button>
+      </main>
+    </div>
+
+    <!-- Level 1.6: log an extra exercise's sets -->
+    <div id="extraSessionView" class="subview" style="display:none;">
+      <div class="cards-toolbar">
+        <button class="icon-btn" id="extraSessionBackBtn" aria-label="Volver">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <h2 class="page-title">Registrar serie</h2>
+        <div style="width:38px;"></div>
+      </div>
+      <main>
+        <div class="ex-card">
+          <div class="ex-card-header">
+            <div class="ex-icon">🏋️</div>
+            <div class="ex-header-info">
+              <div class="ex-name" id="extraSessionName">—</div>
+              <div class="ex-sub">Trabajo extra</div>
+            </div>
+          </div>
+          <div class="set-table-header" style="margin-top:16px;">
+            <span>SERIE</span><span>KG</span><span>REPS</span><span></span>
+          </div>
+          <div id="extraSetList"></div>
+        </div>
+
+        <div class="rpe-card">
+          <div class="field-label" style="margin:0 0 8px 0;">¿Qué tan duro estuvo?</div>
+          <div class="rpe-grid" id="extraRpeGrid"></div>
+        </div>
+
+        <button class="done-toggle" id="finishExtraBtn" style="display:block; width:100%; margin-top:14px; padding:14px;">✓ Guardar sesión</button>
       </main>
     </div>
 
@@ -2781,6 +2868,27 @@ const db = initializeFirestore(firebaseApp, {
   const todayExtraListEl = document.getElementById('todayExtraList');
   const missedBannerEl = document.getElementById('missedBanner');
 
+  const extraConfigViewEl = document.getElementById('extraConfigView');
+  const extraConfigBackBtn = document.getElementById('extraConfigBackBtn');
+  const extraConfigNameEl = document.getElementById('extraConfigName');
+  const extraConfigDeleteBtn = document.getElementById('extraConfigDeleteBtn');
+  const extraStartSessionBtn = document.getElementById('extraStartSessionBtn');
+  const extraRestBadge = document.getElementById('extraRestBadge');
+  const extraRestBadgeText = document.getElementById('extraRestBadgeText');
+  const extraRestEditRow = document.getElementById('extraRestEditRow');
+  const extraRestMinInput = document.getElementById('extraRestMinInput');
+  const extraRestSecInput = document.getElementById('extraRestSecInput');
+  const extraRestSaveBtn = document.getElementById('extraRestSaveBtn');
+  const extraSetConfigListEl = document.getElementById('extraSetConfigList');
+  const addExtraSetBtn = document.getElementById('addExtraSetBtn');
+
+  const extraSessionViewEl = document.getElementById('extraSessionView');
+  const extraSessionBackBtn = document.getElementById('extraSessionBackBtn');
+  const extraSessionNameEl = document.getElementById('extraSessionName');
+  const extraSetListEl = document.getElementById('extraSetList');
+  const extraRpeGridEl = document.getElementById('extraRpeGrid');
+  const finishExtraBtn = document.getElementById('finishExtraBtn');
+
   const trainingCalendarBtn = document.getElementById('trainingCalendarBtn');
   const trainingCalendarOverlay = document.getElementById('trainingCalendarOverlay');
   const trainingCalendarCloseBtn = document.getElementById('trainingCalendarCloseBtn');
@@ -3125,6 +3233,9 @@ const db = initializeFirestore(firebaseApp, {
   let selectedRpe = null;
   let warmupOpen = false;
   let calMonthCursor = new Date();
+  let activeExtraId = null;
+  let activeExtraDraftSets = null;
+  let selectedExtraRpe = null;
 
 
   let tasks = [];
@@ -3263,7 +3374,10 @@ const db = initializeFirestore(firebaseApp, {
     deckListViewEl.style.display = 'flex';
 
     liftSessionViewEl.style.display = 'none';
+    extraConfigViewEl.style.display = 'none';
+    extraSessionViewEl.style.display = 'none';
     trainingOverviewViewEl.style.display = 'flex';
+    activeExtraId = null;
   }
 
   function logChange(taskTitle, action, detail){
@@ -4459,7 +4573,7 @@ const db = initializeFirestore(firebaseApp, {
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-05.4';
+  const APP_VERSION = '2026-08-05.5';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -5247,11 +5361,24 @@ const db = initializeFirestore(firebaseApp, {
       todayExtraListEl.innerHTML = '';
     } else {
       todayExtraListEl.innerHTML = todaysExtras.map(e => `
-        <div class="today-extra-item">
+        <div class="today-extra-item" data-extra-id="${e.id}">
           <span class="tei-name">${escapeHtml(e.name)}</span>
           ${e.detail ? `<span class="tei-detail">${escapeHtml(e.detail)}</span>` : ''}
         </div>`).join('');
+      todayExtraListEl.querySelectorAll('[data-extra-id]').forEach(el => {
+        el.addEventListener('click', () => {
+          const ex = extraExercises.find(e => e.id === el.dataset.extraId);
+          if (ex && ex.sets && ex.sets.length > 0) openExtraSession(ex.id);
+          else openExtraConfig(el.dataset.extraId);
+        });
+      });
     }
+  }
+
+  function ensureExtraDefaults(ex){
+    if (typeof ex.restSeconds !== 'number') ex.restSeconds = 90;
+    if (!Array.isArray(ex.sets)) ex.sets = [];
+    return ex;
   }
 
   function daysLabel(days){
@@ -5259,26 +5386,36 @@ const db = initializeFirestore(firebaseApp, {
     return days.slice().sort((a, b) => a - b).map(d => DAY_NAMES[d]).join(', ');
   }
 
+  function setsSummary(ex){
+    if (!ex.sets || ex.sets.length === 0) return 'Sin series configuradas — toca para agregar';
+    return ex.sets.map(s => `${s.weight || 0}kg×${s.reps || 0}`).join(' · ');
+  }
+
   function renderExtraList(){
     if (extraExercises.length === 0) {
       extraListEl.innerHTML = `<p class="fin-item-sub" style="padding:6px 0;">Sin ejercicios extra agregados.</p>`;
       return;
     }
+    extraExercises.forEach(ensureExtraDefaults);
     extraListEl.innerHTML = extraExercises.map(e => `
-      <li class="fin-item" data-id="${e.id}">
+      <li class="fin-item" data-id="${e.id}" style="cursor:pointer;">
         <button class="fin-remove" data-id="${e.id}">✕</button>
-        <div class="fin-item-info">
+        <div class="fin-item-info" data-open-id="${e.id}">
           <div class="fin-item-name">${escapeHtml(e.name)}</div>
-          ${e.detail ? `<div class="fin-item-sub">${escapeHtml(e.detail)}</div>` : ''}
+          <div class="fin-item-sub">${escapeHtml(setsSummary(e))}</div>
           <div class="extra-item-days">${daysLabel(e.days)}</div>
         </div>
       </li>`).join('');
     extraListEl.querySelectorAll('.fin-remove').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
         extraExercises = extraExercises.filter(e => e.id !== btn.dataset.id);
         scheduleSave();
         renderTraining();
       });
+    });
+    extraListEl.querySelectorAll('[data-open-id]').forEach(el => {
+      el.addEventListener('click', () => openExtraConfig(el.dataset.openId));
     });
   }
 
@@ -5877,6 +6014,8 @@ const db = initializeFirestore(firebaseApp, {
             name: e.name.trim(),
             detail: (e.detail || '').toString().trim(),
             days: parseDayNames(e.days),
+            restSeconds: 90,
+            sets: [],
           });
           count++;
         }
@@ -6162,6 +6301,200 @@ const db = initializeFirestore(firebaseApp, {
   });
   progressCloseBtn.addEventListener('click', () => progressOverlay.classList.remove('open'));
   progressOverlay.addEventListener('click', (e) => { if (e.target === progressOverlay) progressOverlay.classList.remove('open'); });
+
+  // ---- Extra exercise: configure target sets + rest, and log sessions ----
+  function activeExtra(){ return extraExercises.find(e => e.id === activeExtraId) || null; }
+
+  function openExtraConfig(id){
+    activeExtraId = id;
+    const ex = activeExtra();
+    if (!ex) return;
+    ensureExtraDefaults(ex);
+    extraConfigNameEl.textContent = ex.name;
+    extraRestBadgeText.textContent = 'Descanso: ' + formatRestLong(ex.restSeconds);
+    extraRestEditRow.style.display = 'none';
+    extraStartSessionBtn.disabled = ex.sets.length === 0;
+    trainingOverviewViewEl.style.display = 'none';
+    extraConfigViewEl.style.display = 'flex';
+    renderExtraSetConfig();
+  }
+
+  function closeExtraConfig(){
+    extraConfigViewEl.style.display = 'none';
+    trainingOverviewViewEl.style.display = 'flex';
+    activeExtraId = null;
+    renderTraining();
+  }
+
+  function renderExtraSetConfig(){
+    const ex = activeExtra();
+    if (!ex) return;
+    if (ex.sets.length === 0) {
+      extraSetConfigListEl.innerHTML = `<p class="fin-item-sub" style="padding:6px 0;">Sin series todavía.</p>`;
+    } else {
+      extraSetConfigListEl.innerHTML = ex.sets.map((s, i) => `
+        <div class="extra-set-row" data-idx="${i}">
+          <span class="esr-num">${i + 1}</span>
+          <input type="number" inputmode="decimal" placeholder="Kg" value="${s.weight != null ? s.weight : ''}" data-set-weight="${i}" />
+          <input type="number" inputmode="numeric" placeholder="Reps" value="${s.reps != null ? s.reps : ''}" data-set-reps="${i}" />
+          <button class="fin-remove" data-remove-set="${i}">✕</button>
+        </div>`).join('');
+      extraSetConfigListEl.querySelectorAll('[data-set-weight]').forEach(inp => {
+        inp.addEventListener('change', () => {
+          ex.sets[+inp.dataset.setWeight].weight = parseFloat(inp.value) || 0;
+          scheduleSave();
+        });
+      });
+      extraSetConfigListEl.querySelectorAll('[data-set-reps]').forEach(inp => {
+        inp.addEventListener('change', () => {
+          ex.sets[+inp.dataset.setReps].reps = parseInt(inp.value, 10) || 0;
+          scheduleSave();
+        });
+      });
+      extraSetConfigListEl.querySelectorAll('[data-remove-set]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          ex.sets.splice(+btn.dataset.removeSet, 1);
+          scheduleSave();
+          renderExtraSetConfig();
+          extraStartSessionBtn.disabled = ex.sets.length === 0;
+        });
+      });
+    }
+  }
+
+  addExtraSetBtn.addEventListener('click', () => {
+    const ex = activeExtra();
+    if (!ex) return;
+    const last = ex.sets[ex.sets.length - 1];
+    ex.sets.push({ id: uid(), weight: last ? last.weight : 0, reps: last ? last.reps : 10 });
+    scheduleSave();
+    renderExtraSetConfig();
+    extraStartSessionBtn.disabled = false;
+  });
+
+  extraConfigBackBtn.addEventListener('click', closeExtraConfig);
+  extraConfigDeleteBtn.addEventListener('click', () => {
+    extraExercises = extraExercises.filter(e => e.id !== activeExtraId);
+    scheduleSave();
+    closeExtraConfig();
+  });
+
+  extraRestBadge.addEventListener('click', () => {
+    const ex = activeExtra();
+    if (!ex) return;
+    const showing = extraRestEditRow.style.display !== 'none';
+    if (!showing) {
+      extraRestMinInput.value = Math.floor(ex.restSeconds / 60);
+      extraRestSecInput.value = ex.restSeconds % 60;
+    }
+    extraRestEditRow.style.display = showing ? 'none' : 'flex';
+  });
+  extraRestSaveBtn.addEventListener('click', () => {
+    const ex = activeExtra();
+    if (!ex) return;
+    const m = parseInt(extraRestMinInput.value, 10) || 0;
+    const s = parseInt(extraRestSecInput.value, 10) || 0;
+    ex.restSeconds = Math.max(0, m * 60 + s);
+    extraRestBadgeText.textContent = 'Descanso: ' + formatRestLong(ex.restSeconds);
+    extraRestEditRow.style.display = 'none';
+    scheduleSave();
+  });
+
+  extraStartSessionBtn.addEventListener('click', () => {
+    const ex = activeExtra();
+    if (ex && ex.sets.length > 0) openExtraSession(ex.id);
+  });
+
+  function openExtraSession(id){
+    activeExtraId = id;
+    const ex = activeExtra();
+    if (!ex) return;
+    ensureExtraDefaults(ex);
+    activeExtraDraftSets = ex.sets.map(s => ({
+      targetWeight: s.weight, targetReps: s.reps,
+      actualWeight: s.weight, actualReps: s.reps, done: false,
+    }));
+    selectedExtraRpe = null;
+    extraSessionNameEl.textContent = ex.name;
+    trainingOverviewViewEl.style.display = 'none';
+    extraConfigViewEl.style.display = 'none';
+    extraSessionViewEl.style.display = 'flex';
+    renderExtraSetList();
+    renderExtraRpeGrid();
+  }
+
+  function exitExtraSession(){
+    cancelRestTimer();
+    extraSessionViewEl.style.display = 'none';
+    trainingOverviewViewEl.style.display = 'flex';
+    activeExtraId = null;
+    activeExtraDraftSets = null;
+    renderTraining();
+  }
+
+  function renderExtraSetList(){
+    extraSetListEl.innerHTML = activeExtraDraftSets.map((s, i) => `
+      <div class="set-row" data-idx="${i}">
+        <div>
+          <div class="set-row-num">${i + 1}</div>
+          <div class="set-row-target-mini">obj. ${s.targetReps}</div>
+        </div>
+        <input type="number" inputmode="decimal" value="${s.actualWeight}" data-exkg-idx="${i}" />
+        <input type="number" inputmode="numeric" value="${s.actualReps}" data-exreps-idx="${i}" />
+        <button class="set-row-check ${s.done ? 'checked' : ''}" data-excheck-idx="${i}">✓</button>
+      </div>`).join('');
+
+    extraSetListEl.querySelectorAll('input[data-exkg-idx]').forEach(inp => {
+      inp.addEventListener('input', () => { activeExtraDraftSets[+inp.dataset.exkgIdx].actualWeight = inp.value; });
+    });
+    extraSetListEl.querySelectorAll('input[data-exreps-idx]').forEach(inp => {
+      inp.addEventListener('input', () => { activeExtraDraftSets[+inp.dataset.exrepsIdx].actualReps = inp.value; });
+    });
+    extraSetListEl.querySelectorAll('[data-excheck-idx]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = +btn.dataset.excheckIdx;
+        const wasDone = activeExtraDraftSets[idx].done;
+        activeExtraDraftSets[idx].done = !wasDone;
+        renderExtraSetList();
+        if (!wasDone && idx < activeExtraDraftSets.length - 1) {
+          startRestTimer(activeExtra().restSeconds);
+        }
+      });
+    });
+  }
+
+  function renderExtraRpeGrid(){
+    extraRpeGridEl.innerHTML = RPE_SCALE.map(r => `
+      <button class="rpe-btn ${selectedExtraRpe === r.v ? 'active' : ''}" data-exrpe="${r.v}" title="${r.l}">
+        <span class="rpe-emoji">${r.e}</span><span class="rpe-num">${r.v}</span>
+      </button>`).join('');
+    extraRpeGridEl.querySelectorAll('[data-exrpe]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectedExtraRpe = +btn.dataset.exrpe;
+        renderExtraRpeGrid();
+      });
+    });
+  }
+
+  extraSessionBackBtn.addEventListener('click', exitExtraSession);
+  finishExtraBtn.addEventListener('click', () => {
+    const ex = activeExtra();
+    if (!ex) return;
+    trainingLog.unshift({
+      id: uid(), ts: Date.now(), date: todayKey(),
+      wave: null, week: null, lift: ex.name, kind: 'extra',
+      sets: activeExtraDraftSets.map(s => ({
+        targetWeight: s.targetWeight, targetReps: s.targetReps,
+        actualWeight: s.actualWeight ? parseFloat(s.actualWeight) : null,
+        actualReps: s.actualReps ? parseInt(s.actualReps, 10) : null,
+      })),
+      estimated1RM: null,
+      rpe: selectedExtraRpe,
+    });
+    if (trainingLog.length > 400) trainingLog = trainingLog.slice(0, 400);
+    scheduleSave();
+    exitExtraSession();
+  });
 
   // ---- Offline indicator ----
   function updateOfflineBadge(){
