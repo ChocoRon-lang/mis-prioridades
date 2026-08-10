@@ -2677,6 +2677,28 @@
 
       <div class="settings-section-label" style="margin-top:16px;">Horario semanal</div>
       <div id="scheduleSettingsList"></div>
+
+      <div class="settings-section-label" style="margin-top:16px; color:var(--urgent);">Zona de reinicio</div>
+      <p class="rec-hint">Reinicia tus 1RM de Entrenamiento desde cero y te devuelve a la Oleada de 10 Reps, semana Acumulación — así puedes volver a ingresar manualmente tus repeticiones de cada semana (incluidas las AMRAP) y verificar que los cálculos de 1RM tengan sentido a medida que avanzas.</p>
+      <button class="signout-btn" id="resetWeightsBtn" style="border:1px solid var(--urgent); border-radius:11px; padding:11px; width:100%;">🔄 Reiniciar todos los pesos</button>
+    </div>
+  </div>
+</div>
+
+<div class="history-overlay" id="resetWeightsOverlay">
+  <div class="history-panel" id="resetWeightsPanel">
+    <div class="history-header">
+      <span class="grabber"></span>
+      <h2>Reiniciar pesos</h2>
+      <button class="history-close" id="resetWeightsCloseBtn" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="history-list">
+      <p class="rec-hint" style="padding-bottom:10px;">Ingresa el 1RM de Entrenamiento inicial de cada levantamiento. Esto borra el progreso de oleada calculado hasta ahora y te lleva a la Oleada de 10 Reps, semana Acumulación.</p>
+      <div id="resetWeightsList"></div>
+      <div class="add-card-actions" style="justify-content:space-between; margin-top:14px;">
+        <button class="habit-edit-btn" id="resetWeightsCancelBtn">Cancelar</button>
+        <button class="signout-btn" id="resetWeightsConfirmBtn" style="border:1px solid var(--urgent); border-radius:9px; padding:8px 16px;">Reiniciar</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2946,6 +2968,12 @@ const db = initializeFirestore(firebaseApp, {
 
   const waveJumpBtn = document.getElementById('waveJumpBtn');
   const completeWaveBtn = document.getElementById('completeWaveBtn');
+  const resetWeightsBtn = document.getElementById('resetWeightsBtn');
+  const resetWeightsOverlay = document.getElementById('resetWeightsOverlay');
+  const resetWeightsCloseBtn = document.getElementById('resetWeightsCloseBtn');
+  const resetWeightsListEl = document.getElementById('resetWeightsList');
+  const resetWeightsCancelBtn = document.getElementById('resetWeightsCancelBtn');
+  const resetWeightsConfirmBtn = document.getElementById('resetWeightsConfirmBtn');
   const waveJumpOverlay = document.getElementById('waveJumpOverlay');
   const waveJumpCloseBtn = document.getElementById('waveJumpCloseBtn');
   const wjpWaveOptionsEl = document.getElementById('wjpWaveOptions');
@@ -4639,7 +4667,7 @@ const db = initializeFirestore(firebaseApp, {
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-06.2';
+  const APP_VERSION = '2026-08-06.3';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -6132,6 +6160,49 @@ const db = initializeFirestore(firebaseApp, {
       });
     });
   }
+
+  // ---- Reset all training weights: re-enter starting 1RMs and walk the
+  // whole cycle again manually to verify the calculations by hand. ----
+  function renderResetWeightsForm(){
+    resetWeightsListEl.innerHTML = LIFT_NAMES.map(name => `
+      <div class="lift-setting-row">
+        <span class="lift-setting-name">${escapeHtml(name)}</span>
+        <input type="number" inputmode="decimal" value="${lifts[name].trainingMax}" data-reset-tm="${escapeHtml(name)}" title="Nuevo 1RM de Entrenamiento (kg)" style="width:110px;" />
+      </div>`).join('');
+  }
+
+  resetWeightsBtn.addEventListener('click', () => {
+    trainingSettingsOverlay.classList.remove('open');
+    renderResetWeightsForm();
+    resetWeightsOverlay.classList.add('open');
+  });
+  resetWeightsCloseBtn.addEventListener('click', () => resetWeightsOverlay.classList.remove('open'));
+  resetWeightsCancelBtn.addEventListener('click', () => resetWeightsOverlay.classList.remove('open'));
+  resetWeightsOverlay.addEventListener('click', (e) => { if (e.target === resetWeightsOverlay) resetWeightsOverlay.classList.remove('open'); });
+
+  resetWeightsConfirmBtn.addEventListener('click', () => {
+    const newMaxes = {};
+    let valid = true;
+    resetWeightsListEl.querySelectorAll('[data-reset-tm]').forEach(inp => {
+      const v = parseFloat(inp.value);
+      if (!isFinite(v) || v <= 0) valid = false;
+      newMaxes[inp.dataset.resetTm] = v;
+    });
+    if (!valid) return;
+
+    LIFT_NAMES.forEach(name => {
+      lifts[name].trainingMax = newMaxes[name];
+      lifts[name].lastEstimated1RM = null;
+      lifts[name].lastAmrapReps = null;
+    });
+    currentWave = 'oleada10';
+    currentWeek = 'acumulacion';
+    pendingWaveCompletion = null;
+    scheduleSave();
+    renderTraining();
+    resetWeightsOverlay.classList.remove('open');
+  });
+
 
   function parseTrainingImport(text){
     let data;
