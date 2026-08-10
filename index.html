@@ -4667,7 +4667,7 @@ const db = initializeFirestore(firebaseApp, {
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-06.3';
+  const APP_VERSION = '2026-08-06.4';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -5570,8 +5570,8 @@ const db = initializeFirestore(firebaseApp, {
     warmupOpen = false;
     trainingOverviewViewEl.style.display = 'none';
     liftSessionViewEl.style.display = 'flex';
-    renderWarmups();
     loadLiftDraftForDate();
+    renderWarmups();
   }
 
   liftSessionDateInput.addEventListener('change', () => {
@@ -5590,6 +5590,7 @@ const db = initializeFirestore(firebaseApp, {
 
   // ---- Warm-up ramp: bar, ~40%, ~60%, ~80% of the day's heaviest set ----
   function buildWarmups(){
+    if (!activeLiftDraftSets || activeLiftDraftSets.length === 0) return [];
     const topWeight = Math.max(...activeLiftDraftSets.map(s => s.targetWeight));
     const barWeight = 20;
     const steps = [
