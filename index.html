@@ -2386,6 +2386,7 @@
             <button class="habit-edit-btn" id="prevWeekBtn">‹ Semana anterior</button>
             <button class="habit-edit-btn" id="nextWeekBtn">Siguiente semana ›</button>
           </div>
+          <button class="done-toggle" id="completeWaveBtn" style="width:100%; margin-top:10px; padding:11px; display:none;">✓ Completar oleada y calcular nuevo 1RM</button>
           <button class="wave-change-link" id="waveJumpBtn">Cambiar oleada o semana directamente</button>
         </div>
 
@@ -2944,6 +2945,7 @@ const db = initializeFirestore(firebaseApp, {
   const extraSessionDateInput = document.getElementById('extraSessionDateInput');
 
   const waveJumpBtn = document.getElementById('waveJumpBtn');
+  const completeWaveBtn = document.getElementById('completeWaveBtn');
   const waveJumpOverlay = document.getElementById('waveJumpOverlay');
   const waveJumpCloseBtn = document.getElementById('waveJumpCloseBtn');
   const wjpWaveOptionsEl = document.getElementById('wjpWaveOptions');
@@ -4637,7 +4639,7 @@ const db = initializeFirestore(firebaseApp, {
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-06.1';
+  const APP_VERSION = '2026-08-06.2';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -5379,6 +5381,7 @@ const db = initializeFirestore(firebaseApp, {
   function renderTraining(){
     waveLabelEl.textContent = WAVE_LABEL[currentWave];
     weekLabelEl.textContent = WEEK_LABEL[currentWeek];
+    completeWaveBtn.style.display = currentWeek === 'descarga' ? '' : 'none';
     renderTodayHero();
     renderMissedBanner();
 
@@ -5525,10 +5528,10 @@ const db = initializeFirestore(firebaseApp, {
     renderRpeGrid();
   }
 
-  function openLiftSession(name){
+  function openLiftSession(name, dateOverride){
     ensureRestSeconds(name);
     activeLiftName = name;
-    activeSessionDate = todayKey();
+    activeSessionDate = dateOverride || todayKey();
     liftSessionDateInput.value = activeSessionDate;
     liftSessionDateInput.max = todayKey();
 
@@ -5865,20 +5868,19 @@ const db = initializeFirestore(firebaseApp, {
   function advanceWeek(dir){
     const idx = WEEK_ORDER.indexOf(currentWeek);
     const newIdx = idx + dir;
+    const waveIdx = WAVE_ORDER.indexOf(currentWave);
     if (newIdx < 0) {
-      // Step back past Acumulación: move to the previous wave's Descarga.
-      // This only moves the pointer — it never recalculates training maxes,
-      // that only happens when you actually advance forward past Descarga.
-      const waveIdx = WAVE_ORDER.indexOf(currentWave);
+      // Pure navigation — never touches training maxes, in either direction.
       const prevWaveIdx = (waveIdx - 1 + WAVE_ORDER.length) % WAVE_ORDER.length;
       currentWave = WAVE_ORDER[prevWaveIdx];
       currentWeek = 'descarga';
-      scheduleSave();
-      renderTraining();
-      return;
+    } else if (newIdx >= WEEK_ORDER.length) {
+      const nextWaveIdx = (waveIdx + 1) % WAVE_ORDER.length;
+      currentWave = WAVE_ORDER[nextWaveIdx];
+      currentWeek = 'acumulacion';
+    } else {
+      currentWeek = WEEK_ORDER[newIdx];
     }
-    if (newIdx >= WEEK_ORDER.length) { advanceWave(); return; }
-    currentWeek = WEEK_ORDER[newIdx];
     scheduleSave();
     renderTraining();
   }
@@ -5917,29 +5919,46 @@ const db = initializeFirestore(firebaseApp, {
     waveJumpOverlay.classList.remove('open');
   });
 
-  function advanceWave(){
+  // ---- Completing a wave: an explicit, confirmable action (never triggered
+  // by mere navigation, so going back and forth never re-applies it) ----
+  let pendingWaveCompletion = null;
+
+  function previewWaveCompletion(){
     const waveNum = WAVE_NUMBER[currentWave];
-    const completedWaveLabel = WAVE_LABEL[currentWave];
-    const changes = [];
-    LIFT_NAMES.forEach(name => {
+    const changes = LIFT_NAMES.map(name => {
       const lift = lifts[name];
-      const oldMax = lift.trainingMax;
+      let newMax = lift.trainingMax;
       if (lift.lastAmrapReps != null) {
-        lift.trainingMax = ceilingTo((lift.lastAmrapReps - waveNum) * lift.incrementPerRep + lift.trainingMax, 2.5);
+        newMax = ceilingTo((lift.lastAmrapReps - waveNum) * lift.incrementPerRep + lift.trainingMax, 2.5);
       }
-      changes.push({ name, oldMax, newMax: lift.trainingMax });
+      return { name, oldMax: lift.trainingMax, newMax };
     });
-    const waveIdx = WAVE_ORDER.indexOf(currentWave);
-    currentWave = WAVE_ORDER[(waveIdx + 1) % WAVE_ORDER.length];
-    currentWeek = 'acumulacion';
-    scheduleSave();
-    renderTraining();
-    showWaveCompleteSummary(completedWaveLabel, changes);
+    return changes;
   }
 
-  function showWaveCompleteSummary(completedWaveLabel, changes){
+  completeWaveBtn.addEventListener('click', openCompleteWavePrompt);
+
+  function openCompleteWavePrompt(){
+    const changes = previewWaveCompletion();
+    pendingWaveCompletion = { fromWave: currentWave, changes };
+    showWaveCompleteSummary(WAVE_LABEL[currentWave], changes, true);
+  }
+
+  function applyWaveCompletion(){
+    if (!pendingWaveCompletion) return;
+    pendingWaveCompletion.changes.forEach(c => { lifts[c.name].trainingMax = c.newMax; });
+    const waveIdx = WAVE_ORDER.indexOf(pendingWaveCompletion.fromWave);
+    currentWave = WAVE_ORDER[(waveIdx + 1) % WAVE_ORDER.length];
+    currentWeek = 'acumulacion';
+    pendingWaveCompletion = null;
+    scheduleSave();
+    renderTraining();
+    waveCompleteOverlay.classList.remove('open');
+  }
+
+  function showWaveCompleteSummary(completedWaveLabel, changes, confirmable){
     waveCompleteBodyEl.innerHTML = `
-      <p class="rec-hint" style="padding-bottom:10px;">Terminaste la <strong>${completedWaveLabel}</strong>. Estos son tus nuevos 1RM de Entrenamiento:</p>
+      <p class="rec-hint" style="padding-bottom:10px;">${confirmable ? 'Vas a completar la' : 'Terminaste la'} <strong>${completedWaveLabel}</strong>. ${confirmable ? 'Estos serían tus nuevos' : 'Estos son tus nuevos'} 1RM de Entrenamiento:</p>
       ${changes.map(c => {
         const delta = Math.round((c.newMax - c.oldMax) * 10) / 10;
         const deltaColor = delta > 0 ? '#3FC373' : (delta < 0 ? 'var(--urgent)' : 'var(--ink-soft)');
@@ -5953,12 +5972,24 @@ const db = initializeFirestore(firebaseApp, {
           </span>
         </div>`;
       }).join('')}
+      ${confirmable ? `
+        <div class="add-card-actions" style="justify-content:space-between; margin-top:14px;">
+          <button class="habit-edit-btn" id="waveCompleteCancelBtn">Cancelar</button>
+          <button class="done-toggle" id="waveCompleteConfirmBtn">✓ Confirmar y avanzar</button>
+        </div>` : ''}
     `;
     waveCompleteOverlay.classList.add('open');
+    if (confirmable) {
+      document.getElementById('waveCompleteCancelBtn').addEventListener('click', () => {
+        pendingWaveCompletion = null;
+        waveCompleteOverlay.classList.remove('open');
+      });
+      document.getElementById('waveCompleteConfirmBtn').addEventListener('click', applyWaveCompletion);
+    }
   }
 
-  waveCompleteCloseBtn.addEventListener('click', () => waveCompleteOverlay.classList.remove('open'));
-  waveCompleteOverlay.addEventListener('click', (e) => { if (e.target === waveCompleteOverlay) waveCompleteOverlay.classList.remove('open'); });
+  waveCompleteCloseBtn.addEventListener('click', () => { pendingWaveCompletion = null; waveCompleteOverlay.classList.remove('open'); });
+  waveCompleteOverlay.addEventListener('click', (e) => { if (e.target === waveCompleteOverlay) { pendingWaveCompletion = null; waveCompleteOverlay.classList.remove('open'); } });
 
   // ---- Missed-session reminder ----
   function renderMissedBanner(){
@@ -6003,11 +6034,13 @@ const db = initializeFirestore(firebaseApp, {
       const isFuture = key > tKey;
       const activity = weeklySchedule[dow];
       let cls = '';
+      let tappable = '';
       if (!isFuture && LIFT_NAMES.includes(activity)) {
         const done = trainingLog.some(l => l.lift === activity && l.date === key);
         cls = done ? 'done' : 'missed';
+        tappable = `data-cal-lift="${escapeHtml(activity)}" data-cal-date="${key}"`;
       }
-      cells += `<td class="cal-day-cell"><div class="cal-day-inner ${cls} ${isToday ? 'today' : ''}">${d}${cls ? '<span class="cal-dot-mini"></span>' : ''}</div></td>`;
+      cells += `<td class="cal-day-cell"><div class="cal-day-inner ${cls} ${isToday ? 'today' : ''}" ${tappable} style="${tappable ? 'cursor:pointer;' : ''}">${d}${cls ? '<span class="cal-dot-mini"></span>' : ''}</div></td>`;
     }
 
     // pad to complete the final week row
@@ -6029,6 +6062,13 @@ const db = initializeFirestore(firebaseApp, {
         <thead><tr>${DAY_ABBR.map(a => `<th>${a}</th>`).join('')}</tr></thead>
         <tbody>${rows}</tbody>
       </table>`;
+
+    calGridEl.querySelectorAll('[data-cal-lift]').forEach(el => {
+      el.addEventListener('click', () => {
+        trainingCalendarOverlay.classList.remove('open');
+        openLiftSession(el.dataset.calLift, el.dataset.calDate);
+      });
+    });
   }
 
   trainingCalendarBtn.addEventListener('click', () => {
