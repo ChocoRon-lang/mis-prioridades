@@ -1715,6 +1715,26 @@
   }
   .today-extra-item { cursor: pointer; }
 
+  .session-date-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--hairline);
+  }
+  .session-date-row input[type="date"] { padding: 6px 8px; font-size: 13px; }
+
+  .wave-change-link {
+    display: block;
+    text-align: center;
+    border: none; background: none;
+    color: var(--accent-strong);
+    font-size: 12px;
+    font-weight: 650;
+    padding: 8px 0 0 0;
+  }
+  .wjp-group { margin-bottom: 14px; }
+  .wjp-options { display: flex; flex-wrap: wrap; gap: 6px; }
+
   .lift-setting-row {
     display: flex; align-items: center; gap: 10px;
     background: var(--field-bg);
@@ -2366,6 +2386,7 @@
             <button class="habit-edit-btn" id="prevWeekBtn">‹ Semana anterior</button>
             <button class="habit-edit-btn" id="nextWeekBtn">Siguiente semana ›</button>
           </div>
+          <button class="wave-change-link" id="waveJumpBtn">Cambiar oleada o semana directamente</button>
         </div>
 
         <div class="field-label" style="margin:16px 4px 4px 4px;">Todos los levantamientos</div>
@@ -2458,6 +2479,10 @@
               <div class="ex-sub">Trabajo extra</div>
             </div>
           </div>
+          <div class="session-date-row">
+            <span class="field-label" style="margin:0;">Fecha de la sesión</span>
+            <input type="date" class="due" id="extraSessionDateInput" style="width:auto;" />
+          </div>
           <div class="set-table-header" style="margin-top:16px;">
             <span>SERIE</span><span>KG</span><span>REPS</span><span></span>
           </div>
@@ -2490,6 +2515,11 @@
               <div class="ex-name" id="liftSessionName">—</div>
               <div class="ex-sub" id="liftSessionSub"></div>
             </div>
+          </div>
+
+          <div class="session-date-row">
+            <span class="field-label" style="margin:0;">Fecha de la sesión</span>
+            <input type="date" class="due" id="liftSessionDateInput" style="width:auto;" />
           </div>
 
           <button class="rest-badge" id="restBadge">
@@ -2712,6 +2742,28 @@
   </div>
 </div>
 
+<div class="history-overlay" id="waveJumpOverlay">
+  <div class="history-panel" id="waveJumpPanel">
+    <div class="history-header">
+      <span class="grabber"></span>
+      <h2>Cambiar oleada o semana</h2>
+      <button class="history-close" id="waveJumpCloseBtn" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="history-list">
+      <p class="rec-hint" style="padding-bottom:10px;">Esto solo cambia qué semana estás viendo — no recalcula tu 1RM de Entrenamiento (eso solo pasa al avanzar de forma normal desde Descarga).</p>
+      <div class="wjp-group">
+        <div class="settings-section-label">Oleada</div>
+        <div class="wjp-options" id="wjpWaveOptions"></div>
+      </div>
+      <div class="wjp-group">
+        <div class="settings-section-label">Semana</div>
+        <div class="wjp-options" id="wjpWeekOptions"></div>
+      </div>
+      <button class="done-toggle" id="wjpSaveBtn" style="width:100%; padding:12px;">Ir ahí</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js';
 import {
@@ -2888,6 +2940,15 @@ const db = initializeFirestore(firebaseApp, {
   const extraSetListEl = document.getElementById('extraSetList');
   const extraRpeGridEl = document.getElementById('extraRpeGrid');
   const finishExtraBtn = document.getElementById('finishExtraBtn');
+  const liftSessionDateInput = document.getElementById('liftSessionDateInput');
+  const extraSessionDateInput = document.getElementById('extraSessionDateInput');
+
+  const waveJumpBtn = document.getElementById('waveJumpBtn');
+  const waveJumpOverlay = document.getElementById('waveJumpOverlay');
+  const waveJumpCloseBtn = document.getElementById('waveJumpCloseBtn');
+  const wjpWaveOptionsEl = document.getElementById('wjpWaveOptions');
+  const wjpWeekOptionsEl = document.getElementById('wjpWeekOptions');
+  const wjpSaveBtn = document.getElementById('wjpSaveBtn');
 
   const trainingCalendarBtn = document.getElementById('trainingCalendarBtn');
   const trainingCalendarOverlay = document.getElementById('trainingCalendarOverlay');
@@ -3236,6 +3297,9 @@ const db = initializeFirestore(firebaseApp, {
   let activeExtraId = null;
   let activeExtraDraftSets = null;
   let selectedExtraRpe = null;
+  let activeSessionDate = null;
+  let wjpPendingWave = null;
+  let wjpPendingWeek = null;
 
 
   let tasks = [];
@@ -4573,7 +4637,7 @@ const db = initializeFirestore(firebaseApp, {
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-05.5';
+  const APP_VERSION = '2026-08-06.1';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -5431,18 +5495,14 @@ const db = initializeFirestore(firebaseApp, {
     return (m > 0 ? m + 'min ' : '') + s + 's';
   }
 
-  function findTodayLog(name, wave, week){
-    const tKey = todayKey();
-    return trainingLog.find(l => l.lift === name && l.wave === wave && l.week === week && l.date === tKey) || null;
+  function findLogForDate(name, wave, week, date){
+    return trainingLog.find(l => l.lift === name && l.wave === wave && l.week === week && l.date === date) || null;
   }
 
-  function openLiftSession(name){
-    ensureRestSeconds(name);
-    activeLiftName = name;
-
-    const existing = findTodayLog(name, currentWave, currentWeek);
+  function loadLiftDraftForDate(){
+    const name = activeLiftName;
+    const existing = findLogForDate(name, currentWave, currentWeek, activeSessionDate);
     if (existing) {
-      // Reopen with whatever was actually logged, instead of resetting to fresh targets.
       activeLiftDraftSets = existing.sets.map(s => ({
         pct: s.pct, targetWeight: s.targetWeight, targetReps: s.targetReps, amrap: s.amrap,
         repsObjetivo: s.repsObjetivo != null ? s.repsObjetivo : null,
@@ -5459,19 +5519,35 @@ const db = initializeFirestore(firebaseApp, {
       }));
       selectedRpe = null;
     }
+    const isToday = activeSessionDate === todayKey();
+    liftSessionSubEl.textContent = WAVE_LABEL[currentWave] + ' · ' + WEEK_LABEL[currentWeek] + (existing ? ' · ya registrada ese día' : '') + (isToday ? '' : ' · registro con fecha pasada');
+    renderLiftSetList();
+    renderRpeGrid();
+  }
+
+  function openLiftSession(name){
+    ensureRestSeconds(name);
+    activeLiftName = name;
+    activeSessionDate = todayKey();
+    liftSessionDateInput.value = activeSessionDate;
+    liftSessionDateInput.max = todayKey();
 
     liftIconEl.innerHTML = LIFT_ANIMATIONS[name] || '';
     liftSessionNameEl.textContent = name;
-    liftSessionSubEl.textContent = WAVE_LABEL[currentWave] + ' · ' + WEEK_LABEL[currentWeek] + (existing ? ' · ya registrada hoy' : '');
     restBadgeText.textContent = 'Descanso: ' + formatRestLong(lifts[name].restSeconds);
     restEditRow.style.display = 'none';
     warmupOpen = false;
     trainingOverviewViewEl.style.display = 'none';
     liftSessionViewEl.style.display = 'flex';
     renderWarmups();
-    renderLiftSetList();
-    renderRpeGrid();
+    loadLiftDraftForDate();
   }
+
+  liftSessionDateInput.addEventListener('change', () => {
+    if (!liftSessionDateInput.value) { liftSessionDateInput.value = activeSessionDate; return; }
+    activeSessionDate = liftSessionDateInput.value;
+    loadLiftDraftForDate();
+  });
 
   function exitLiftSession(){
     cancelRestTimer();
@@ -5580,7 +5656,7 @@ const db = initializeFirestore(firebaseApp, {
     }
 
     const entry = {
-      ts: Date.now(), date: todayKey(),
+      ts: Date.now(), date: activeSessionDate || todayKey(),
       wave: currentWave, week: currentWeek, lift: name,
       sets: activeLiftDraftSets.map(s => ({
         pct: s.pct, targetWeight: s.targetWeight, targetReps: s.targetReps, amrap: s.amrap,
@@ -5596,7 +5672,7 @@ const db = initializeFirestore(firebaseApp, {
     // of creating a duplicate — but a future pass through this same wave/week
     // (a new cycle, weeks later) still gets its own new entry, since it will
     // have a different date.
-    const existing = findTodayLog(name, currentWave, currentWeek);
+    const existing = findLogForDate(name, currentWave, currentWeek, entry.date);
     if (existing) {
       existing.ts = entry.ts;
       existing.sets = entry.sets;
@@ -5789,12 +5865,57 @@ const db = initializeFirestore(firebaseApp, {
   function advanceWeek(dir){
     const idx = WEEK_ORDER.indexOf(currentWeek);
     const newIdx = idx + dir;
-    if (newIdx < 0) return; // already at the first week
+    if (newIdx < 0) {
+      // Step back past Acumulación: move to the previous wave's Descarga.
+      // This only moves the pointer — it never recalculates training maxes,
+      // that only happens when you actually advance forward past Descarga.
+      const waveIdx = WAVE_ORDER.indexOf(currentWave);
+      const prevWaveIdx = (waveIdx - 1 + WAVE_ORDER.length) % WAVE_ORDER.length;
+      currentWave = WAVE_ORDER[prevWaveIdx];
+      currentWeek = 'descarga';
+      scheduleSave();
+      renderTraining();
+      return;
+    }
     if (newIdx >= WEEK_ORDER.length) { advanceWave(); return; }
     currentWeek = WEEK_ORDER[newIdx];
     scheduleSave();
     renderTraining();
   }
+
+  // ---- Direct wave/week jump (no recalculation, just moves the pointer) ----
+  function openWaveJump(){
+    wjpPendingWave = currentWave;
+    wjpPendingWeek = currentWeek;
+    renderWaveJumpOptions();
+    waveJumpOverlay.classList.add('open');
+  }
+
+  function renderWaveJumpOptions(){
+    wjpWaveOptionsEl.innerHTML = WAVE_ORDER.map(w => `
+      <button class="schedule-opt-btn ${wjpPendingWave === w ? 'active' : ''}" data-jump-wave="${w}">${WAVE_LABEL[w]}</button>
+    `).join('');
+    wjpWeekOptionsEl.innerHTML = WEEK_ORDER.map(w => `
+      <button class="schedule-opt-btn ${wjpPendingWeek === w ? 'active' : ''}" data-jump-week="${w}">${WEEK_LABEL[w]}</button>
+    `).join('');
+    wjpWaveOptionsEl.querySelectorAll('[data-jump-wave]').forEach(btn => {
+      btn.addEventListener('click', () => { wjpPendingWave = btn.dataset.jumpWave; renderWaveJumpOptions(); });
+    });
+    wjpWeekOptionsEl.querySelectorAll('[data-jump-week]').forEach(btn => {
+      btn.addEventListener('click', () => { wjpPendingWeek = btn.dataset.jumpWeek; renderWaveJumpOptions(); });
+    });
+  }
+
+  waveJumpBtn.addEventListener('click', openWaveJump);
+  waveJumpCloseBtn.addEventListener('click', () => waveJumpOverlay.classList.remove('open'));
+  waveJumpOverlay.addEventListener('click', (e) => { if (e.target === waveJumpOverlay) waveJumpOverlay.classList.remove('open'); });
+  wjpSaveBtn.addEventListener('click', () => {
+    currentWave = wjpPendingWave;
+    currentWeek = wjpPendingWeek;
+    scheduleSave();
+    renderTraining();
+    waveJumpOverlay.classList.remove('open');
+  });
 
   function advanceWave(){
     const waveNum = WAVE_NUMBER[currentWave];
@@ -6405,23 +6526,48 @@ const db = initializeFirestore(firebaseApp, {
     if (ex && ex.sets.length > 0) openExtraSession(ex.id);
   });
 
+  function loadExtraDraftForDate(){
+    const ex = activeExtra();
+    const existing = findLogForDate(ex.name, null, null, activeSessionDate);
+    if (existing) {
+      activeExtraDraftSets = existing.sets.map(s => ({
+        targetWeight: s.targetWeight, targetReps: s.targetReps,
+        actualWeight: s.actualWeight != null ? s.actualWeight : s.targetWeight,
+        actualReps: s.actualReps != null ? s.actualReps : s.targetReps,
+        done: true,
+      }));
+      selectedExtraRpe = typeof existing.rpe === 'number' ? existing.rpe : null;
+    } else {
+      activeExtraDraftSets = ex.sets.map(s => ({
+        targetWeight: s.weight, targetReps: s.reps,
+        actualWeight: s.weight, actualReps: s.reps, done: false,
+      }));
+      selectedExtraRpe = null;
+    }
+    renderExtraSetList();
+    renderExtraRpeGrid();
+  }
+
   function openExtraSession(id){
     activeExtraId = id;
     const ex = activeExtra();
     if (!ex) return;
     ensureExtraDefaults(ex);
-    activeExtraDraftSets = ex.sets.map(s => ({
-      targetWeight: s.weight, targetReps: s.reps,
-      actualWeight: s.weight, actualReps: s.reps, done: false,
-    }));
-    selectedExtraRpe = null;
+    activeSessionDate = todayKey();
+    extraSessionDateInput.value = activeSessionDate;
+    extraSessionDateInput.max = todayKey();
     extraSessionNameEl.textContent = ex.name;
     trainingOverviewViewEl.style.display = 'none';
     extraConfigViewEl.style.display = 'none';
     extraSessionViewEl.style.display = 'flex';
-    renderExtraSetList();
-    renderExtraRpeGrid();
+    loadExtraDraftForDate();
   }
+
+  extraSessionDateInput.addEventListener('change', () => {
+    if (!extraSessionDateInput.value) { extraSessionDateInput.value = activeSessionDate; return; }
+    activeSessionDate = extraSessionDateInput.value;
+    loadExtraDraftForDate();
+  });
 
   function exitExtraSession(){
     cancelRestTimer();
@@ -6480,8 +6626,8 @@ const db = initializeFirestore(firebaseApp, {
   finishExtraBtn.addEventListener('click', () => {
     const ex = activeExtra();
     if (!ex) return;
-    trainingLog.unshift({
-      id: uid(), ts: Date.now(), date: todayKey(),
+    const entry = {
+      ts: Date.now(), date: activeSessionDate || todayKey(),
       wave: null, week: null, lift: ex.name, kind: 'extra',
       sets: activeExtraDraftSets.map(s => ({
         targetWeight: s.targetWeight, targetReps: s.targetReps,
@@ -6490,8 +6636,16 @@ const db = initializeFirestore(firebaseApp, {
       })),
       estimated1RM: null,
       rpe: selectedExtraRpe,
-    });
-    if (trainingLog.length > 400) trainingLog = trainingLog.slice(0, 400);
+    };
+    const existing = findLogForDate(ex.name, null, null, entry.date);
+    if (existing) {
+      existing.ts = entry.ts;
+      existing.sets = entry.sets;
+      existing.rpe = entry.rpe;
+    } else {
+      trainingLog.unshift(Object.assign({ id: uid() }, entry));
+      if (trainingLog.length > 400) trainingLog = trainingLog.slice(0, 400);
+    }
     scheduleSave();
     exitExtraSession();
   });
