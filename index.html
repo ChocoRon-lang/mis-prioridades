@@ -4689,7 +4689,7 @@ const db = initializeFirestore(firebaseApp, {
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-06.5';
+  const APP_VERSION = '2026-08-06.6';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -5974,15 +5974,35 @@ const db = initializeFirestore(firebaseApp, {
   // by mere navigation, so going back and forth never re-applies it) ----
   let pendingWaveCompletion = null;
 
+  function findRealizacionLog(name, wave){
+    // Look at every session logged for this lift's Realización week of this
+    // specific wave, and use whichever was saved most recently — this reads
+    // straight from your actual saved history instead of a side-variable
+    // that could go stale if you saved out of the "usual" order.
+    const entries = trainingLog.filter(l => l.lift === name && l.wave === wave && l.week === 'realizacion');
+    if (entries.length === 0) return null;
+    entries.sort((a, b) => b.ts - a.ts);
+    return entries[0];
+  }
+
   function previewWaveCompletion(){
     const waveNum = WAVE_NUMBER[currentWave];
     const changes = LIFT_NAMES.map(name => {
       const lift = lifts[name];
       let newMax = lift.trainingMax;
-      if (lift.lastAmrapReps != null) {
-        newMax = ceilingTo((lift.lastAmrapReps - waveNum) * lift.incrementPerRep + lift.trainingMax, 2.5);
+      let amrapReps = null;
+
+      const log = findRealizacionLog(name, currentWave);
+      if (log) {
+        const amrapSet = log.sets.find(s => s.amrap);
+        if (amrapSet && amrapSet.actualReps != null) amrapReps = amrapSet.actualReps;
       }
-      return { name, oldMax: lift.trainingMax, newMax };
+      if (amrapReps == null && lift.lastAmrapReps != null) amrapReps = lift.lastAmrapReps; // fallback for older data
+
+      if (amrapReps != null) {
+        newMax = ceilingTo((amrapReps - waveNum) * lift.incrementPerRep + lift.trainingMax, 2.5);
+      }
+      return { name, oldMax: lift.trainingMax, newMax, amrapReps };
     });
     return changes;
   }
@@ -6014,13 +6034,19 @@ const db = initializeFirestore(firebaseApp, {
         const delta = Math.round((c.newMax - c.oldMax) * 10) / 10;
         const deltaColor = delta > 0 ? '#3FC373' : (delta < 0 ? 'var(--urgent)' : 'var(--ink-soft)');
         const deltaText = delta > 0 ? '+' + delta : (delta === 0 ? 'sin cambio' : delta);
+        const amrapNote = c.amrapReps != null
+          ? `AMRAP registrada: ${c.amrapReps} reps`
+          : '⚠️ sin serie AMRAP de Realización registrada — no se aplicó incremento';
         return `
-        <div class="wave-complete-row">
-          <span class="wcr-name">${escapeHtml(c.name)}</span>
-          <span>
-            ${c.oldMax}kg <span class="wcr-arrow">→</span> <span class="wcr-change">${c.newMax}kg</span>
-            <span style="color:${deltaColor}; font-size:12px; font-weight:700; margin-left:6px;">(${deltaText}${typeof delta === 'number' && delta !== 0 ? 'kg' : ''})</span>
-          </span>
+        <div class="wave-complete-row" style="flex-direction:column; align-items:flex-start; gap:4px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+            <span class="wcr-name">${escapeHtml(c.name)}</span>
+            <span>
+              ${c.oldMax}kg <span class="wcr-arrow">→</span> <span class="wcr-change">${c.newMax}kg</span>
+              <span style="color:${deltaColor}; font-size:12px; font-weight:700; margin-left:6px;">(${deltaText}${typeof delta === 'number' && delta !== 0 ? 'kg' : ''})</span>
+            </span>
+          </div>
+          <div style="font-size:11px; color:${c.amrapReps != null ? 'var(--ink-soft)' : 'var(--urgent)'};">${amrapNote}</div>
         </div>`;
       }).join('')}
       ${confirmable ? `
