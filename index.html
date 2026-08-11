@@ -1734,6 +1734,38 @@
   .custom-block-type-row .fin-item-name { font-size: 14px; font-weight: 650; }
   .custom-block-type-row .fin-item-sub { font-size: 11.5px; color: var(--ink-soft); margin-top: 1px; }
 
+  .routine-row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 13px;
+    padding: 13px 14px;
+    margin-bottom: 8px;
+  }
+  .routine-row-body { flex: 1; min-width: 0; cursor: pointer; }
+  .routine-row-name { font-size: 14.5px; font-weight: 700; }
+  .routine-row-sub { font-size: 11.5px; color: var(--ink-soft); margin-top: 1px; }
+  .routine-start-btn {
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 12px;
+    border-radius: 9px;
+    flex-shrink: 0;
+  }
+
+  .routine-item-row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 13px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .routine-item-row .dbi-body { flex: 1; min-width: 0; cursor: pointer; }
+
   .day-chip-row { display: flex; gap: 5px; flex-wrap: wrap; }
   .day-chip {
     width: 34px; height: 34px;
@@ -2537,10 +2569,13 @@
         <button class="home-mode-card" id="goDayTrainingBtn">
           <div class="hmc-title">▶ Iniciar<br/>entrenamiento</div>
         </button>
+        <button class="home-mode-card" id="openRoutinesBtn">
+          <div class="hmc-title">📑 Mis<br/>rutinas</div>
+        </button>
         <button class="home-mode-card" id="editExercisesBtn">
           <div class="hmc-title">📋 Editar<br/>ejercicios</div>
         </button>
-        <p class="rec-hint" style="padding:0 4px;">Arma tu sesión de hoy agregando los bloques que quieras hacer — Juggernaut, Accesorios, Rugby, Cardio — en el orden que prefieras.</p>
+        <p class="rec-hint" style="padding:0 4px;">Arma tu sesión de hoy agregando los bloques que quieras hacer — Juggernaut, Accesorios, Rugby, Cardio — en el orden que prefieras. O empieza directo desde una de tus rutinas guardadas.</p>
       </main>
     </div>
 
@@ -2670,6 +2705,49 @@
         <div class="deck-empty" id="customBlockDrillEmpty" style="display:none;"><p>Sin ejercicios configurados.</p></div>
 
         <button class="done-toggle" id="markCustomBlockDoneBtn" style="width:100%; margin-top:14px; padding:14px;">✓ Marcar como hecho</button>
+      </main>
+    </div>
+
+    <!-- Mis rutinas -->
+    <div id="routinesListView" class="subview" style="display:none;">
+      <div class="cards-toolbar">
+        <button class="icon-btn" id="routinesListBackBtn" aria-label="Volver">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <h2 class="page-title">Mis rutinas</h2>
+        <div style="width:38px;"></div>
+      </div>
+      <main>
+        <p class="rec-hint" id="routinesCountHint" style="padding:0 0 8px 0;"></p>
+        <ul id="routinesList"></ul>
+        <div class="deck-empty" id="routinesEmpty" style="display:none;">
+          <p>Todavía no tienes rutinas guardadas. Crea una para empezar entrenamientos completos de un toque.</p>
+        </div>
+        <button class="add-card-toggle" id="addRoutineBtn">+ Nueva rutina</button>
+      </main>
+    </div>
+
+    <!-- Editor de una rutina -->
+    <div id="routineEditorView" class="subview" style="display:none;">
+      <div class="cards-toolbar">
+        <button class="icon-btn" id="routineEditorBackBtn" aria-label="Volver">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <h2 class="page-title">Editar rutina</h2>
+        <button class="icon-btn" id="routineDeleteBtn" aria-label="Eliminar rutina">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m-9 0 1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <main>
+        <div class="field-label" style="margin-top:0;">Nombre de la rutina</div>
+        <input class="due" id="routineNameInput" type="text" style="width:100%;" placeholder="Ej. Empuje + Cardio" />
+
+        <div class="field-label">Ejercicios de la rutina</div>
+        <ul id="routineItemList"></ul>
+        <div class="deck-empty" id="routineItemEmpty" style="display:none;"><p>Agrega al menos un ejercicio abajo.</p></div>
+        <div class="day-program-add-block" id="addRoutineItemRow" style="margin-top:6px;"></div>
+
+        <button class="done-toggle" id="saveRoutineBtn" style="width:100%; margin-top:16px; padding:14px;">Guardar rutina</button>
       </main>
     </div>
 
@@ -3229,6 +3307,23 @@ const db = initializeFirestore(firebaseApp, {
   const accesoriosManageControlsEl = document.getElementById('accesoriosManageControls');
   const deleteAllExtrasBtn = document.getElementById('deleteAllExtrasBtn');
   const editExercisesBtn = document.getElementById('editExercisesBtn');
+
+  const openRoutinesBtn = document.getElementById('openRoutinesBtn');
+  const routinesListViewEl = document.getElementById('routinesListView');
+  const routinesListBackBtn = document.getElementById('routinesListBackBtn');
+  const routinesCountHintEl = document.getElementById('routinesCountHint');
+  const routinesListEl = document.getElementById('routinesList');
+  const routinesEmptyEl = document.getElementById('routinesEmpty');
+  const addRoutineBtn = document.getElementById('addRoutineBtn');
+
+  const routineEditorViewEl = document.getElementById('routineEditorView');
+  const routineEditorBackBtn = document.getElementById('routineEditorBackBtn');
+  const routineDeleteBtn = document.getElementById('routineDeleteBtn');
+  const routineNameInput = document.getElementById('routineNameInput');
+  const routineItemListEl = document.getElementById('routineItemList');
+  const routineItemEmptyEl = document.getElementById('routineItemEmpty');
+  const addRoutineItemRowEl = document.getElementById('addRoutineItemRow');
+  const saveRoutineBtn = document.getElementById('saveRoutineBtn');
   const addExtraToggle = document.getElementById('addExtraToggle');
   const addExtraForm = document.getElementById('addExtraForm');
 
@@ -3736,6 +3831,11 @@ const db = initializeFirestore(firebaseApp, {
   let activeAccesoriosBlockId = null;
   let accesoriosReturnView = 'trainingDayView';
   let deleteAllExtrasArmed = false;
+
+  const MAX_ROUTINES = 8;
+  let routines = []; // [{id, name, items: [{id,type,blockTypeId?,selectedExerciseIds?}]}] — same item shape as session blocks
+  let editingRoutineId = null; // null while creating a new routine
+  let routineEditorDraft = null; // { name, items: [...] } — the working copy while editing
   let activeExtraDraftSets = null;
   let selectedExtraRpe = null;
   let activeSessionDate = null;
@@ -3814,6 +3914,7 @@ const db = initializeFirestore(firebaseApp, {
       customBlockTypes = Array.isArray(state.customBlockTypes) ? state.customBlockTypes : defaultCustomBlockTypes();
       currentSessionBlocks = Array.isArray(state.currentSessionBlocks) ? state.currentSessionBlocks : [];
       sessionBlocksDone = (state.sessionBlocksDone && typeof state.sessionBlocksDone === 'object') ? state.sessionBlocksDone : {};
+      routines = Array.isArray(state.routines) ? state.routines : [];
       applyTheme(state.theme || 'dark');
       notificationSound = state.notificationSound || 'clasico';
       dataLoadOk = true;
@@ -3846,7 +3947,7 @@ const db = initializeFirestore(firebaseApp, {
   async function persist(){
     if (!currentUserId || !dataLoadOk) return;
     try {
-      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, notificationSound, habits, decks, salaryEntries, otherIncomes, fixedExpenses, debts, savings, freeExpenses, financeHistory, currentWave, currentWeek, lifts, extraExercises, trainingLog, trainingMaxHistory, dayCompletionLog, weeklySchedule, scheduleConfigured, customBlockTypes, currentSessionBlocks, sessionBlocksDone });
+      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, notificationSound, habits, decks, salaryEntries, otherIncomes, fixedExpenses, debts, savings, freeExpenses, financeHistory, currentWave, currentWeek, lifts, extraExercises, trainingLog, trainingMaxHistory, dayCompletionLog, weeklySchedule, scheduleConfigured, customBlockTypes, currentSessionBlocks, sessionBlocksDone, routines });
     } catch(e) {
       console.error('No se pudo guardar', e);
     }
@@ -3863,6 +3964,9 @@ const db = initializeFirestore(firebaseApp, {
     customBlockTypes = defaultCustomBlockTypes();
     currentSessionBlocks = [];
     sessionBlocksDone = {};
+    routines = [];
+    editingRoutineId = null;
+    routineEditorDraft = null;
     activeCustomBlockTypeId = null;
     editingBlockTypeId = null;
     openId = null; activeDeckId = null;
@@ -5084,7 +5188,7 @@ const db = initializeFirestore(firebaseApp, {
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-11.7';
+  const APP_VERSION = '2026-08-11.8';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -5859,13 +5963,21 @@ const db = initializeFirestore(firebaseApp, {
     return ex.sets.map(s => `${s.weight || 0}kg×${s.reps || 0}`).join(' · ');
   }
 
+  function getAccesoriosPickerTarget(){
+    if (!activeAccesoriosBlockId) return null;
+    if (accesoriosReturnView === 'routineEditorView' && routineEditorDraft) {
+      return routineEditorDraft.items.find(it => it.id === activeAccesoriosBlockId) || null;
+    }
+    return currentSessionBlocks.find(b => b.id === activeAccesoriosBlockId) || null;
+  }
+
   function renderExtraList(){
     if (extraExercises.length === 0) {
       extraListEl.innerHTML = `<p class="fin-item-sub" style="padding:6px 0;">Sin ejercicios en tu base de datos todavía.</p>`;
       return;
     }
     extraExercises.forEach(ensureExtraDefaults);
-    const block = activeAccesoriosBlockId ? currentSessionBlocks.find(b => b.id === activeAccesoriosBlockId) : null;
+    const block = getAccesoriosPickerTarget();
     const selected = block ? block.selectedExerciseIds : null;
 
     extraListEl.innerHTML = extraExercises.map(e => `
@@ -7257,6 +7369,7 @@ const db = initializeFirestore(firebaseApp, {
     'trainingHomeView', 'trainingDayView', 'trainingOverviewView', 'accesoriosListView',
     'customBlockSessionView', 'dayProgramConfigView', 'customBlockEditorView',
     'liftSessionView', 'extraConfigView', 'extraSessionView',
+    'routinesListView', 'routineEditorView',
   ];
   function showTrainingSubview(id){
     TRAINING_SUBVIEW_IDS.forEach(vid => {
@@ -7442,6 +7555,7 @@ const db = initializeFirestore(firebaseApp, {
     activeAccesoriosBlockId = null;
     showTrainingSubview(accesoriosReturnView);
     if (accesoriosReturnView === 'trainingDayView') renderDayView();
+    if (accesoriosReturnView === 'routineEditorView') renderRoutineEditorItems();
   });
 
   deleteAllExtrasBtn.addEventListener('click', () => {
@@ -7512,6 +7626,185 @@ const db = initializeFirestore(firebaseApp, {
   });
 
   // ---- Configuración del programa (Cara 2's ⚙️) ----
+  // ---- Mis rutinas ----
+  openRoutinesBtn.addEventListener('click', openRoutinesList);
+  routinesListBackBtn.addEventListener('click', () => showTrainingSubview('trainingHomeView'));
+
+  function openRoutinesList(){
+    showTrainingSubview('routinesListView');
+    renderRoutinesList();
+  }
+
+  function routineItemSummary(routine){
+    return routine.items.map(it => blockDisplayInfo(it).name).join(' · ') || 'Sin ejercicios';
+  }
+
+  function renderRoutinesList(){
+    routinesCountHintEl.textContent = routines.length + ' de ' + MAX_ROUTINES + ' rutinas';
+    addRoutineBtn.style.display = routines.length >= MAX_ROUTINES ? 'none' : '';
+    if (routines.length === 0) {
+      routinesListEl.innerHTML = '';
+      routinesEmptyEl.style.display = '';
+      return;
+    }
+    routinesEmptyEl.style.display = 'none';
+    routinesListEl.innerHTML = routines.map(r => `
+      <li class="routine-row" data-routine-id="${r.id}">
+        <div class="routine-row-body" data-edit-routine="${r.id}">
+          <div class="routine-row-name">${escapeHtml(r.name)}</div>
+          <div class="routine-row-sub">${escapeHtml(routineItemSummary(r))}</div>
+        </div>
+        <button class="routine-start-btn" data-start-routine="${r.id}">▶ Usar</button>
+      </li>`).join('');
+    routinesListEl.querySelectorAll('[data-edit-routine]').forEach(el => {
+      el.addEventListener('click', () => openRoutineEditor(el.dataset.editRoutine));
+    });
+    routinesListEl.querySelectorAll('[data-start-routine]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        startSessionFromRoutine(btn.dataset.startRoutine);
+      });
+    });
+  }
+
+  function startSessionFromRoutine(routineId){
+    const routine = routines.find(r => r.id === routineId);
+    if (!routine) return;
+    currentSessionBlocks = routine.items.map(it => Object.assign({}, it, {
+      id: uid(),
+      selectedExerciseIds: Array.isArray(it.selectedExerciseIds) ? it.selectedExerciseIds.slice() : undefined,
+    }));
+    sessionBlocksDone = {};
+    scheduleSave();
+    showTrainingSubview('trainingDayView');
+    renderDayView();
+  }
+
+  addRoutineBtn.addEventListener('click', () => {
+    if (routines.length >= MAX_ROUTINES) return;
+    openRoutineEditor(null);
+  });
+
+  function openRoutineEditor(routineId){
+    editingRoutineId = routineId;
+    if (routineId) {
+      const r = routines.find(x => x.id === routineId);
+      routineEditorDraft = { name: r ? r.name : '', items: r ? r.items.map(it => Object.assign({}, it, { selectedExerciseIds: it.selectedExerciseIds ? it.selectedExerciseIds.slice() : undefined })) : [] };
+      routineDeleteBtn.style.display = '';
+    } else {
+      routineEditorDraft = { name: '', items: [] };
+      routineDeleteBtn.style.display = 'none';
+    }
+    routineNameInput.value = routineEditorDraft.name;
+    showTrainingSubview('routineEditorView');
+    renderRoutineEditorItems();
+  }
+
+  function renderRoutineEditorItems(){
+    const items = routineEditorDraft.items;
+    if (items.length === 0) {
+      routineItemListEl.innerHTML = '';
+      routineItemEmptyEl.style.display = '';
+    } else {
+      routineItemEmptyEl.style.display = 'none';
+      routineItemListEl.innerHTML = items.map((it, i) => {
+        const info = blockDisplayInfo(it);
+        return `
+          <li class="routine-item-row" data-idx="${i}">
+            <span class="dbi-handle">
+              <button data-ritem-up="${i}" ${i === 0 ? 'disabled style="opacity:.3;"' : ''} aria-label="Subir" style="display:block;">▲</button>
+              <button data-ritem-down="${i}" ${i === items.length - 1 ? 'disabled style="opacity:.3;"' : ''} aria-label="Bajar" style="display:block;">▼</button>
+            </span>
+            <div class="dbi-body" data-ritem-open="${it.id}">
+              <div class="dbi-name">${escapeHtml(info.name)}</div>
+              <div class="dbi-sub">${escapeHtml(info.sub)}</div>
+            </div>
+            <button class="fin-remove" data-ritem-remove="${i}">✕</button>
+          </li>`;
+      }).join('');
+      routineItemListEl.querySelectorAll('[data-ritem-up]').forEach(btn => {
+        btn.addEventListener('click', () => moveRoutineItem(+btn.dataset.ritemUp, -1));
+      });
+      routineItemListEl.querySelectorAll('[data-ritem-down]').forEach(btn => {
+        btn.addEventListener('click', () => moveRoutineItem(+btn.dataset.ritemDown, 1));
+      });
+      routineItemListEl.querySelectorAll('[data-ritem-remove]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          routineEditorDraft.items.splice(+btn.dataset.ritemRemove, 1);
+          renderRoutineEditorItems();
+        });
+      });
+      routineItemListEl.querySelectorAll('[data-ritem-open]').forEach(el => {
+        el.addEventListener('click', () => openRoutineItem(el.dataset.ritemOpen));
+      });
+    }
+
+    addRoutineItemRowEl.innerHTML = SESSION_BLOCK_TYPE_OPTIONS().map(opt => `
+      <button class="block-type-btn" data-add-ritem="${opt.type}${opt.blockTypeId ? ':' + opt.blockTypeId : ''}">+ ${escapeHtml(opt.name)}</button>
+    `).join('');
+    addRoutineItemRowEl.querySelectorAll('[data-add-ritem]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const [type, blockTypeId] = btn.dataset.addRitem.split(':');
+        const item = type === 'custom' ? { id: uid(), type: 'custom', blockTypeId } : { id: uid(), type };
+        if (type === 'extra') item.selectedExerciseIds = [];
+        routineEditorDraft.items.push(item);
+        renderRoutineEditorItems();
+      });
+    });
+  }
+
+  function moveRoutineItem(idx, dir){
+    const items = routineEditorDraft.items;
+    const newIdx = idx + dir;
+    if (newIdx < 0 || newIdx >= items.length) return;
+    const tmp = items[idx]; items[idx] = items[newIdx]; items[newIdx] = tmp;
+    renderRoutineEditorItems();
+  }
+
+  function openRoutineItem(itemId){
+    const item = routineEditorDraft.items.find(it => it.id === itemId);
+    if (!item) return;
+    if (item.type === 'extra') {
+      if (!Array.isArray(item.selectedExerciseIds)) item.selectedExerciseIds = [];
+      activeAccesoriosBlockId = item.id;
+      accesoriosReturnView = 'routineEditorView';
+      accesoriosTitleEl.textContent = 'Accesorios de la rutina';
+      accesoriosHintEl.textContent = 'Marca ✓ los ejercicios que quieres que traiga esta rutina cada vez que la uses.';
+      accesoriosManageControlsEl.style.display = 'none';
+      showTrainingSubview('accesoriosListView');
+      renderExtraList();
+      return;
+    }
+    // Juggernaut / bloques personalizados no necesitan configuración adicional aquí — su contenido ya vive en su propia sección.
+  }
+
+  routineEditorBackBtn.addEventListener('click', () => { showTrainingSubview('routinesListView'); renderRoutinesList(); });
+
+  saveRoutineBtn.addEventListener('click', () => {
+    const name = routineNameInput.value.trim();
+    if (!name) { routineNameInput.focus(); return; }
+    if (routineEditorDraft.items.length === 0) return;
+    if (editingRoutineId) {
+      const r = routines.find(x => x.id === editingRoutineId);
+      r.name = name;
+      r.items = routineEditorDraft.items;
+    } else {
+      if (routines.length >= MAX_ROUTINES) return;
+      routines.push({ id: uid(), name, items: routineEditorDraft.items });
+    }
+    scheduleSave();
+    showTrainingSubview('routinesListView');
+    renderRoutinesList();
+  });
+
+  routineDeleteBtn.addEventListener('click', () => {
+    if (!editingRoutineId) return;
+    routines = routines.filter(r => r.id !== editingRoutineId);
+    scheduleSave();
+    showTrainingSubview('routinesListView');
+    renderRoutinesList();
+  });
+
   function openDayProgramConfig(){
     showTrainingSubview('dayProgramConfigView');
     renderDayProgramConfig();
