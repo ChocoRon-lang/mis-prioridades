@@ -1436,6 +1436,8 @@
   }
   .set-row:nth-child(even) { background: var(--field-bg); }
   .set-row.amrap { background: var(--accent-soft); }
+  .set-row.approx { opacity: 0.72; }
+  .set-row.approx .set-row-num { color: var(--ink-soft); font-weight: 600; }
   .set-row-num { font-size: 14px; font-weight: 700; }
   .set-row.amrap .set-row-num { color: var(--accent-strong); }
   .set-row-target-mini { font-size: 9.5px; color: var(--ink-soft); margin-top: 1px; }
@@ -2536,6 +2538,7 @@
         <div class="deck-empty" id="dayBlockEmpty" style="display:none;">
           <p>Este día no tiene bloques configurados todavía. Ve a configurar tu programa (⚙️ arriba en la portada de Entrenamiento).</p>
         </div>
+        <button class="wave-change-link" id="prevDayBtn">‹ Volver al día anterior</button>
         <div class="day-finish-actions">
           <button class="habit-edit-btn" id="skipDayBtn">⏭ Omitir día</button>
           <button class="done-toggle" id="finishDayBtn">✓ Terminar día</button>
@@ -2830,16 +2833,24 @@
             <button id="restSaveBtn">Guardar</button>
           </div>
 
-          <div class="warmup-section" id="warmupSection">
-            <div class="warmup-header" id="warmupToggle">
-              <span class="fs-icon">🔥</span>
-              <span class="finance-section-title">Calentamiento</span>
-              <span class="chevron">›</span>
+          <div class="field-label" style="margin:14px 0 6px 0;">🔥 Calentamiento recomendado</div>
+          <ul id="mobilityWarmupList"></ul>
+          <p class="fin-item-sub" id="mobilityWarmupEmpty" style="display:none; padding:2px 0 4px 0;">Sin calentamiento configurado para este ejercicio.</p>
+          <div style="display:flex; gap:8px; margin-bottom:10px;">
+            <button class="habit-edit-btn" id="addMobilityItemBtn" style="flex:1;">+ Agregar ítem</button>
+            <button class="habit-edit-btn" id="importMobilityToggle" style="flex:1;">⇩ Importar JSON</button>
+          </div>
+          <div class="add-card-form" id="importMobilityForm" style="display:none;">
+            <div class="field-label">Pega aquí el JSON</div>
+            <textarea class="notes" id="importMobilityTextarea" style="min-height:90px;" placeholder='{"warmup":[{"name":"Círculos hombros","detail":"10 c/lado"}]}'></textarea>
+            <div class="auth-error" id="importMobilityError" style="display:none;"></div>
+            <div class="add-card-actions">
+              <button class="habit-edit-btn" id="importMobilityCancelBtn">Cancelar</button>
+              <button class="done-toggle" id="importMobilitySubmitBtn">Importar</button>
             </div>
-            <div id="warmupList" style="display:none;"></div>
           </div>
 
-          <div class="set-table-header">
+          <div class="set-table-header" style="margin-top:10px;">
             <span>SERIE</span><span>KG</span><span>REPS</span><span></span>
           </div>
           <div id="liftSetList"></div>
@@ -3196,6 +3207,7 @@ const db = initializeFirestore(firebaseApp, {
   const dayBlockListEl = document.getElementById('dayBlockList');
   const dayBlockEmptyEl = document.getElementById('dayBlockEmpty');
   const skipDayBtn = document.getElementById('skipDayBtn');
+  const prevDayBtn = document.getElementById('prevDayBtn');
   const finishDayBtn = document.getElementById('finishDayBtn');
 
   const trainingOverviewViewEl = document.getElementById('trainingOverviewView');
@@ -3352,8 +3364,15 @@ const db = initializeFirestore(firebaseApp, {
   const progressLiftTabsEl = document.getElementById('progressLiftTabs');
   const progressChartAreaEl = document.getElementById('progressChartArea');
 
-  const warmupToggle = document.getElementById('warmupToggle');
-  const warmupListEl = document.getElementById('warmupList');
+  const mobilityWarmupListEl = document.getElementById('mobilityWarmupList');
+  const mobilityWarmupEmptyEl = document.getElementById('mobilityWarmupEmpty');
+  const addMobilityItemBtn = document.getElementById('addMobilityItemBtn');
+  const importMobilityToggle = document.getElementById('importMobilityToggle');
+  const importMobilityForm = document.getElementById('importMobilityForm');
+  const importMobilityTextarea = document.getElementById('importMobilityTextarea');
+  const importMobilityErrorEl = document.getElementById('importMobilityError');
+  const importMobilityCancelBtn = document.getElementById('importMobilityCancelBtn');
+  const importMobilitySubmitBtn = document.getElementById('importMobilitySubmitBtn');
   const rpeGridEl = document.getElementById('rpeGrid');
 
   const offlineBadgeEl = document.getElementById('offlineBadge');
@@ -3568,10 +3587,11 @@ const db = initializeFirestore(firebaseApp, {
 
   function defaultLifts(){
     return {
-      'Press de Banca': { trainingMax: 95,    incrementPerRep: 1.25, lastEstimated1RM: 96.4575, lastAmrapReps: null, restSeconds: 120 },
-      'Sentadilla':     { trainingMax: 112.5, incrementPerRep: 2.5,  lastEstimated1RM: 112.4475, lastAmrapReps: null, restSeconds: 150 },
-      'Press Militar':  { trainingMax: 62.5,  incrementPerRep: 1.25, lastEstimated1RM: 62.82,   lastAmrapReps: null, restSeconds: 120 },
-      'Peso Muerto':    { trainingMax: 137.5, incrementPerRep: 2.5,  lastEstimated1RM: 139.65,  lastAmrapReps: null, restSeconds: 150 },
+      'Press de Banca': { trainingMax: 95,    incrementPerRep: 1.25, lastEstimated1RM: 96.4575, lastAmrapReps: null, restSeconds: 120,
+        mobilityWarmup: [{ id: uid(), name: 'Círculos hombros', detail: '' }, { id: uid(), name: 'Rotación torácica cuadrupedia', detail: '' }] },
+      'Sentadilla':     { trainingMax: 112.5, incrementPerRep: 2.5,  lastEstimated1RM: 112.4475, lastAmrapReps: null, restSeconds: 150, mobilityWarmup: [] },
+      'Press Militar':  { trainingMax: 62.5,  incrementPerRep: 1.25, lastEstimated1RM: 62.82,   lastAmrapReps: null, restSeconds: 120, mobilityWarmup: [] },
+      'Peso Muerto':    { trainingMax: 137.5, incrementPerRep: 2.5,  lastEstimated1RM: 139.65,  lastAmrapReps: null, restSeconds: 150, mobilityWarmup: [] },
     };
   }
 
@@ -3657,6 +3677,7 @@ const db = initializeFirestore(firebaseApp, {
   };
   function ensureRestSeconds(name){
     if (typeof lifts[name].restSeconds !== 'number') lifts[name].restSeconds = 90;
+    if (!Array.isArray(lifts[name].mobilityWarmup)) lifts[name].mobilityWarmup = [];
   }
 
   const DAY_NAMES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -3706,7 +3727,6 @@ const db = initializeFirestore(firebaseApp, {
     return days;
   }
   let selectedRpe = null;
-  let warmupOpen = false;
   let calMonthCursor = new Date();
   let activeExtraId = null;
   let activeExtraDraftSets = null;
@@ -5057,7 +5077,7 @@ const db = initializeFirestore(firebaseApp, {
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-11.1';
+  const APP_VERSION = '2026-08-11.2';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -5883,13 +5903,16 @@ const db = initializeFirestore(firebaseApp, {
       activeLiftDraftSets = existing.sets.map(s => ({
         pct: s.pct, targetWeight: s.targetWeight, targetReps: s.targetReps, amrap: s.amrap,
         repsObjetivo: s.repsObjetivo != null ? s.repsObjetivo : null,
+        isApprox: !!s.isApprox,
         actualWeight: s.actualWeight != null ? s.actualWeight : s.targetWeight,
         actualReps: s.actualReps != null ? s.actualReps : '',
         done: true,
       }));
       selectedRpe = typeof existing.rpe === 'number' ? existing.rpe : null;
     } else {
-      activeLiftDraftSets = buildWeekSets(name, currentWave, currentWeek).map(s => Object.assign({}, s, {
+      const workSets = buildWeekSets(name, currentWave, currentWeek).map(s => Object.assign({}, s, { isApprox: false }));
+      const approachSets = buildApproachSets(workSets);
+      activeLiftDraftSets = approachSets.concat(workSets).map(s => Object.assign({}, s, {
         actualWeight: s.targetWeight,
         actualReps: s.amrap ? '' : s.targetReps,
         done: false,
@@ -5913,10 +5936,9 @@ const db = initializeFirestore(firebaseApp, {
     liftSessionNameEl.textContent = name;
     restBadgeText.textContent = 'Descanso: ' + formatRestLong(lifts[name].restSeconds);
     restEditRow.style.display = 'none';
-    warmupOpen = false;
     showTrainingSubview('liftSessionView');
+    renderMobilityWarmup();
     loadLiftDraftForDate();
-    renderWarmups();
   }
 
   liftSessionDateInput.addEventListener('change', () => {
@@ -5933,30 +5955,84 @@ const db = initializeFirestore(firebaseApp, {
   }
 
   // ---- Warm-up ramp: bar, ~40%, ~60%, ~80% of the day's heaviest set ----
-  function buildWarmups(){
-    if (!activeLiftDraftSets || activeLiftDraftSets.length === 0) return [];
-    const topWeight = Math.max(...activeLiftDraftSets.map(s => s.targetWeight));
+  function buildApproachSets(workSets){
+    if (!workSets || workSets.length === 0) return [];
+    const topWeight = Math.max(...workSets.map(s => s.targetWeight));
     const barWeight = 20;
     const steps = [
-      { label: 'Barra', weight: barWeight, reps: 8 },
-      { label: '40%', weight: Math.max(barWeight, ceilingTo(topWeight * 0.4, 2.5)), reps: 5 },
-      { label: '60%', weight: ceilingTo(topWeight * 0.6, 2.5), reps: 3 },
-      { label: '80%', weight: ceilingTo(topWeight * 0.8, 2.5), reps: 2 },
+      { targetWeight: barWeight, targetReps: 8 },
+      { targetWeight: Math.max(barWeight, ceilingTo(topWeight * 0.4, 2.5)), targetReps: 5 },
+      { targetWeight: ceilingTo(topWeight * 0.6, 2.5), targetReps: 3 },
+      { targetWeight: ceilingTo(topWeight * 0.8, 2.5), targetReps: 2 },
     ];
     // de-duplicate steps that end up at the same weight as the bar for light lifts
-    return steps.filter((s, i) => i === 0 || s.weight > steps[i - 1].weight);
+    return steps.filter((s, i) => i === 0 || s.targetWeight > steps[i - 1].targetWeight)
+      .map(s => ({ pct: null, targetWeight: s.targetWeight, targetReps: s.targetReps, amrap: false, repsObjetivo: null, isApprox: true }));
   }
 
-  function renderWarmups(){
-    const steps = buildWarmups();
-    warmupListEl.innerHTML = steps.map(s => `
-      <div class="warmup-row">
-        <span class="warmup-row-name">${s.label}</span>
-        <span class="warmup-row-detail">${s.weight}kg × ${s.reps}</span>
-      </div>`).join('');
-    warmupListEl.style.display = warmupOpen ? '' : 'none';
-    warmupToggle.classList.toggle('open', warmupOpen);
+  // ---- Calentamiento recomendado: movilidad, propia de cada ejercicio, importable ----
+  function renderMobilityWarmup(){
+    const list = lifts[activeLiftName].mobilityWarmup;
+    if (list.length === 0) { mobilityWarmupListEl.innerHTML = ''; mobilityWarmupEmptyEl.style.display = ''; return; }
+    mobilityWarmupEmptyEl.style.display = 'none';
+    mobilityWarmupListEl.innerHTML = list.map((item, i) => `
+      <li class="edit-item-row" data-idx="${i}">
+        <input class="edit-item-name" type="text" placeholder="Nombre" value="${escapeHtml(item.name || '')}" data-mob-name="${i}" />
+        <input class="edit-item-detail" type="text" placeholder="Detalle" value="${escapeHtml(item.detail || '')}" data-mob-detail="${i}" />
+        <button class="fin-remove" data-mob-remove="${i}">✕</button>
+      </li>`).join('');
+    mobilityWarmupListEl.querySelectorAll('[data-mob-name]').forEach(inp => {
+      inp.addEventListener('input', () => { list[+inp.dataset.mobName].name = inp.value; });
+      inp.addEventListener('change', scheduleSave);
+    });
+    mobilityWarmupListEl.querySelectorAll('[data-mob-detail]').forEach(inp => {
+      inp.addEventListener('input', () => { list[+inp.dataset.mobDetail].detail = inp.value; });
+      inp.addEventListener('change', scheduleSave);
+    });
+    mobilityWarmupListEl.querySelectorAll('[data-mob-remove]').forEach(btn => {
+      btn.addEventListener('click', () => { list.splice(+btn.dataset.mobRemove, 1); scheduleSave(); renderMobilityWarmup(); });
+    });
   }
+
+  addMobilityItemBtn.addEventListener('click', () => {
+    lifts[activeLiftName].mobilityWarmup.push({ id: uid(), name: '', detail: '' });
+    renderMobilityWarmup();
+  });
+
+  importMobilityToggle.addEventListener('click', () => {
+    const showing = importMobilityForm.style.display !== 'none';
+    importMobilityForm.style.display = showing ? 'none' : '';
+    importMobilityErrorEl.style.display = 'none';
+    if (!showing) importMobilityTextarea.focus();
+  });
+  importMobilityCancelBtn.addEventListener('click', () => {
+    importMobilityForm.style.display = 'none';
+    importMobilityTextarea.value = '';
+    importMobilityErrorEl.style.display = 'none';
+  });
+  importMobilitySubmitBtn.addEventListener('click', () => {
+    let data;
+    try { data = JSON.parse(importMobilityTextarea.value); } catch(e) { importMobilityErrorEl.textContent = 'JSON inválido.'; importMobilityErrorEl.style.display = ''; return; }
+    const list = data.warmup;
+    if (!Array.isArray(list) || list.length === 0) {
+      importMobilityErrorEl.textContent = 'Debe tener un campo "warmup" con una lista de al menos un ítem.';
+      importMobilityErrorEl.style.display = '';
+      return;
+    }
+    let count = 0;
+    list.forEach(item => {
+      if (item && typeof item.name === 'string' && item.name.trim()) {
+        lifts[activeLiftName].mobilityWarmup.push({ id: uid(), name: item.name.trim(), detail: (item.detail || '').toString().trim() });
+        count++;
+      }
+    });
+    if (count === 0) { importMobilityErrorEl.textContent = 'No encontré ítems válidos (cada uno necesita al menos "name").'; importMobilityErrorEl.style.display = ''; return; }
+    scheduleSave();
+    renderMobilityWarmup();
+    importMobilityTextarea.value = '';
+    importMobilityForm.style.display = 'none';
+    importMobilityErrorEl.style.display = 'none';
+  });
 
   // ---- RPE (session effort, 1–10 with matching emoji) ----
   const RPE_SCALE = [
@@ -5979,22 +6055,21 @@ const db = initializeFirestore(firebaseApp, {
     });
   }
 
-  warmupToggle.addEventListener('click', () => {
-    warmupOpen = !warmupOpen;
-    renderWarmups();
-  });
-
   function renderLiftSetList(){
-    liftSetListEl.innerHTML = activeLiftDraftSets.map((s, i) => `
-      <div class="set-row ${s.amrap ? 'amrap' : ''}" data-idx="${i}">
+    let approxN = 0, serieN = 0;
+    liftSetListEl.innerHTML = activeLiftDraftSets.map((s, i) => {
+      const label = s.isApprox ? ('Aprox ' + (++approxN)) : ('Serie ' + (++serieN) + (s.amrap ? ' 🔥' : ''));
+      return `
+      <div class="set-row ${s.amrap ? 'amrap' : ''} ${s.isApprox ? 'approx' : ''}" data-idx="${i}">
         <div>
-          <div class="set-row-num">${i + 1}${s.amrap ? ' 🔥' : ''}</div>
+          <div class="set-row-num">${label}</div>
           <div class="set-row-target-mini">obj. ${s.amrap ? (s.repsObjetivo ? s.repsObjetivo + '+' : '¿?') : s.targetReps}</div>
         </div>
         <input type="number" inputmode="decimal" value="${s.actualWeight}" data-kg-idx="${i}" />
         <input type="number" inputmode="numeric" placeholder="${s.amrap ? 'AMRAP' : ''}" value="${s.actualReps}" data-reps-idx="${i}" />
         <button class="set-row-check ${s.done ? 'checked' : ''}" data-check-idx="${i}">✓</button>
-      </div>`).join('');
+      </div>`;
+    }).join('');
 
     liftSetListEl.querySelectorAll('input[data-kg-idx]').forEach(inp => {
       inp.addEventListener('input', () => { activeLiftDraftSets[+inp.dataset.kgIdx].actualWeight = inp.value; });
@@ -6037,6 +6112,7 @@ const db = initializeFirestore(firebaseApp, {
       sets: activeLiftDraftSets.map(s => ({
         pct: s.pct, targetWeight: s.targetWeight, targetReps: s.targetReps, amrap: s.amrap,
         repsObjetivo: s.repsObjetivo != null ? s.repsObjetivo : null,
+        isApprox: !!s.isApprox,
         actualWeight: s.actualWeight ? parseFloat(s.actualWeight) : null,
         actualReps: s.actualReps ? parseInt(s.actualReps, 10) : null,
       })),
@@ -7259,6 +7335,15 @@ const db = initializeFirestore(firebaseApp, {
   }
   skipDayBtn.addEventListener('click', advanceToNextDay);
   finishDayBtn.addEventListener('click', advanceToNextDay);
+
+  function goToPreviousDay(){
+    if (trainingDays.length === 0) return;
+    currentDayIndex = (currentDayIndex - 1 + trainingDays.length) % trainingDays.length;
+    dayProgress = {};
+    scheduleSave();
+    renderDayView(); // stay on Cara 2 so you can jump straight into the block you need to fix
+  }
+  prevDayBtn.addEventListener('click', goToPreviousDay);
 
   // ---- Cara 3 / Cara 5 back buttons ----
   overviewBackBtn.addEventListener('click', () => showTrainingSubview('trainingDayView'));
