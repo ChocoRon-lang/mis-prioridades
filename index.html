@@ -1756,6 +1756,28 @@
     font-family: inherit;
   }
 
+  .reset-test-row {
+    background: var(--field-bg);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+  .reset-test-top { display: flex; align-items: center; gap: 10px; }
+  .reset-test-name { flex: 1; font-size: 13.5px; font-weight: 600; }
+  .reset-test-top input {
+    width: 62px;
+    border: 1px solid var(--hairline);
+    background: var(--card);
+    border-radius: 8px;
+    padding: 7px 6px;
+    font-size: 13px;
+    text-align: center;
+    color: var(--ink);
+    font-family: inherit;
+  }
+  .reset-test-preview { font-size: 11px; color: var(--accent-strong); margin-top: 6px; font-weight: 600; }
+
   .salary-current {
     background: var(--field-bg);
     border: 1px solid var(--hairline);
@@ -2693,7 +2715,7 @@
       <button class="history-close" id="resetWeightsCloseBtn" aria-label="Cerrar">✕</button>
     </div>
     <div class="history-list">
-      <p class="rec-hint" style="padding-bottom:10px;">Ingresa el 1RM de Entrenamiento inicial de cada levantamiento. Esto borra el progreso de oleada calculado hasta ahora y te lleva a la Oleada de 10 Reps, semana Acumulación.</p>
+      <p class="rec-hint" style="padding-bottom:10px;">Ingresa una serie de prueba de cada levantamiento (el peso que usaste y cuántas repeticiones hiciste), igual que tu planilla. Prisma calcula tu 1RM estimado y tu 1RM de Entrenamiento (90% del 1RM) automáticamente. Esto borra el progreso de oleada calculado hasta ahora y te lleva a la Oleada de 10 Reps, semana Acumulación.</p>
       <div id="resetWeightsList"></div>
       <div class="add-card-actions" style="justify-content:space-between; margin-top:14px;">
         <button class="habit-edit-btn" id="resetWeightsCancelBtn">Cancelar</button>
@@ -4667,7 +4689,7 @@ const db = initializeFirestore(firebaseApp, {
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-06.4';
+  const APP_VERSION = '2026-08-06.5';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -6162,14 +6184,36 @@ const db = initializeFirestore(firebaseApp, {
     });
   }
 
-  // ---- Reset all training weights: re-enter starting 1RMs and walk the
-  // whole cycle again manually to verify the calculations by hand. ----
+  // ---- Reset all training weights: re-enter a test set (weight × reps) for
+  // each lift, exactly like the spreadsheet's own starting-point formula:
+  // 1RM = weight*reps*0.033+weight, Training Max = 90% of that, rounded. ----
   function renderResetWeightsForm(){
     resetWeightsListEl.innerHTML = LIFT_NAMES.map(name => `
-      <div class="lift-setting-row">
-        <span class="lift-setting-name">${escapeHtml(name)}</span>
-        <input type="number" inputmode="decimal" value="${lifts[name].trainingMax}" data-reset-tm="${escapeHtml(name)}" title="Nuevo 1RM de Entrenamiento (kg)" style="width:110px;" />
+      <div class="reset-test-row" data-reset-row="${escapeHtml(name)}">
+        <div class="reset-test-top">
+          <span class="reset-test-name">${escapeHtml(name)}</span>
+          <input type="number" inputmode="decimal" placeholder="Kg" data-reset-weight="${escapeHtml(name)}" />
+          <input type="number" inputmode="numeric" placeholder="Reps" data-reset-reps="${escapeHtml(name)}" />
+        </div>
+        <div class="reset-test-preview" data-reset-preview="${escapeHtml(name)}">1RM estimado: — · 1RM de Entrenamiento: —</div>
       </div>`).join('');
+
+    function updatePreview(name){
+      const row = resetWeightsListEl.querySelector(`[data-reset-row="${CSS.escape(name)}"]`);
+      const w = parseFloat(row.querySelector('[data-reset-weight]').value);
+      const r = parseInt(row.querySelector('[data-reset-reps]').value, 10);
+      const previewEl = row.querySelector('[data-reset-preview]');
+      if (isFinite(w) && w > 0 && isFinite(r) && r > 0) {
+        const est1RM = calcEstimated1RM(w, r);
+        const tm = ceilingTo(est1RM * 0.9, 2.5);
+        previewEl.textContent = `1RM estimado: ${Math.round(est1RM * 100) / 100}kg · 1RM de Entrenamiento: ${tm}kg`;
+      } else {
+        previewEl.textContent = '1RM estimado: — · 1RM de Entrenamiento: —';
+      }
+    }
+    resetWeightsListEl.querySelectorAll('[data-reset-weight], [data-reset-reps]').forEach(inp => {
+      inp.addEventListener('input', () => updatePreview(inp.dataset.resetWeight || inp.dataset.resetReps));
+    });
   }
 
   resetWeightsBtn.addEventListener('click', () => {
@@ -6184,10 +6228,13 @@ const db = initializeFirestore(firebaseApp, {
   resetWeightsConfirmBtn.addEventListener('click', () => {
     const newMaxes = {};
     let valid = true;
-    resetWeightsListEl.querySelectorAll('[data-reset-tm]').forEach(inp => {
-      const v = parseFloat(inp.value);
-      if (!isFinite(v) || v <= 0) valid = false;
-      newMaxes[inp.dataset.resetTm] = v;
+    LIFT_NAMES.forEach(name => {
+      const row = resetWeightsListEl.querySelector(`[data-reset-row="${CSS.escape(name)}"]`);
+      const w = parseFloat(row.querySelector('[data-reset-weight]').value);
+      const r = parseInt(row.querySelector('[data-reset-reps]').value, 10);
+      if (!isFinite(w) || w <= 0 || !isFinite(r) || r <= 0) { valid = false; return; }
+      const est1RM = calcEstimated1RM(w, r);
+      newMaxes[name] = ceilingTo(est1RM * 0.9, 2.5);
     });
     if (!valid) return;
 
