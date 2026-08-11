@@ -2617,9 +2617,9 @@
         <div style="width:38px;"></div>
       </div>
       <main>
-        <p class="rec-hint" style="padding:0 0 8px 0;">Tu trabajo extra — los ejercicios que no vienen del Juggernaut. Tócalos para configurar series, peso y descanso.</p>
+        <p class="rec-hint" id="accesoriosHint" style="padding:0 0 8px 0;"></p>
         <ul id="extraList"></ul>
-        <button class="add-card-toggle" id="addExtraToggle">+ Agregar ejercicio extra</button>
+        <button class="add-card-toggle" id="addExtraToggle">+ Agregar ejercicio a la base de datos</button>
         <div class="add-card-form" id="addExtraForm" style="display:none;">
           <input class="due" id="newExtraName" type="text" style="width:100%;" placeholder="Nombre del ejercicio" />
           <input class="due" id="newExtraDetail" type="text" style="width:100%; margin-top:8px;" placeholder="Nota opcional (ej. con mancuernas)" />
@@ -3217,6 +3217,7 @@ const db = initializeFirestore(firebaseApp, {
   const accesoriosListViewEl = document.getElementById('accesoriosListView');
   const accesoriosBackBtn = document.getElementById('accesoriosBackBtn');
   const extraListEl = document.getElementById('extraList');
+  const accesoriosHintEl = document.getElementById('accesoriosHint');
   const addExtraToggle = document.getElementById('addExtraToggle');
   const addExtraForm = document.getElementById('addExtraForm');
 
@@ -3721,6 +3722,7 @@ const db = initializeFirestore(firebaseApp, {
   let selectedRpe = null;
   let calMonthCursor = new Date();
   let activeExtraId = null;
+  let activeAccesoriosBlockId = null;
   let activeExtraDraftSets = null;
   let selectedExtraRpe = null;
   let activeSessionDate = null;
@@ -5069,7 +5071,7 @@ const db = initializeFirestore(firebaseApp, {
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-11.5';
+  const APP_VERSION = '2026-08-11.6';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -5846,25 +5848,40 @@ const db = initializeFirestore(firebaseApp, {
 
   function renderExtraList(){
     if (extraExercises.length === 0) {
-      extraListEl.innerHTML = `<p class="fin-item-sub" style="padding:6px 0;">Sin ejercicios extra agregados.</p>`;
+      extraListEl.innerHTML = `<p class="fin-item-sub" style="padding:6px 0;">Sin ejercicios en tu base de datos todavía.</p>`;
       return;
     }
     extraExercises.forEach(ensureExtraDefaults);
+    const block = activeAccesoriosBlockId ? currentSessionBlocks.find(b => b.id === activeAccesoriosBlockId) : null;
+    const selected = block ? block.selectedExerciseIds : null;
+
     extraListEl.innerHTML = extraExercises.map(e => `
       <li class="fin-item" data-id="${e.id}" style="cursor:pointer;">
+        ${selected ? `<button class="checklist-check ${selected.includes(e.id) ? 'checked' : ''}" data-pick-id="${e.id}" style="flex-shrink:0;">✓</button>` : ''}
         <button class="fin-remove" data-id="${e.id}">✕</button>
         <div class="fin-item-info" data-open-id="${e.id}">
           <div class="fin-item-name">${escapeHtml(e.name)}</div>
           <div class="fin-item-sub">${escapeHtml(setsSummary(e))}</div>
-          <div class="extra-item-days">${daysLabel(e.days)}</div>
         </div>
       </li>`).join('');
     extraListEl.querySelectorAll('.fin-remove').forEach(btn => {
       btn.addEventListener('click', (ev) => {
         ev.stopPropagation();
         extraExercises = extraExercises.filter(e => e.id !== btn.dataset.id);
+        if (block) block.selectedExerciseIds = block.selectedExerciseIds.filter(id => id !== btn.dataset.id);
         scheduleSave();
         renderTrainingAll();
+        renderExtraList();
+      });
+    });
+    extraListEl.querySelectorAll('[data-pick-id]').forEach(btn => {
+      btn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        const id = btn.dataset.pickId;
+        const pos = block.selectedExerciseIds.indexOf(id);
+        if (pos === -1) block.selectedExerciseIds.push(id); else block.selectedExerciseIds.splice(pos, 1);
+        scheduleSave();
+        renderExtraList();
       });
     });
     extraListEl.querySelectorAll('[data-open-id]').forEach(el => {
@@ -7272,7 +7289,8 @@ const db = initializeFirestore(firebaseApp, {
       return { name: 'Ciclo Juggernaut', sub: WAVE_LABEL[currentWave] + ' · ' + WEEK_LABEL[currentWeek] };
     }
     if (block.type === 'extra') {
-      return { name: 'Accesorios', sub: extraExercises.length + ' ejercicio' + (extraExercises.length === 1 ? '' : 's') };
+      const n = (block.selectedExerciseIds || []).length;
+      return { name: 'Accesorios', sub: n === 0 ? 'Sin ejercicios elegidos todavía' : n + ' ejercicio' + (n === 1 ? '' : 's') + ' elegido' + (n === 1 ? '' : 's') };
     }
     const bt = customBlockTypes.find(t => t.id === block.blockTypeId);
     return { name: bt ? bt.name : 'Bloque eliminado', sub: bt ? (bt.warmup.length + bt.drills.length) + ' ítems' : '' };
@@ -7338,6 +7356,7 @@ const db = initializeFirestore(firebaseApp, {
       btn.addEventListener('click', () => {
         const [type, blockTypeId] = btn.dataset.addSessionBlock.split(':');
         const block = type === 'custom' ? { id: uid(), type: 'custom', blockTypeId } : { id: uid(), type };
+        if (type === 'extra') block.selectedExerciseIds = [];
         currentSessionBlocks.push(block);
         scheduleSave();
         renderDayView();
@@ -7359,7 +7378,14 @@ const db = initializeFirestore(firebaseApp, {
     const block = currentSessionBlocks.find(b => b.id === blockId);
     if (!block) return;
     if (block.type === 'juggernaut') { showTrainingSubview('trainingOverviewView'); renderOverview(); return; }
-    if (block.type === 'extra') { showTrainingSubview('accesoriosListView'); renderExtraList(); return; }
+    if (block.type === 'extra') {
+      if (!Array.isArray(block.selectedExerciseIds)) block.selectedExerciseIds = [];
+      activeAccesoriosBlockId = block.id;
+      accesoriosHintEl.textContent = 'Marca ✓ los ejercicios que vas a hacer hoy. Toca el nombre de cualquiera (elegido o no) para configurar sus series o registrar tu sesión. Puedes seguir agregando ejercicios nuevos a la base de datos cuando quieras.';
+      showTrainingSubview('accesoriosListView');
+      renderExtraList();
+      return;
+    }
     if (block.type === 'custom') openCustomBlockSession(block.blockTypeId);
   }
 
@@ -7385,7 +7411,11 @@ const db = initializeFirestore(firebaseApp, {
 
   // ---- Cara 3 / Cara 5 back buttons ----
   overviewBackBtn.addEventListener('click', () => showTrainingSubview('trainingDayView'));
-  accesoriosBackBtn.addEventListener('click', () => showTrainingSubview('trainingDayView'));
+  accesoriosBackBtn.addEventListener('click', () => {
+    activeAccesoriosBlockId = null;
+    showTrainingSubview('trainingDayView');
+    renderDayView();
+  });
 
   // ---- Cara 6: bloque personalizado ----
   function openCustomBlockSession(blockTypeId){
