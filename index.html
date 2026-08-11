@@ -1777,6 +1777,17 @@
     font-family: inherit;
   }
   .reset-test-preview { font-size: 11px; color: var(--accent-strong); margin-top: 6px; font-weight: 600; }
+  .reset-clear-log-row {
+    display: flex; align-items: flex-start; gap: 8px;
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: var(--field-bg);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .reset-clear-log-row input { margin-top: 2px; flex-shrink: 0; }
 
   .salary-current {
     background: var(--field-bg);
@@ -2717,6 +2728,10 @@
     <div class="history-list">
       <p class="rec-hint" style="padding-bottom:10px;">Ingresa una serie de prueba de cada levantamiento (el peso que usaste y cuántas repeticiones hiciste), igual que tu planilla. Prisma calcula tu 1RM estimado y tu 1RM de Entrenamiento (90% del 1RM) automáticamente. Esto borra el progreso de oleada calculado hasta ahora y te lleva a la Oleada de 10 Reps, semana Acumulación.</p>
       <div id="resetWeightsList"></div>
+      <label class="reset-clear-log-row">
+        <input type="checkbox" id="resetClearLogCheckbox" checked />
+        <span>También borrar todas las sesiones registradas (recomendado — evita que se te muestren pesos viejos guardados antes del reinicio)</span>
+      </label>
       <div class="add-card-actions" style="justify-content:space-between; margin-top:14px;">
         <button class="habit-edit-btn" id="resetWeightsCancelBtn">Cancelar</button>
         <button class="signout-btn" id="resetWeightsConfirmBtn" style="border:1px solid var(--urgent); border-radius:9px; padding:8px 16px;">Reiniciar</button>
@@ -2996,6 +3011,7 @@ const db = initializeFirestore(firebaseApp, {
   const resetWeightsListEl = document.getElementById('resetWeightsList');
   const resetWeightsCancelBtn = document.getElementById('resetWeightsCancelBtn');
   const resetWeightsConfirmBtn = document.getElementById('resetWeightsConfirmBtn');
+  const resetClearLogCheckbox = document.getElementById('resetClearLogCheckbox');
   const waveJumpOverlay = document.getElementById('waveJumpOverlay');
   const waveJumpCloseBtn = document.getElementById('waveJumpCloseBtn');
   const wjpWaveOptionsEl = document.getElementById('wjpWaveOptions');
@@ -4689,7 +4705,7 @@ const db = initializeFirestore(firebaseApp, {
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-06.6';
+  const APP_VERSION = '2026-08-06.7';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -6269,6 +6285,9 @@ const db = initializeFirestore(firebaseApp, {
       lifts[name].lastEstimated1RM = null;
       lifts[name].lastAmrapReps = null;
     });
+    if (resetClearLogCheckbox.checked) {
+      trainingLog = trainingLog.filter(l => l.kind === 'extra'); // keep accessory-work history, drop lift sessions
+    }
     currentWave = 'oleada10';
     currentWeek = 'acumulacion';
     pendingWaveCompletion = null;
