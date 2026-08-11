@@ -2505,6 +2505,19 @@
     <div id="trainingHomeView" class="subview">
       <div class="cards-toolbar">
         <h2 class="page-title">Entrenamiento</h2>
+        <button class="icon-btn" id="trainingCalendarBtn" aria-label="Calendario">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <rect x="3.5" y="5" width="17" height="15" rx="2.5" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M3.5 9.5h17" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M8 3v3.5M16 3v3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button class="icon-btn" id="trainingProgressBtn" aria-label="Progreso">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M4 19V5M4 19h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M7 15l4-5 3 3 5-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
         <button class="icon-btn" id="dayProgramConfigBtn" aria-label="Configurar programa">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
             <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.6"/>
@@ -2553,19 +2566,6 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <h2 class="page-title">Juggernaut</h2>
-        <button class="icon-btn" id="trainingCalendarBtn" aria-label="Calendario">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <rect x="3.5" y="5" width="17" height="15" rx="2.5" stroke="currentColor" stroke-width="1.8"/>
-            <path d="M3.5 9.5h17" stroke="currentColor" stroke-width="1.8"/>
-            <path d="M8 3v3.5M16 3v3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          </svg>
-        </button>
-        <button class="icon-btn" id="trainingProgressBtn" aria-label="Progreso">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M4 19V5M4 19h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M7 15l4-5 3 3 5-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
         <button class="icon-btn" id="trainingHistoryBtn" aria-label="Historial de entrenamiento">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
             <path d="M12 8v4.5l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -2981,9 +2981,6 @@
       <p class="rec-hint" style="padding-bottom:8px;">El 1RM de Entrenamiento es la base desde la que se calculan todos los pesos de la oleada actual (igual que en tu planilla).</p>
       <div id="liftSettingsList"></div>
 
-      <div class="settings-section-label" style="margin-top:16px;">Horario semanal</div>
-      <div id="scheduleSettingsList"></div>
-
       <div class="settings-section-label" style="margin-top:16px; color:var(--urgent);">Zona de reinicio</div>
       <p class="rec-hint">Reinicia tus 1RM de Entrenamiento desde cero y te devuelve a la Oleada de 10 Reps, semana Acumulación — así puedes volver a ingresar manualmente tus repeticiones de cada semana (incluidas las AMRAP) y verificar que los cálculos de 1RM tengan sentido a medida que avanzas.</p>
       <button class="signout-btn" id="resetWeightsBtn" style="border:1px solid var(--urgent); border-radius:11px; padding:11px; width:100%;">🔄 Reiniciar todos los pesos</button>
@@ -3301,7 +3298,6 @@ const db = initializeFirestore(firebaseApp, {
   const trainingSettingsOverlay = document.getElementById('trainingSettingsOverlay');
   const trainingSettingsCloseBtn = document.getElementById('trainingSettingsCloseBtn');
   const liftSettingsListEl = document.getElementById('liftSettingsList');
-  const scheduleSettingsListEl = document.getElementById('scheduleSettingsList');
 
 
   const extraConfigViewEl = document.getElementById('extraConfigView');
@@ -3582,6 +3578,7 @@ const db = initializeFirestore(firebaseApp, {
   let lifts = {}; // { [name]: { trainingMax, incrementPerRep, lastEstimated1RM, lastAmrapReps } }
   let extraExercises = []; // [{id, name, detail}]
   let trainingLog = []; // completed set-logs: [{id, ts, date, wave, week, lift, sets:[{pct,targetWeight,targetReps,actualReps,amrap}], estimated1RM}]
+  let trainingMaxHistory = []; // [{lift, trainingMax, date, ts, label}] — checkpoints for the progress chart: the initial test, then each wave completion
   let activeLiftName = null;
   let activeLiftDraftSets = null; // working copy of sets being logged in liftSessionView
 
@@ -3800,6 +3797,7 @@ const db = initializeFirestore(firebaseApp, {
       lifts = (state.lifts && Object.keys(state.lifts).length) ? state.lifts : defaultLifts();
       extraExercises = Array.isArray(state.extraExercises) ? state.extraExercises : [];
       trainingLog = Array.isArray(state.trainingLog) ? state.trainingLog : [];
+      trainingMaxHistory = Array.isArray(state.trainingMaxHistory) ? state.trainingMaxHistory : [];
       if (state.weeklySchedule && typeof state.weeklySchedule === 'object') weeklySchedule = state.weeklySchedule;
       scheduleConfigured = !!state.scheduleConfigured;
       customBlockTypes = Array.isArray(state.customBlockTypes) ? state.customBlockTypes : defaultCustomBlockTypes();
@@ -3838,7 +3836,7 @@ const db = initializeFirestore(firebaseApp, {
   async function persist(){
     if (!currentUserId || !dataLoadOk) return;
     try {
-      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, notificationSound, habits, decks, salaryEntries, otherIncomes, fixedExpenses, debts, savings, freeExpenses, financeHistory, currentWave, currentWeek, lifts, extraExercises, trainingLog, weeklySchedule, scheduleConfigured, customBlockTypes, trainingDays, currentDayIndex, dayProgress });
+      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, notificationSound, habits, decks, salaryEntries, otherIncomes, fixedExpenses, debts, savings, freeExpenses, financeHistory, currentWave, currentWeek, lifts, extraExercises, trainingLog, trainingMaxHistory, weeklySchedule, scheduleConfigured, customBlockTypes, trainingDays, currentDayIndex, dayProgress });
     } catch(e) {
       console.error('No se pudo guardar', e);
     }
@@ -3849,7 +3847,7 @@ const db = initializeFirestore(firebaseApp, {
     salaryEntries = []; otherIncomes = []; fixedExpenses = []; debts = []; savings = [];
     freeExpenses = []; financeHistory = [];
     currentWave = 'oleada8'; currentWeek = 'acumulacion';
-    lifts = defaultLifts(); extraExercises = []; trainingLog = []; activeLiftName = null;
+    lifts = defaultLifts(); extraExercises = []; trainingLog = []; trainingMaxHistory = []; activeLiftName = null;
     weeklySchedule = { 0: 'Descanso', 1: 'Descanso', 2: 'Descanso', 3: 'Descanso', 4: 'Descanso', 5: 'Descanso', 6: 'Descanso' };
     scheduleConfigured = false;
     customBlockTypes = defaultCustomBlockTypes();
@@ -5077,7 +5075,7 @@ const db = initializeFirestore(firebaseApp, {
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-11.2';
+  const APP_VERSION = '2026-08-11.3';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -6416,7 +6414,13 @@ const db = initializeFirestore(firebaseApp, {
 
   function applyWaveCompletion(){
     if (!pendingWaveCompletion) return;
-    pendingWaveCompletion.changes.forEach(c => { lifts[c.name].trainingMax = c.newMax; });
+    const completedLabel = WAVE_LABEL[pendingWaveCompletion.fromWave];
+    const ts = Date.now();
+    const date = todayKey();
+    pendingWaveCompletion.changes.forEach(c => {
+      lifts[c.name].trainingMax = c.newMax;
+      trainingMaxHistory.push({ lift: c.name, trainingMax: c.newMax, date, ts, label: completedLabel + ' completada' });
+    });
     const waveIdx = WAVE_ORDER.indexOf(pendingWaveCompletion.fromWave);
     currentWave = WAVE_ORDER[(waveIdx + 1) % WAVE_ORDER.length];
     currentWeek = 'acumulacion';
@@ -6575,7 +6579,12 @@ const db = initializeFirestore(firebaseApp, {
     liftSettingsListEl.querySelectorAll('[data-lift-tm]').forEach(inp => {
       inp.addEventListener('change', () => {
         const v = parseFloat(inp.value);
-        if (isFinite(v) && v > 0) { lifts[inp.dataset.liftTm].trainingMax = v; scheduleSave(); renderTrainingAll(); }
+        if (isFinite(v) && v > 0) {
+          lifts[inp.dataset.liftTm].trainingMax = v;
+          trainingMaxHistory.push({ lift: inp.dataset.liftTm, trainingMax: v, date: todayKey(), ts: Date.now(), label: 'Ajuste manual' });
+          scheduleSave();
+          renderTrainingAll();
+        }
       });
     });
     liftSettingsListEl.querySelectorAll('[data-lift-inc]').forEach(inp => {
@@ -6648,6 +6657,12 @@ const db = initializeFirestore(firebaseApp, {
     if (resetClearLogCheckbox.checked) {
       trainingLog = trainingLog.filter(l => l.kind === 'extra'); // keep accessory-work history, drop lift sessions
     }
+    // The reset is a fresh start — the chart's history starts over from here.
+    const resetDate = todayKey();
+    const resetTs = Date.now();
+    trainingMaxHistory = LIFT_NAMES.map(name => ({
+      lift: name, trainingMax: newMaxes[name], date: resetDate, ts: resetTs, label: 'Inicio (test 1RM)',
+    }));
     currentWave = 'oleada10';
     currentWeek = 'acumulacion';
     pendingWaveCompletion = null;
@@ -6739,7 +6754,6 @@ const db = initializeFirestore(firebaseApp, {
 
   trainingSettingsBtn.addEventListener('click', () => {
     renderLiftSettings();
-    renderScheduleRows(scheduleSettingsListEl, () => scheduleSave());
     trainingSettingsOverlay.classList.add('open');
   });
   trainingSettingsCloseBtn.addEventListener('click', () => trainingSettingsOverlay.classList.remove('open'));
@@ -6914,31 +6928,36 @@ const db = initializeFirestore(firebaseApp, {
   }
 
   function renderProgressChart(){
-    const points = trainingLog
-      .filter(l => l.lift === progressLift && typeof l.estimated1RM === 'number')
+    const points = trainingMaxHistory
+      .filter(p => p.lift === progressLift)
       .slice()
       .sort((a, b) => a.ts - b.ts);
 
-    if (points.length < 2) {
-      progressChartAreaEl.innerHTML = `<p class="chart-empty">Necesitas al menos 2 sesiones con serie AMRAP registrada en ${escapeHtml(progressLift)} para ver el gráfico.</p>`;
+    if (points.length === 0) {
+      progressChartAreaEl.innerHTML = `<p class="chart-empty">Todavía no hay ningún 1RM de Entrenamiento registrado para ${escapeHtml(progressLift)}. Usa "Reiniciar todos los pesos" para fijar tu punto de partida.</p>`;
+      return;
+    }
+    if (points.length === 1) {
+      progressChartAreaEl.innerHTML = `
+        <p class="chart-empty">Solo tienes tu punto de partida todavía (${points[0].trainingMax}kg). El gráfico aparece cuando completes al menos una oleada.</p>`;
       return;
     }
 
     const W = 320, H = 160, PAD = 24;
-    const values = points.map(p => p.estimated1RM);
+    const values = points.map(p => p.trainingMax);
     const minV = Math.min(...values) - 2;
     const maxV = Math.max(...values) + 2;
     const range = Math.max(1, maxV - minV);
     const xStep = (W - PAD * 2) / (points.length - 1);
     const coords = points.map((p, i) => {
       const x = PAD + i * xStep;
-      const y = H - PAD - ((p.estimated1RM - minV) / range) * (H - PAD * 2);
+      const y = H - PAD - ((p.trainingMax - minV) / range) * (H - PAD * 2);
       return [x, y];
     });
     const pathD = coords.map((c, i) => (i === 0 ? 'M' : 'L') + c[0].toFixed(1) + ',' + c[1].toFixed(1)).join(' ');
 
-    const dots = coords.map(([x, y]) => `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5" fill="var(--accent)" />`).join('');
-    const first = points[0].estimated1RM, last = points[points.length - 1].estimated1RM;
+    const dots = coords.map(([x, y], i) => `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5" fill="var(--accent)"><title>${escapeHtml(points[i].label || '')} — ${points[i].date}</title></circle>`).join('');
+    const first = points[0].trainingMax, last = points[points.length - 1].trainingMax;
     const delta = Math.round((last - first) * 10) / 10;
 
     progressChartAreaEl.innerHTML = `
@@ -6950,11 +6969,11 @@ const db = initializeFirestore(firebaseApp, {
       <div class="chart-stats">
         <div class="habit-stat-box">
           <div class="habit-stat-num">${Math.round(first * 10) / 10}kg</div>
-          <div class="habit-stat-label">Primer registro</div>
+          <div class="habit-stat-label">${escapeHtml(points[0].label || 'Inicio')}</div>
         </div>
         <div class="habit-stat-box accent">
           <div class="habit-stat-num">${Math.round(last * 10) / 10}kg</div>
-          <div class="habit-stat-label">Último registro</div>
+          <div class="habit-stat-label">Actual</div>
         </div>
         <div class="habit-stat-box">
           <div class="habit-stat-num" style="${delta >= 0 ? 'color:#3FC373' : 'color:var(--urgent)'}">${delta >= 0 ? '+' : ''}${delta}kg</div>
