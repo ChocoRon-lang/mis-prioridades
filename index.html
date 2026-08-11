@@ -3046,6 +3046,7 @@
       <button class="history-close" id="trainingCalendarCloseBtn" aria-label="Cerrar">✕</button>
     </div>
     <div class="history-list">
+      <p class="rec-hint" id="calPickingHint" style="display:none; color:var(--accent-strong); font-weight:650; padding-bottom:8px;"></p>
       <div class="month-switcher" style="justify-content:center; margin-bottom:12px;">
         <button class="month-arrow" id="calPrevMonth">‹</button>
         <span class="month-label" id="calMonthLabel">—</span>
@@ -3053,9 +3054,8 @@
       </div>
       <div id="calGrid"></div>
       <div class="cal-legend">
-        <span><span class="cal-dot done"></span> Hecho</span>
-        <span><span class="cal-dot missed"></span> No registrado</span>
-        <span><span class="cal-dot rest"></span> Descanso/otro</span>
+        <span><span class="cal-dot done"></span> Día terminado</span>
+        <span><span class="cal-dot missed"></span> Día omitido</span>
       </div>
     </div>
   </div>
@@ -3344,6 +3344,7 @@ const db = initializeFirestore(firebaseApp, {
   const calPrevMonthBtn = document.getElementById('calPrevMonth');
   const calNextMonthBtn = document.getElementById('calNextMonth');
   const calMonthLabelEl = document.getElementById('calMonthLabel');
+  const calPickingHintEl = document.getElementById('calPickingHint');
   const calGridEl = document.getElementById('calGrid');
 
   const waveCompleteOverlay = document.getElementById('waveCompleteOverlay');
@@ -3579,6 +3580,8 @@ const db = initializeFirestore(firebaseApp, {
   let extraExercises = []; // [{id, name, detail}]
   let trainingLog = []; // completed set-logs: [{id, ts, date, wave, week, lift, sets:[{pct,targetWeight,targetReps,actualReps,amrap}], estimated1RM}]
   let trainingMaxHistory = []; // [{lift, trainingMax, date, ts, label}] — checkpoints for the progress chart: the initial test, then each wave completion
+  let dayCompletionLog = []; // [{id, date, dayId, dayName, status:'done'|'skipped', ts}] — powers the calendar
+  let pendingDayFinish = null; // { status: 'done' | 'skipped' } while the calendar is open picking a date for Terminar/Omitir día
   let activeLiftName = null;
   let activeLiftDraftSets = null; // working copy of sets being logged in liftSessionView
 
@@ -3798,6 +3801,7 @@ const db = initializeFirestore(firebaseApp, {
       extraExercises = Array.isArray(state.extraExercises) ? state.extraExercises : [];
       trainingLog = Array.isArray(state.trainingLog) ? state.trainingLog : [];
       trainingMaxHistory = Array.isArray(state.trainingMaxHistory) ? state.trainingMaxHistory : [];
+      dayCompletionLog = Array.isArray(state.dayCompletionLog) ? state.dayCompletionLog : [];
       if (state.weeklySchedule && typeof state.weeklySchedule === 'object') weeklySchedule = state.weeklySchedule;
       scheduleConfigured = !!state.scheduleConfigured;
       customBlockTypes = Array.isArray(state.customBlockTypes) ? state.customBlockTypes : defaultCustomBlockTypes();
@@ -3836,7 +3840,7 @@ const db = initializeFirestore(firebaseApp, {
   async function persist(){
     if (!currentUserId || !dataLoadOk) return;
     try {
-      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, notificationSound, habits, decks, salaryEntries, otherIncomes, fixedExpenses, debts, savings, freeExpenses, financeHistory, currentWave, currentWeek, lifts, extraExercises, trainingLog, trainingMaxHistory, weeklySchedule, scheduleConfigured, customBlockTypes, trainingDays, currentDayIndex, dayProgress });
+      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, notificationSound, habits, decks, salaryEntries, otherIncomes, fixedExpenses, debts, savings, freeExpenses, financeHistory, currentWave, currentWeek, lifts, extraExercises, trainingLog, trainingMaxHistory, dayCompletionLog, weeklySchedule, scheduleConfigured, customBlockTypes, trainingDays, currentDayIndex, dayProgress });
     } catch(e) {
       console.error('No se pudo guardar', e);
     }
@@ -3847,7 +3851,7 @@ const db = initializeFirestore(firebaseApp, {
     salaryEntries = []; otherIncomes = []; fixedExpenses = []; debts = []; savings = [];
     freeExpenses = []; financeHistory = [];
     currentWave = 'oleada8'; currentWeek = 'acumulacion';
-    lifts = defaultLifts(); extraExercises = []; trainingLog = []; trainingMaxHistory = []; activeLiftName = null;
+    lifts = defaultLifts(); extraExercises = []; trainingLog = []; trainingMaxHistory = []; dayCompletionLog = []; pendingDayFinish = null; activeLiftName = null;
     weeklySchedule = { 0: 'Descanso', 1: 'Descanso', 2: 'Descanso', 3: 'Descanso', 4: 'Descanso', 5: 'Descanso', 6: 'Descanso' };
     scheduleConfigured = false;
     customBlockTypes = defaultCustomBlockTypes();
@@ -5075,7 +5079,7 @@ const db = initializeFirestore(firebaseApp, {
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-11.3';
+  const APP_VERSION = '2026-08-11.4';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -6476,6 +6480,12 @@ const db = initializeFirestore(firebaseApp, {
     const y = calMonthCursor.getFullYear();
     const m = calMonthCursor.getMonth();
     calMonthLabelEl.textContent = MONTH_NAMES[m] + ' ' + y;
+    calPickingHintEl.style.display = pendingDayFinish ? '' : 'none';
+    if (pendingDayFinish) {
+      calPickingHintEl.textContent = pendingDayFinish.status === 'done'
+        ? '¿Qué día ejecutaste este entrenamiento? Tócalo en el calendario.'
+        : '¿Qué día quieres marcar como omitido? Tócalo en el calendario.';
+    }
 
     const daysInMonth = new Date(y, m + 1, 0).getDate();
     const firstWeekday = new Date(y, m, 1).getDay();
@@ -6485,19 +6495,17 @@ const db = initializeFirestore(firebaseApp, {
     for (let i = 0; i < firstWeekday; i++) cells += `<td class="cal-day-cell"><div class="cal-day-inner empty"></div></td>`;
 
     for (let d = 1; d <= daysInMonth; d++) {
-      const dow = new Date(y, m, d).getDay();
       const key = dateKey(y, m, d);
       const isToday = key === tKey;
       const isFuture = key > tKey;
-      const activity = weeklySchedule[dow];
+      const entries = dayCompletionLog.filter(e => e.date === key);
       let cls = '';
-      let tappable = '';
-      if (!isFuture && LIFT_NAMES.includes(activity)) {
-        const done = trainingLog.some(l => l.lift === activity && l.date === key);
-        cls = done ? 'done' : 'missed';
-        tappable = `data-cal-lift="${escapeHtml(activity)}" data-cal-date="${key}"`;
+      if (entries.length > 0) {
+        cls = entries.some(e => e.status === 'done') ? 'done' : 'missed';
       }
-      cells += `<td class="cal-day-cell"><div class="cal-day-inner ${cls} ${isToday ? 'today' : ''}" ${tappable} style="${tappable ? 'cursor:pointer;' : ''}">${d}${cls ? '<span class="cal-dot-mini"></span>' : ''}</div></td>`;
+      const pickable = pendingDayFinish && !isFuture;
+      const tappable = pickable ? `data-pick-date="${key}"` : '';
+      cells += `<td class="cal-day-cell"><div class="cal-day-inner ${cls} ${isToday ? 'today' : ''}" ${tappable} style="${pickable ? 'cursor:pointer;' : ''}">${d}${cls ? '<span class="cal-dot-mini"></span>' : ''}</div></td>`;
     }
 
     // pad to complete the final week row
@@ -6520,12 +6528,27 @@ const db = initializeFirestore(firebaseApp, {
         <tbody>${rows}</tbody>
       </table>`;
 
-    calGridEl.querySelectorAll('[data-cal-lift]').forEach(el => {
-      el.addEventListener('click', () => {
-        trainingCalendarOverlay.classList.remove('open');
-        openLiftSession(el.dataset.calLift, el.dataset.calDate);
-      });
+    calGridEl.querySelectorAll('[data-pick-date]').forEach(el => {
+      el.addEventListener('click', () => confirmDayFinish(el.dataset.pickDate));
     });
+  }
+
+  function confirmDayFinish(dateKeyStr){
+    if (!pendingDayFinish) return;
+    const day = currentDay();
+    dayCompletionLog.unshift({
+      id: uid(), date: dateKeyStr, dayId: day ? day.id : null, dayName: day ? day.name : '—',
+      status: pendingDayFinish.status, ts: Date.now(),
+    });
+    if (dayCompletionLog.length > 400) dayCompletionLog = dayCompletionLog.slice(0, 400);
+    pendingDayFinish = null;
+    trainingCalendarOverlay.classList.remove('open');
+    if (trainingDays.length > 0) {
+      currentDayIndex = (currentDayIndex + 1) % trainingDays.length;
+      dayProgress = {};
+    }
+    scheduleSave();
+    showTrainingSubview('trainingHomeView');
   }
 
   trainingCalendarBtn.addEventListener('click', () => {
@@ -6533,8 +6556,8 @@ const db = initializeFirestore(firebaseApp, {
     renderTrainingCalendar();
     trainingCalendarOverlay.classList.add('open');
   });
-  trainingCalendarCloseBtn.addEventListener('click', () => trainingCalendarOverlay.classList.remove('open'));
-  trainingCalendarOverlay.addEventListener('click', (e) => { if (e.target === trainingCalendarOverlay) trainingCalendarOverlay.classList.remove('open'); });
+  trainingCalendarCloseBtn.addEventListener('click', () => { pendingDayFinish = null; trainingCalendarOverlay.classList.remove('open'); });
+  trainingCalendarOverlay.addEventListener('click', (e) => { if (e.target === trainingCalendarOverlay) { pendingDayFinish = null; trainingCalendarOverlay.classList.remove('open'); } });
   calPrevMonthBtn.addEventListener('click', () => {
     calMonthCursor = new Date(calMonthCursor.getFullYear(), calMonthCursor.getMonth() - 1, 1);
     renderTrainingCalendar();
@@ -7345,15 +7368,15 @@ const db = initializeFirestore(firebaseApp, {
 
   dayViewBackBtn.addEventListener('click', () => showTrainingSubview('trainingHomeView'));
 
-  function advanceToNextDay(){
+  function requestDayFinish(status){
     if (trainingDays.length === 0) return;
-    currentDayIndex = (currentDayIndex + 1) % trainingDays.length;
-    dayProgress = {};
-    scheduleSave();
-    showTrainingSubview('trainingHomeView');
+    pendingDayFinish = { status };
+    calMonthCursor = new Date();
+    renderTrainingCalendar();
+    trainingCalendarOverlay.classList.add('open');
   }
-  skipDayBtn.addEventListener('click', advanceToNextDay);
-  finishDayBtn.addEventListener('click', advanceToNextDay);
+  skipDayBtn.addEventListener('click', () => requestDayFinish('skipped'));
+  finishDayBtn.addEventListener('click', () => requestDayFinish('done'));
 
   function goToPreviousDay(){
     if (trainingDays.length === 0) return;
