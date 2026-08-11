@@ -1600,6 +1600,138 @@
   }
   .offline-badge.show { display: inline-flex; }
 
+  /* ---- Cara 1: portada Entrenamiento ---- */
+  .home-mode-card {
+    display: block;
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 18px;
+    padding: 36px 20px;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .home-mode-card:first-of-type { border-color: var(--accent); background: var(--accent-soft); }
+  .hmc-title { font-size: 19px; font-weight: 750; letter-spacing: -0.01em; line-height: 1.3; }
+  .hmc-soon { font-size: 11px; color: var(--ink-soft); margin-top: 8px; font-weight: 650; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* ---- Cara 2: bloques del día ---- */
+  .day-block-item {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 13px;
+    padding: 13px 14px;
+    margin-bottom: 8px;
+  }
+  .day-block-item.done { border-color: #3FC373; background: rgba(63,195,115,0.08); }
+  .dbi-handle { color: var(--ink-soft); flex-shrink: 0; cursor: grab; touch-action: none; padding: 4px; }
+  .dbi-handle svg { display: block; }
+  .dbi-body { flex: 1; min-width: 0; }
+  .dbi-name { font-size: 14.5px; font-weight: 650; }
+  .dbi-sub { font-size: 11.5px; color: var(--ink-soft); margin-top: 1px; }
+  .dbi-check {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 1.5px solid var(--hairline);
+    background: var(--field-bg);
+    color: transparent;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .dbi-check.checked { background: #3FC373; border-color: #3FC373; color: #fff; }
+  .day-block-item.dragging { opacity: 0.5; }
+
+  .day-finish-actions { display: flex; gap: 10px; margin-top: 16px; }
+  .day-finish-actions #skipDayBtn { flex: 1; }
+  .day-finish-actions #finishDayBtn { flex: 1.4; padding: 12px; }
+
+  .checklist-item {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 11px 12px;
+    margin-bottom: 8px;
+  }
+  .checklist-item-info { flex: 1; min-width: 0; }
+  .checklist-item-name { font-size: 14px; font-weight: 600; }
+  .checklist-item-detail { font-size: 12px; color: var(--ink-soft); margin-top: 1px; }
+  .checklist-check {
+    width: 27px; height: 27px;
+    border-radius: 50%;
+    border: 1.5px solid var(--hairline);
+    background: var(--field-bg);
+    color: transparent;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .checklist-check.checked { background: #3FC373; border-color: #3FC373; color: #fff; }
+
+  .edit-item-row {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--field-bg);
+    border: 1px solid var(--hairline);
+    border-radius: 11px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+  }
+  .edit-item-row input {
+    border: 1px solid var(--hairline);
+    background: var(--card);
+    border-radius: 8px;
+    padding: 7px 8px;
+    font-size: 13px;
+    color: var(--ink);
+    font-family: inherit;
+  }
+  .edit-item-row input.edit-item-name { flex: 1.4; min-width: 0; }
+  .edit-item-row input.edit-item-detail { flex: 1; min-width: 0; }
+
+  .day-program-card {
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 13px 14px;
+    margin-bottom: 10px;
+  }
+  .day-program-header { display: flex; align-items: center; gap: 8px; }
+  .day-program-name { flex: 1; font-size: 14.5px; font-weight: 700; }
+  .day-program-blocks { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .day-program-block-chip {
+    display: flex; align-items: center; gap: 5px;
+    background: var(--field-bg);
+    border: 1px solid var(--hairline);
+    border-radius: 20px;
+    padding: 5px 6px 5px 10px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .day-program-block-chip button { color: var(--urgent); font-size: 13px; line-height: 1; padding: 2px; }
+  .day-program-add-block { margin-top: 8px; }
+  .block-type-btn {
+    border: 1px solid var(--hairline);
+    background: var(--field-bg);
+    color: var(--ink);
+    font-size: 11.5px;
+    font-weight: 650;
+    padding: 6px 10px;
+    border-radius: 20px;
+    margin: 0 6px 6px 0;
+  }
+
+  .custom-block-type-row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 11px 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+  }
+  .custom-block-type-row .fin-item-name { font-size: 14px; font-weight: 650; }
+  .custom-block-type-row .fin-item-sub { font-size: 11.5px; color: var(--ink-soft); margin-top: 1px; }
+
   .day-chip-row { display: flex; gap: 5px; flex-wrap: wrap; }
   .day-chip {
     width: 34px; height: 34px;
@@ -2367,10 +2499,57 @@
 
   <div id="trainingPage" class="page" style="display:none;">
 
-    <!-- Level 1: wave overview + the 4 lifts + trabajo extra -->
-    <div id="trainingOverviewView" class="subview">
+    <!-- Cara 1: Entrenamiento (portada) -->
+    <div id="trainingHomeView" class="subview">
       <div class="cards-toolbar">
-        <h2 class="page-title">Entreno</h2>
+        <h2 class="page-title">Entrenamiento</h2>
+        <button class="icon-btn" id="dayProgramConfigBtn" aria-label="Configurar programa">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M19.4 13.5a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V19.5a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H4.5a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 6.1 8.6a1.65 1.65 0 0 0-.33-1.82l-.06-.06A2 2 0 1 1 8.54 3.9l.06.06a1.65 1.65 0 0 0 1.82.33H10.5a1.65 1.65 0 0 0 1-1.51V2.5a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V8.5a1.65 1.65 0 0 0 1.51 1h.09a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <main>
+        <button class="home-mode-card" id="goDayTrainingBtn">
+          <div class="hmc-title">Entrenamiento<br/>del Día</div>
+        </button>
+        <button class="home-mode-card" id="goFreeTrainingBtn">
+          <div class="hmc-title">Entrenamiento<br/>Libre</div>
+          <div class="hmc-soon">Próximamente</div>
+        </button>
+      </main>
+    </div>
+
+    <!-- Cara 2: Entrenamiento del Día — bloques del día actual del programa -->
+    <div id="trainingDayView" class="subview" style="display:none;">
+      <div class="cards-toolbar">
+        <button class="icon-btn" id="dayViewBackBtn" aria-label="Volver">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <h2 class="page-title">Entrenamiento del Día</h2>
+        <div style="width:38px;"></div>
+      </div>
+      <main>
+        <p class="rec-hint" id="dayViewLabel" style="padding:0 0 8px 0;"></p>
+        <ul id="dayBlockList"></ul>
+        <div class="deck-empty" id="dayBlockEmpty" style="display:none;">
+          <p>Este día no tiene bloques configurados todavía. Ve a configurar tu programa (⚙️ arriba en la portada de Entrenamiento).</p>
+        </div>
+        <div class="day-finish-actions">
+          <button class="habit-edit-btn" id="skipDayBtn">⏭ Omitir día</button>
+          <button class="done-toggle" id="finishDayBtn">✓ Terminar día</button>
+        </div>
+      </main>
+    </div>
+
+    <!-- Cara 3: wave overview + the 4 lifts + trabajo extra -->
+    <div id="trainingOverviewView" class="subview" style="display:none;">
+      <div class="cards-toolbar">
+        <button class="icon-btn" id="overviewBackBtn" aria-label="Volver">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <h2 class="page-title">Juggernaut</h2>
         <button class="icon-btn" id="trainingCalendarBtn" aria-label="Calendario">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
             <rect x="3.5" y="5" width="17" height="15" rx="2.5" stroke="currentColor" stroke-width="1.8"/>
@@ -2400,15 +2579,6 @@
       </div>
 
       <main>
-        <div class="missed-banner" id="missedBanner" style="display:none;"></div>
-
-        <div class="today-hero" id="todayHero">
-          <div class="th-label" id="thLabel">HOY · MARTES</div>
-          <div class="th-activity" id="thActivity">Press de Banca</div>
-          <button class="study-cta" id="todayStartBtn" style="width:100%; margin-top:10px;">▶ Empezar sesión de hoy</button>
-          <div id="todayExtraList" style="margin-top:10px;"></div>
-        </div>
-
         <div class="safe-to-spend" style="text-align:left; padding:14px 16px; margin-left:0; margin-right:0;">
           <div class="sts-label">Ciclo Juggernaut</div>
           <div class="wave-week-row">
@@ -2423,43 +2593,135 @@
           <button class="wave-change-link" id="waveJumpBtn">Cambiar oleada o semana directamente</button>
         </div>
 
-        <div class="field-label" style="margin:16px 4px 4px 4px;">Todos los levantamientos</div>
+        <div class="field-label" style="margin:16px 4px 4px 4px;">Los 4 básicos</div>
         <ul id="liftList"></ul>
+      </main>
+    </div>
 
-        <div class="finance-section" data-section="extra" style="margin-top:14px;">
-          <div class="finance-section-header" data-section-toggle="extra">
-            <span class="fs-icon">➕</span>
-            <span class="finance-section-title">Trabajo extra</span>
-            <span class="finance-section-total"></span>
-            <span class="chevron">›</span>
-          </div>
-          <div class="finance-section-body" id="extraBody" style="display:none;">
-            <p class="rec-hint" style="padding:0 0 8px 0;">Ejercicios accesorios de tu programa (los que no vienen del Juggernaut). Asígnalos a días específicos para que aparezcan en "Hoy" — sin días marcados, se muestran todos los días. Tócalos para configurar series, peso y descanso. Pídele a Claude en "Entrenamiento Total Hans" que te los pase en JSON (con sus días) para importarlos.</p>
-            <ul id="extraList"></ul>
-            <button class="add-card-toggle" id="addExtraToggle">+ Agregar ejercicio extra</button>
-            <div class="add-card-form" id="addExtraForm" style="display:none;">
-              <input class="due" id="newExtraName" type="text" style="width:100%;" placeholder="Nombre del ejercicio" />
-              <input class="due" id="newExtraDetail" type="text" style="width:100%; margin-top:8px;" placeholder="Nota opcional (ej. con mancuernas)" />
-              <div class="field-label">¿Qué días? (ninguno = todos los días)</div>
-              <div class="day-chip-row" id="newExtraDays"></div>
-              <div class="add-card-actions">
-                <button class="habit-edit-btn" id="cancelExtraBtn">Cancelar</button>
-                <button class="done-toggle" id="saveExtraBtn">Guardar</button>
-              </div>
-            </div>
+    <!-- Cara 5: Accesorios (Trabajo Extra) -->
+    <div id="accesoriosListView" class="subview" style="display:none;">
+      <div class="cards-toolbar">
+        <button class="icon-btn" id="accesoriosBackBtn" aria-label="Volver">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <h2 class="page-title">Accesorios</h2>
+        <div style="width:38px;"></div>
+      </div>
+      <main>
+        <p class="rec-hint" style="padding:0 0 8px 0;">Tu trabajo extra — los ejercicios que no vienen del Juggernaut. Tócalos para configurar series, peso y descanso.</p>
+        <ul id="extraList"></ul>
+        <button class="add-card-toggle" id="addExtraToggle">+ Agregar ejercicio extra</button>
+        <div class="add-card-form" id="addExtraForm" style="display:none;">
+          <input class="due" id="newExtraName" type="text" style="width:100%;" placeholder="Nombre del ejercicio" />
+          <input class="due" id="newExtraDetail" type="text" style="width:100%; margin-top:8px;" placeholder="Nota opcional (ej. con mancuernas)" />
+          <div class="add-card-actions">
+            <button class="habit-edit-btn" id="cancelExtraBtn">Cancelar</button>
+            <button class="done-toggle" id="saveExtraBtn">Guardar</button>
           </div>
         </div>
 
         <button class="add-card-toggle" id="importRoutineToggle">⇩ Importar rutina (JSON)</button>
         <div class="add-card-form" id="importRoutineForm" style="display:none;">
           <div class="field-label">Pega aquí el JSON que te dé Claude</div>
-          <textarea class="notes" id="importRoutineTextarea" style="min-height:120px;" placeholder='{"extra": [{"name":"...","detail":"...","days":["martes","jueves"]}]}'></textarea>
+          <textarea class="notes" id="importRoutineTextarea" style="min-height:120px;" placeholder='{"extra": [{"name":"...","detail":"..."}]}'></textarea>
           <div class="auth-error" id="importRoutineError" style="display:none;"></div>
           <div class="add-card-actions">
             <button class="habit-edit-btn" id="importRoutineCancelBtn">Cancelar</button>
             <button class="done-toggle" id="importRoutineSubmitBtn">Importar</button>
           </div>
         </div>
+      </main>
+    </div>
+
+    <!-- Cara 6: bloque personalizado (ej. Rugby) -->
+    <div id="customBlockSessionView" class="subview" style="display:none;">
+      <div class="cards-toolbar">
+        <button class="icon-btn" id="customBlockBackBtn" aria-label="Volver">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <h2 class="page-title" id="customBlockTitle">—</h2>
+        <button class="icon-btn" id="customBlockEditBtn" aria-label="Editar">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <main>
+        <div class="field-label" style="margin-top:0;">🔥 Calentamiento</div>
+        <ul id="customBlockWarmupList"></ul>
+        <div class="deck-empty" id="customBlockWarmupEmpty" style="display:none;"><p>Sin calentamiento configurado.</p></div>
+
+        <div class="field-label">Ejercicios</div>
+        <ul id="customBlockDrillList"></ul>
+        <div class="deck-empty" id="customBlockDrillEmpty" style="display:none;"><p>Sin ejercicios configurados.</p></div>
+
+        <button class="done-toggle" id="markCustomBlockDoneBtn" style="width:100%; margin-top:14px; padding:14px;">✓ Marcar como hecho</button>
+      </main>
+    </div>
+
+    <!-- Configuración del programa: días + bloques + tipos de bloque personalizados -->
+    <div id="dayProgramConfigView" class="subview" style="display:none;">
+      <div class="cards-toolbar">
+        <button class="icon-btn" id="dayProgramConfigBackBtn" aria-label="Volver">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <h2 class="page-title">Tu programa</h2>
+        <div style="width:38px;"></div>
+      </div>
+      <main>
+        <p class="rec-hint" style="padding:0 0 8px 0;">Arma la secuencia de días de tu programa. Cada vez que termines u omitas un día, Prisma pasa automáticamente al siguiente — sin importar el día de la semana.</p>
+        <ul id="dayProgramList"></ul>
+        <button class="add-card-toggle" id="addDayBtn">+ Agregar día al programa</button>
+
+        <div class="field-label" style="margin-top:22px;">Tipos de bloque personalizados</div>
+        <p class="rec-hint" style="padding:0 0 8px 0;">Como "Rugby": tu propio calentamiento + ejercicios, reutilizable en cualquier día.</p>
+        <ul id="customBlockTypeList"></ul>
+        <button class="add-card-toggle" id="addCustomBlockTypeBtn">+ Crear tipo de bloque</button>
+      </main>
+    </div>
+
+    <!-- Editor de un tipo de bloque personalizado -->
+    <div id="customBlockEditorView" class="subview" style="display:none;">
+      <div class="cards-toolbar">
+        <button class="icon-btn" id="customBlockEditorBackBtn" aria-label="Volver">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <h2 class="page-title">Editar bloque</h2>
+        <button class="icon-btn" id="customBlockDeleteBtn" aria-label="Eliminar">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m-9 0 1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <main>
+        <div class="field-label" style="margin-top:0;">Nombre</div>
+        <input class="due" id="customBlockNameInput" type="text" style="width:100%;" placeholder="Ej. Rugby" />
+
+        <div class="field-label">🔥 Calentamiento</div>
+        <ul id="editWarmupList"></ul>
+        <button class="add-card-toggle" id="addWarmupItemBtn">+ Agregar ítem de calentamiento</button>
+        <button class="add-card-toggle" id="importWarmupToggle">⇩ Importar calentamiento (JSON)</button>
+        <div class="add-card-form" id="importWarmupForm" style="display:none;">
+          <div class="field-label">Pega aquí el JSON</div>
+          <textarea class="notes" id="importWarmupTextarea" style="min-height:100px;" placeholder='{"warmup":[{"name":"Skip A","detail":"15mt"}]}'></textarea>
+          <div class="auth-error" id="importWarmupError" style="display:none;"></div>
+          <div class="add-card-actions">
+            <button class="habit-edit-btn" id="importWarmupCancelBtn">Cancelar</button>
+            <button class="done-toggle" id="importWarmupSubmitBtn">Importar</button>
+          </div>
+        </div>
+
+        <div class="field-label">Ejercicios</div>
+        <ul id="editDrillList"></ul>
+        <button class="add-card-toggle" id="addDrillItemBtn">+ Agregar ejercicio</button>
+        <button class="add-card-toggle" id="importDrillToggle">⇩ Importar ejercicios (JSON)</button>
+        <div class="add-card-form" id="importDrillForm" style="display:none;">
+          <div class="field-label">Pega aquí el JSON</div>
+          <textarea class="notes" id="importDrillTextarea" style="min-height:100px;" placeholder='{"drills":[{"name":"Piques","detail":"6x15mt"}]}'></textarea>
+          <div class="auth-error" id="importDrillError" style="display:none;"></div>
+          <div class="add-card-actions">
+            <button class="habit-edit-btn" id="importDrillCancelBtn">Cancelar</button>
+            <button class="done-toggle" id="importDrillSubmitBtn">Importar</button>
+          </div>
+        </div>
+
+        <button class="done-toggle" id="saveCustomBlockTypeBtn" style="width:100%; margin-top:16px; padding:14px;">Guardar</button>
       </main>
     </div>
 
@@ -2922,19 +3184,75 @@ const db = initializeFirestore(firebaseApp, {
 
   const trainingPageEl = document.getElementById('trainingPage');
   const navTrainingBtn = document.getElementById('navTraining');
+
+  const trainingHomeViewEl = document.getElementById('trainingHomeView');
+  const goDayTrainingBtn = document.getElementById('goDayTrainingBtn');
+  const goFreeTrainingBtn = document.getElementById('goFreeTrainingBtn');
+  const dayProgramConfigBtn = document.getElementById('dayProgramConfigBtn');
+
+  const trainingDayViewEl = document.getElementById('trainingDayView');
+  const dayViewBackBtn = document.getElementById('dayViewBackBtn');
+  const dayViewLabelEl = document.getElementById('dayViewLabel');
+  const dayBlockListEl = document.getElementById('dayBlockList');
+  const dayBlockEmptyEl = document.getElementById('dayBlockEmpty');
+  const skipDayBtn = document.getElementById('skipDayBtn');
+  const finishDayBtn = document.getElementById('finishDayBtn');
+
   const trainingOverviewViewEl = document.getElementById('trainingOverviewView');
+  const overviewBackBtn = document.getElementById('overviewBackBtn');
   const liftSessionViewEl = document.getElementById('liftSessionView');
   const waveLabelEl = document.getElementById('waveLabel');
   const weekLabelEl = document.getElementById('weekLabel');
   const prevWeekBtn = document.getElementById('prevWeekBtn');
   const nextWeekBtn = document.getElementById('nextWeekBtn');
   const liftListEl = document.getElementById('liftList');
+
+  const accesoriosListViewEl = document.getElementById('accesoriosListView');
+  const accesoriosBackBtn = document.getElementById('accesoriosBackBtn');
   const extraListEl = document.getElementById('extraList');
   const addExtraToggle = document.getElementById('addExtraToggle');
   const addExtraForm = document.getElementById('addExtraForm');
+
+  const customBlockSessionViewEl = document.getElementById('customBlockSessionView');
+  const customBlockBackBtn = document.getElementById('customBlockBackBtn');
+  const customBlockTitleEl = document.getElementById('customBlockTitle');
+  const customBlockEditBtn = document.getElementById('customBlockEditBtn');
+  const customBlockWarmupListEl = document.getElementById('customBlockWarmupList');
+  const customBlockWarmupEmptyEl = document.getElementById('customBlockWarmupEmpty');
+  const customBlockDrillListEl = document.getElementById('customBlockDrillList');
+  const customBlockDrillEmptyEl = document.getElementById('customBlockDrillEmpty');
+  const markCustomBlockDoneBtn = document.getElementById('markCustomBlockDoneBtn');
+
+  const dayProgramConfigViewEl = document.getElementById('dayProgramConfigView');
+  const dayProgramConfigBackBtn = document.getElementById('dayProgramConfigBackBtn');
+  const dayProgramListEl = document.getElementById('dayProgramList');
+  const addDayBtn = document.getElementById('addDayBtn');
+  const customBlockTypeListEl = document.getElementById('customBlockTypeList');
+  const addCustomBlockTypeBtn = document.getElementById('addCustomBlockTypeBtn');
+
+  const customBlockEditorViewEl = document.getElementById('customBlockEditorView');
+  const customBlockEditorBackBtn = document.getElementById('customBlockEditorBackBtn');
+  const customBlockDeleteBtn = document.getElementById('customBlockDeleteBtn');
+  const customBlockNameInput = document.getElementById('customBlockNameInput');
+  const editWarmupListEl = document.getElementById('editWarmupList');
+  const addWarmupItemBtn = document.getElementById('addWarmupItemBtn');
+  const importWarmupToggle = document.getElementById('importWarmupToggle');
+  const importWarmupForm = document.getElementById('importWarmupForm');
+  const importWarmupTextarea = document.getElementById('importWarmupTextarea');
+  const importWarmupErrorEl = document.getElementById('importWarmupError');
+  const importWarmupCancelBtn = document.getElementById('importWarmupCancelBtn');
+  const importWarmupSubmitBtn = document.getElementById('importWarmupSubmitBtn');
+  const editDrillListEl = document.getElementById('editDrillList');
+  const addDrillItemBtn = document.getElementById('addDrillItemBtn');
+  const importDrillToggle = document.getElementById('importDrillToggle');
+  const importDrillForm = document.getElementById('importDrillForm');
+  const importDrillTextarea = document.getElementById('importDrillTextarea');
+  const importDrillErrorEl = document.getElementById('importDrillError');
+  const importDrillCancelBtn = document.getElementById('importDrillCancelBtn');
+  const importDrillSubmitBtn = document.getElementById('importDrillSubmitBtn');
+  const saveCustomBlockTypeBtn = document.getElementById('saveCustomBlockTypeBtn');
   const newExtraNameEl = document.getElementById('newExtraName');
   const newExtraDetailEl = document.getElementById('newExtraDetail');
-  const newExtraDaysEl = document.getElementById('newExtraDays');
   const cancelExtraBtn = document.getElementById('cancelExtraBtn');
   const saveExtraBtn = document.getElementById('saveExtraBtn');
   const importRoutineToggle = document.getElementById('importRoutineToggle');
@@ -2973,12 +3291,6 @@ const db = initializeFirestore(firebaseApp, {
   const liftSettingsListEl = document.getElementById('liftSettingsList');
   const scheduleSettingsListEl = document.getElementById('scheduleSettingsList');
 
-  const todayHeroEl = document.getElementById('todayHero');
-  const thLabelEl = document.getElementById('thLabel');
-  const thActivityEl = document.getElementById('thActivity');
-  const todayStartBtn = document.getElementById('todayStartBtn');
-  const todayExtraListEl = document.getElementById('todayExtraList');
-  const missedBannerEl = document.getElementById('missedBanner');
 
   const extraConfigViewEl = document.getElementById('extraConfigView');
   const extraConfigBackBtn = document.getElementById('extraConfigBackBtn');
@@ -3356,9 +3668,43 @@ const db = initializeFirestore(firebaseApp, {
   }
   const DAY_NAME_TO_INDEX = {};
   DAY_NAMES.forEach((name, idx) => { DAY_NAME_TO_INDEX[normalizeDayName(name)] = idx; });
-  let newExtraSelectedDays = [];
   let weeklySchedule = { 0: 'Descanso', 1: 'Descanso', 2: 'Descanso', 3: 'Descanso', 4: 'Descanso', 5: 'Descanso', 6: 'Descanso' };
   let scheduleConfigured = false;
+
+  // ---- Cara 6 / día-sequence: custom block types + the day program ----
+  let customBlockTypes = [];
+  let trainingDays = [];
+  let currentDayIndex = 0;
+  let dayProgress = {}; // { [blockId]: true } — resets whenever the day advances
+  let activeCustomBlockTypeId = null;
+  let editingBlockTypeId = null; // null while creating a new one
+  let editWarmupDraft = [];
+  let editDrillDraft = [];
+
+  function defaultCustomBlockTypes(){
+    const rugbyId = uid();
+    return [{
+      id: rugbyId,
+      name: 'Rugby',
+      warmup: [
+        { id: uid(), name: 'Skip A', detail: '15mt' },
+        { id: uid(), name: 'Piques progresivos', detail: '3x5' },
+      ],
+      drills: [
+        { id: uid(), name: 'Piques', detail: '6x15mt' },
+        { id: uid(), name: 'Cambio de Dirección', detail: '3x15mt' },
+      ],
+    }];
+  }
+
+  function defaultTrainingDays(blockTypes){
+    const rugbyId = blockTypes && blockTypes[0] ? blockTypes[0].id : null;
+    const days = [
+      { id: uid(), name: 'Día 1', blocks: [{ id: uid(), type: 'juggernaut' }, { id: uid(), type: 'extra' }] },
+    ];
+    if (rugbyId) days.push({ id: uid(), name: 'Día 2', blocks: [{ id: uid(), type: 'custom', blockTypeId: rugbyId }] });
+    return days;
+  }
   let selectedRpe = null;
   let warmupOpen = false;
   let calMonthCursor = new Date();
@@ -3436,6 +3782,10 @@ const db = initializeFirestore(firebaseApp, {
       trainingLog = Array.isArray(state.trainingLog) ? state.trainingLog : [];
       if (state.weeklySchedule && typeof state.weeklySchedule === 'object') weeklySchedule = state.weeklySchedule;
       scheduleConfigured = !!state.scheduleConfigured;
+      customBlockTypes = Array.isArray(state.customBlockTypes) ? state.customBlockTypes : defaultCustomBlockTypes();
+      trainingDays = Array.isArray(state.trainingDays) && state.trainingDays.length ? state.trainingDays : defaultTrainingDays(customBlockTypes);
+      currentDayIndex = typeof state.currentDayIndex === 'number' ? state.currentDayIndex : 0;
+      dayProgress = (state.dayProgress && typeof state.dayProgress === 'object') ? state.dayProgress : {};
       applyTheme(state.theme || 'dark');
       notificationSound = state.notificationSound || 'clasico';
       dataLoadOk = true;
@@ -3452,8 +3802,7 @@ const db = initializeFirestore(firebaseApp, {
     renderHabits();
     renderDeckList();
     renderFinance();
-    renderTraining();
-    if (!scheduleConfigured) maybeShowScheduleSetup();
+    renderTrainingAll();
   }
 
   // All data (tasks, history, theme, habits, decks) lives in one Firestore
@@ -3469,7 +3818,7 @@ const db = initializeFirestore(firebaseApp, {
   async function persist(){
     if (!currentUserId || !dataLoadOk) return;
     try {
-      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, notificationSound, habits, decks, salaryEntries, otherIncomes, fixedExpenses, debts, savings, freeExpenses, financeHistory, currentWave, currentWeek, lifts, extraExercises, trainingLog, weeklySchedule, scheduleConfigured });
+      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, notificationSound, habits, decks, salaryEntries, otherIncomes, fixedExpenses, debts, savings, freeExpenses, financeHistory, currentWave, currentWeek, lifts, extraExercises, trainingLog, weeklySchedule, scheduleConfigured, customBlockTypes, trainingDays, currentDayIndex, dayProgress });
     } catch(e) {
       console.error('No se pudo guardar', e);
     }
@@ -3483,6 +3832,12 @@ const db = initializeFirestore(firebaseApp, {
     lifts = defaultLifts(); extraExercises = []; trainingLog = []; activeLiftName = null;
     weeklySchedule = { 0: 'Descanso', 1: 'Descanso', 2: 'Descanso', 3: 'Descanso', 4: 'Descanso', 5: 'Descanso', 6: 'Descanso' };
     scheduleConfigured = false;
+    customBlockTypes = defaultCustomBlockTypes();
+    trainingDays = defaultTrainingDays(customBlockTypes);
+    currentDayIndex = 0;
+    dayProgress = {};
+    activeCustomBlockTypeId = null;
+    editingBlockTypeId = null;
     openId = null; activeDeckId = null;
     loaded = false;
     dataLoadOk = false;
@@ -3505,10 +3860,7 @@ const db = initializeFirestore(firebaseApp, {
     studyViewEl.style.display = 'none';
     deckListViewEl.style.display = 'flex';
 
-    liftSessionViewEl.style.display = 'none';
-    extraConfigViewEl.style.display = 'none';
-    extraSessionViewEl.style.display = 'none';
-    trainingOverviewViewEl.style.display = 'flex';
+    showTrainingSubview('trainingHomeView');
     activeExtraId = null;
   }
 
@@ -4006,7 +4358,7 @@ const db = initializeFirestore(firebaseApp, {
     if (page === 'habits') renderHabits();
     if (page === 'cards') renderDeckList();
     if (page === 'finance') renderFinance();
-    if (page === 'training') renderTraining();
+    if (page === 'training') { renderTrainingAll(); showTrainingSubview('trainingHomeView'); }
   }
   navTasksBtn.addEventListener('click', () => setPage('tasks'));
   navHabitsBtn.addEventListener('click', () => setPage('habits'));
@@ -4705,7 +5057,7 @@ const db = initializeFirestore(firebaseApp, {
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-06.7';
+  const APP_VERSION = '2026-08-11.1';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -5444,68 +5796,24 @@ const db = initializeFirestore(firebaseApp, {
     ).join(' · ');
   }
 
-  function renderTraining(){
+  function renderOverview(){
     waveLabelEl.textContent = WAVE_LABEL[currentWave];
     weekLabelEl.textContent = WEEK_LABEL[currentWeek];
     completeWaveBtn.style.display = currentWeek === 'descarga' ? '' : 'none';
-    renderTodayHero();
-    renderMissedBanner();
 
-    const tKey = todayKey();
     liftListEl.innerHTML = LIFT_NAMES.map(name => {
-      const doneToday = trainingLog.some(l => l.lift === name && l.wave === currentWave && l.week === currentWeek && l.date === tKey);
+      const done = trainingLog.some(l => l.lift === name && l.wave === currentWave && l.week === currentWeek);
       return `
         <li class="lift-item" data-lift="${escapeHtml(name)}">
           <div class="lift-item-top">
             <span class="lift-item-name">${escapeHtml(name)}</span>
-            ${doneToday ? '<span class="lift-item-done">✓ Hecho</span>' : '<span class="chevron">›</span>'}
+            ${done ? '<span class="lift-item-done">✓ Hecho</span>' : '<span class="chevron">›</span>'}
           </div>
         </li>`;
     }).join('');
     liftListEl.querySelectorAll('.lift-item').forEach(el => {
       el.addEventListener('click', () => openLiftSession(el.dataset.lift));
     });
-
-    renderExtraList();
-  }
-
-  function renderTodayHero(){
-    const dayIdx = new Date().getDay();
-    const activity = weeklySchedule[dayIdx] || 'Descanso';
-    thLabelEl.textContent = 'HOY · ' + DAY_NAMES[dayIdx].toUpperCase();
-    const tKey = todayKey();
-
-    if (LIFT_NAMES.includes(activity)) {
-      const doneToday = trainingLog.some(l => l.lift === activity && l.wave === currentWave && l.week === currentWeek && l.date === tKey);
-      thActivityEl.textContent = activity;
-      todayStartBtn.style.display = '';
-      todayStartBtn.textContent = doneToday ? '✓ Ya registrada — ver/editar' : '▶ Empezar sesión de hoy';
-      todayStartBtn.onclick = () => openLiftSession(activity);
-    } else if (activity === 'Descanso') {
-      thActivityEl.textContent = 'Descanso';
-      todayStartBtn.style.display = 'none';
-    } else {
-      thActivityEl.textContent = activity; // custom activity, e.g. "Rugby"
-      todayStartBtn.style.display = 'none';
-    }
-
-    const todaysExtras = extraExercises.filter(e => !Array.isArray(e.days) || e.days.length === 0 || e.days.includes(dayIdx));
-    if (todaysExtras.length === 0) {
-      todayExtraListEl.innerHTML = '';
-    } else {
-      todayExtraListEl.innerHTML = todaysExtras.map(e => `
-        <div class="today-extra-item" data-extra-id="${e.id}">
-          <span class="tei-name">${escapeHtml(e.name)}</span>
-          ${e.detail ? `<span class="tei-detail">${escapeHtml(e.detail)}</span>` : ''}
-        </div>`).join('');
-      todayExtraListEl.querySelectorAll('[data-extra-id]').forEach(el => {
-        el.addEventListener('click', () => {
-          const ex = extraExercises.find(e => e.id === el.dataset.extraId);
-          if (ex && ex.sets && ex.sets.length > 0) openExtraSession(ex.id);
-          else openExtraConfig(el.dataset.extraId);
-        });
-      });
-    }
   }
 
   function ensureExtraDefaults(ex){
@@ -5544,7 +5852,7 @@ const db = initializeFirestore(firebaseApp, {
         ev.stopPropagation();
         extraExercises = extraExercises.filter(e => e.id !== btn.dataset.id);
         scheduleSave();
-        renderTraining();
+        renderTrainingAll();
       });
     });
     extraListEl.querySelectorAll('[data-open-id]').forEach(el => {
@@ -5606,8 +5914,7 @@ const db = initializeFirestore(firebaseApp, {
     restBadgeText.textContent = 'Descanso: ' + formatRestLong(lifts[name].restSeconds);
     restEditRow.style.display = 'none';
     warmupOpen = false;
-    trainingOverviewViewEl.style.display = 'none';
-    liftSessionViewEl.style.display = 'flex';
+    showTrainingSubview('liftSessionView');
     loadLiftDraftForDate();
     renderWarmups();
   }
@@ -5620,8 +5927,7 @@ const db = initializeFirestore(firebaseApp, {
 
   function exitLiftSession(){
     cancelRestTimer();
-    liftSessionViewEl.style.display = 'none';
-    trainingOverviewViewEl.style.display = 'flex';
+    showTrainingSubview('trainingOverviewView');
     activeLiftName = null;
     activeLiftDraftSets = null;
   }
@@ -5752,9 +6058,10 @@ const db = initializeFirestore(firebaseApp, {
       trainingLog.unshift(Object.assign({ id: uid() }, entry));
       if (trainingLog.length > 400) trainingLog = trainingLog.slice(0, 400);
     }
+    markDayBlockDoneForType('juggernaut');
     scheduleSave();
     exitLiftSession();
-    renderTraining();
+    renderOverview();
   }
 
   // ---- Rest timer: countdown + audible beep (foreground only — see note to user) ----
@@ -5949,7 +6256,7 @@ const db = initializeFirestore(firebaseApp, {
       currentWeek = WEEK_ORDER[newIdx];
     }
     scheduleSave();
-    renderTraining();
+    renderTrainingAll();
   }
 
   // ---- Direct wave/week jump (no recalculation, just moves the pointer) ----
@@ -5982,7 +6289,7 @@ const db = initializeFirestore(firebaseApp, {
     currentWave = wjpPendingWave;
     currentWeek = wjpPendingWeek;
     scheduleSave();
-    renderTraining();
+    renderTrainingAll();
     waveJumpOverlay.classList.remove('open');
   });
 
@@ -6039,7 +6346,7 @@ const db = initializeFirestore(firebaseApp, {
     currentWeek = 'acumulacion';
     pendingWaveCompletion = null;
     scheduleSave();
-    renderTraining();
+    renderTrainingAll();
     waveCompleteOverlay.classList.remove('open');
   }
 
@@ -6083,29 +6390,6 @@ const db = initializeFirestore(firebaseApp, {
 
   waveCompleteCloseBtn.addEventListener('click', () => { pendingWaveCompletion = null; waveCompleteOverlay.classList.remove('open'); });
   waveCompleteOverlay.addEventListener('click', (e) => { if (e.target === waveCompleteOverlay) { pendingWaveCompletion = null; waveCompleteOverlay.classList.remove('open'); } });
-
-  // ---- Missed-session reminder ----
-  function renderMissedBanner(){
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yIdx = yesterday.getDay();
-    const yKey = dateKey(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate());
-    const activity = weeklySchedule[yIdx];
-
-    if (LIFT_NAMES.includes(activity)) {
-      const wasLogged = trainingLog.some(l => l.lift === activity && l.date === yKey);
-      if (!wasLogged) {
-        missedBannerEl.style.display = 'flex';
-        missedBannerEl.innerHTML = `
-          <span class="mb-text">Ayer (${DAY_NAMES[yIdx]}) te tocaba ${escapeHtml(activity)} y no quedó registrado.</span>
-          <button id="missedRegisterBtn">Registrar</button>`;
-        document.getElementById('missedRegisterBtn').addEventListener('click', () => openLiftSession(activity));
-        return;
-      }
-    }
-    missedBannerEl.style.display = 'none';
-    missedBannerEl.innerHTML = '';
-  }
 
   // ---- Training calendar ----
   function renderTrainingCalendar(){
@@ -6215,7 +6499,7 @@ const db = initializeFirestore(firebaseApp, {
     liftSettingsListEl.querySelectorAll('[data-lift-tm]').forEach(inp => {
       inp.addEventListener('change', () => {
         const v = parseFloat(inp.value);
-        if (isFinite(v) && v > 0) { lifts[inp.dataset.liftTm].trainingMax = v; scheduleSave(); renderTraining(); }
+        if (isFinite(v) && v > 0) { lifts[inp.dataset.liftTm].trainingMax = v; scheduleSave(); renderTrainingAll(); }
       });
     });
     liftSettingsListEl.querySelectorAll('[data-lift-inc]').forEach(inp => {
@@ -6292,7 +6576,7 @@ const db = initializeFirestore(firebaseApp, {
     currentWeek = 'acumulacion';
     pendingWaveCompletion = null;
     scheduleSave();
-    renderTraining();
+    renderTrainingAll();
     resetWeightsOverlay.classList.remove('open');
   });
 
@@ -6360,7 +6644,7 @@ const db = initializeFirestore(firebaseApp, {
       throw new Error('El JSON es válido pero no pude importar nada de él — revisa que los nombres de ejercicios/levantamientos coincidan y que los campos tengan el nombre exacto de la plantilla.');
     }
     scheduleSave();
-    renderTraining();
+    renderTrainingAll();
     return count;
   }
 
@@ -6385,41 +6669,25 @@ const db = initializeFirestore(firebaseApp, {
   trainingSettingsCloseBtn.addEventListener('click', () => trainingSettingsOverlay.classList.remove('open'));
   trainingSettingsOverlay.addEventListener('click', (e) => { if (e.target === trainingSettingsOverlay) trainingSettingsOverlay.classList.remove('open'); });
 
-  function renderNewExtraDayChips(){
-    newExtraDaysEl.innerHTML = DAY_ABBR.map((abbr, idx) => `
-      <button type="button" class="day-chip ${newExtraSelectedDays.includes(idx) ? 'active' : ''}" data-day-chip="${idx}">${abbr}</button>
-    `).join('');
-    newExtraDaysEl.querySelectorAll('[data-day-chip]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const idx = +btn.dataset.dayChip;
-        const pos = newExtraSelectedDays.indexOf(idx);
-        if (pos === -1) newExtraSelectedDays.push(idx); else newExtraSelectedDays.splice(pos, 1);
-        renderNewExtraDayChips();
-      });
-    });
-  }
-
   addExtraToggle.addEventListener('click', () => {
     const showing = addExtraForm.style.display !== 'none';
     addExtraForm.style.display = showing ? 'none' : '';
-    if (!showing) { newExtraSelectedDays = []; renderNewExtraDayChips(); newExtraNameEl.focus(); }
+    if (!showing) newExtraNameEl.focus();
   });
   cancelExtraBtn.addEventListener('click', () => {
     addExtraForm.style.display = 'none';
     newExtraNameEl.value = '';
     newExtraDetailEl.value = '';
-    newExtraSelectedDays = [];
   });
   saveExtraBtn.addEventListener('click', () => {
     const nm = newExtraNameEl.value.trim();
     if (!nm) { newExtraNameEl.focus(); return; }
-    extraExercises.push({ id: uid(), name: nm, detail: newExtraDetailEl.value.trim(), days: newExtraSelectedDays.slice() });
+    extraExercises.push({ id: uid(), name: nm, detail: newExtraDetailEl.value.trim(), days: [] });
     scheduleSave();
     newExtraNameEl.value = '';
     newExtraDetailEl.value = '';
-    newExtraSelectedDays = [];
     addExtraForm.style.display = 'none';
-    renderTraining();
+    renderExtraList();
   });
 
   importRoutineToggle.addEventListener('click', () => {
@@ -6550,7 +6818,7 @@ const db = initializeFirestore(firebaseApp, {
     scheduleConfigured = true;
     scheduleSetupOverlay.classList.remove('open');
     scheduleSave();
-    renderTraining();
+    renderTrainingAll();
   });
 
   // ---- Progress chart ----
@@ -6639,16 +6907,14 @@ const db = initializeFirestore(firebaseApp, {
     extraRestBadgeText.textContent = 'Descanso: ' + formatRestLong(ex.restSeconds);
     extraRestEditRow.style.display = 'none';
     extraStartSessionBtn.disabled = ex.sets.length === 0;
-    trainingOverviewViewEl.style.display = 'none';
-    extraConfigViewEl.style.display = 'flex';
+    showTrainingSubview('extraConfigView');
     renderExtraSetConfig();
   }
 
   function closeExtraConfig(){
-    extraConfigViewEl.style.display = 'none';
-    trainingOverviewViewEl.style.display = 'flex';
+    showTrainingSubview('accesoriosListView');
     activeExtraId = null;
-    renderTraining();
+    renderExtraList();
   }
 
   function renderExtraSetConfig(){
@@ -6761,9 +7027,7 @@ const db = initializeFirestore(firebaseApp, {
     extraSessionDateInput.value = activeSessionDate;
     extraSessionDateInput.max = todayKey();
     extraSessionNameEl.textContent = ex.name;
-    trainingOverviewViewEl.style.display = 'none';
-    extraConfigViewEl.style.display = 'none';
-    extraSessionViewEl.style.display = 'flex';
+    showTrainingSubview('extraSessionView');
     loadExtraDraftForDate();
   }
 
@@ -6775,11 +7039,10 @@ const db = initializeFirestore(firebaseApp, {
 
   function exitExtraSession(){
     cancelRestTimer();
-    extraSessionViewEl.style.display = 'none';
-    trainingOverviewViewEl.style.display = 'flex';
+    showTrainingSubview('accesoriosListView');
     activeExtraId = null;
     activeExtraDraftSets = null;
-    renderTraining();
+    renderExtraList();
   }
 
   function renderExtraSetList(){
@@ -6850,8 +7113,391 @@ const db = initializeFirestore(firebaseApp, {
       trainingLog.unshift(Object.assign({ id: uid() }, entry));
       if (trainingLog.length > 400) trainingLog = trainingLog.slice(0, 400);
     }
+    markDayBlockDoneForType('extra');
     scheduleSave();
     exitExtraSession();
+  });
+
+  // ============================================================
+  // Cara 1-6 navigation + día-sequence + tipos de bloque personalizados
+  // ============================================================
+  const TRAINING_SUBVIEW_IDS = [
+    'trainingHomeView', 'trainingDayView', 'trainingOverviewView', 'accesoriosListView',
+    'customBlockSessionView', 'dayProgramConfigView', 'customBlockEditorView',
+    'liftSessionView', 'extraConfigView', 'extraSessionView',
+  ];
+  function showTrainingSubview(id){
+    TRAINING_SUBVIEW_IDS.forEach(vid => {
+      const el = document.getElementById(vid);
+      if (el) el.style.display = (vid === id) ? 'flex' : 'none';
+    });
+  }
+
+  function currentDay(){ return trainingDays[currentDayIndex] || null; }
+
+  // Called after successfully finishing a session, so the matching block(s)
+  // in today's día get their checkmark without any extra taps.
+  function markDayBlockDoneForType(type){
+    const day = currentDay();
+    if (!day) return;
+    let changed = false;
+    day.blocks.forEach(b => {
+      if (b.type === type && !dayProgress[b.id]) { dayProgress[b.id] = true; changed = true; }
+    });
+    if (changed) scheduleSave();
+  }
+  function markDayBlockDoneForCustomType(blockTypeId){
+    const day = currentDay();
+    if (!day) return;
+    day.blocks.forEach(b => {
+      if (b.type === 'custom' && b.blockTypeId === blockTypeId) dayProgress[b.id] = true;
+    });
+    scheduleSave();
+  }
+
+  // ---- Cara 1 ----
+  goDayTrainingBtn.addEventListener('click', () => { openDayView(); });
+  goFreeTrainingBtn.addEventListener('click', () => { /* Entrenamiento Libre — no implementado todavía */ });
+  dayProgramConfigBtn.addEventListener('click', openDayProgramConfig);
+
+  // ---- Cara 2: Entrenamiento del Día ----
+  function openDayView(){
+    if (trainingDays.length === 0) { openDayProgramConfig(); return; }
+    if (currentDayIndex >= trainingDays.length) currentDayIndex = 0;
+    showTrainingSubview('trainingDayView');
+    renderDayView();
+  }
+
+  function blockDisplayInfo(block){
+    if (block.type === 'juggernaut') {
+      return { name: 'Ciclo Juggernaut', sub: WAVE_LABEL[currentWave] + ' · ' + WEEK_LABEL[currentWeek] };
+    }
+    if (block.type === 'extra') {
+      return { name: 'Accesorios', sub: extraExercises.length + ' ejercicio' + (extraExercises.length === 1 ? '' : 's') };
+    }
+    const bt = customBlockTypes.find(t => t.id === block.blockTypeId);
+    return { name: bt ? bt.name : 'Bloque eliminado', sub: bt ? (bt.warmup.length + bt.drills.length) + ' ítems' : '' };
+  }
+
+  function renderDayView(){
+    const day = currentDay();
+    if (!day) { dayBlockListEl.innerHTML = ''; dayBlockEmptyEl.style.display = ''; return; }
+    dayViewLabelEl.textContent = day.name + ' (' + (currentDayIndex + 1) + ' de ' + trainingDays.length + ' en tu programa)';
+
+    if (day.blocks.length === 0) {
+      dayBlockListEl.innerHTML = '';
+      dayBlockEmptyEl.style.display = '';
+      return;
+    }
+    dayBlockEmptyEl.style.display = 'none';
+
+    dayBlockListEl.innerHTML = day.blocks.map((b, i) => {
+      const info = blockDisplayInfo(b);
+      const done = !!dayProgress[b.id];
+      return `
+        <li class="day-block-item ${done ? 'done' : ''}" data-block-id="${b.id}">
+          <span class="dbi-handle">
+            <button data-move-up="${i}" ${i === 0 ? 'disabled style="opacity:.3;"' : ''} aria-label="Subir" style="display:block;">▲</button>
+            <button data-move-down="${i}" ${i === day.blocks.length - 1 ? 'disabled style="opacity:.3;"' : ''} aria-label="Bajar" style="display:block;">▼</button>
+          </span>
+          <div class="dbi-body" data-open-block="${b.id}">
+            <div class="dbi-name">${escapeHtml(info.name)}</div>
+            <div class="dbi-sub">${escapeHtml(info.sub)}</div>
+          </div>
+          <button class="dbi-check ${done ? 'checked' : ''}" data-toggle-block="${b.id}">✓</button>
+        </li>`;
+    }).join('');
+
+    dayBlockListEl.querySelectorAll('[data-open-block]').forEach(el => {
+      el.addEventListener('click', () => openDayBlock(el.dataset.openBlock));
+    });
+    dayBlockListEl.querySelectorAll('[data-toggle-block]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.toggleBlock;
+        dayProgress[id] = !dayProgress[id];
+        scheduleSave();
+        renderDayView();
+      });
+    });
+    dayBlockListEl.querySelectorAll('[data-move-up]').forEach(btn => {
+      btn.addEventListener('click', (e) => { e.stopPropagation(); moveDayBlock(+btn.dataset.moveUp, -1); });
+    });
+    dayBlockListEl.querySelectorAll('[data-move-down]').forEach(btn => {
+      btn.addEventListener('click', (e) => { e.stopPropagation(); moveDayBlock(+btn.dataset.moveDown, 1); });
+    });
+  }
+
+  function moveDayBlock(idx, dir){
+    const day = currentDay();
+    const newIdx = idx + dir;
+    if (!day || newIdx < 0 || newIdx >= day.blocks.length) return;
+    const tmp = day.blocks[idx];
+    day.blocks[idx] = day.blocks[newIdx];
+    day.blocks[newIdx] = tmp;
+    scheduleSave();
+    renderDayView();
+  }
+
+  function openDayBlock(blockId){
+    const day = currentDay();
+    const block = day && day.blocks.find(b => b.id === blockId);
+    if (!block) return;
+    if (block.type === 'juggernaut') { showTrainingSubview('trainingOverviewView'); renderOverview(); return; }
+    if (block.type === 'extra') { showTrainingSubview('accesoriosListView'); renderExtraList(); return; }
+    if (block.type === 'custom') openCustomBlockSession(block.blockTypeId);
+  }
+
+  dayViewBackBtn.addEventListener('click', () => showTrainingSubview('trainingHomeView'));
+
+  function advanceToNextDay(){
+    if (trainingDays.length === 0) return;
+    currentDayIndex = (currentDayIndex + 1) % trainingDays.length;
+    dayProgress = {};
+    scheduleSave();
+    showTrainingSubview('trainingHomeView');
+  }
+  skipDayBtn.addEventListener('click', advanceToNextDay);
+  finishDayBtn.addEventListener('click', advanceToNextDay);
+
+  // ---- Cara 3 / Cara 5 back buttons ----
+  overviewBackBtn.addEventListener('click', () => showTrainingSubview('trainingDayView'));
+  accesoriosBackBtn.addEventListener('click', () => showTrainingSubview('trainingDayView'));
+
+  // ---- Cara 6: bloque personalizado ----
+  function openCustomBlockSession(blockTypeId){
+    const bt = customBlockTypes.find(t => t.id === blockTypeId);
+    if (!bt) return;
+    activeCustomBlockTypeId = blockTypeId;
+    customBlockTitleEl.textContent = bt.name;
+    renderCustomBlockChecklist(customBlockWarmupListEl, customBlockWarmupEmptyEl, bt.warmup);
+    renderCustomBlockChecklist(customBlockDrillListEl, customBlockDrillEmptyEl, bt.drills);
+    showTrainingSubview('customBlockSessionView');
+  }
+
+  const customBlockChecked = {}; // ephemeral per-visit checklist state, keyed by item id
+
+  function renderCustomBlockChecklist(listEl, emptyEl, items){
+    if (!items || items.length === 0) { listEl.innerHTML = ''; emptyEl.style.display = ''; return; }
+    emptyEl.style.display = 'none';
+    listEl.innerHTML = items.map(item => `
+      <li class="checklist-item" data-item-id="${item.id}">
+        <div class="checklist-item-info">
+          <div class="checklist-item-name">${escapeHtml(item.name)}</div>
+          ${item.detail ? `<div class="checklist-item-detail">${escapeHtml(item.detail)}</div>` : ''}
+        </div>
+        <button class="checklist-check ${customBlockChecked[item.id] ? 'checked' : ''}" data-check-item="${item.id}">✓</button>
+      </li>`).join('');
+    listEl.querySelectorAll('[data-check-item]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.checkItem;
+        customBlockChecked[id] = !customBlockChecked[id];
+        btn.classList.toggle('checked', !!customBlockChecked[id]);
+      });
+    });
+  }
+
+  customBlockBackBtn.addEventListener('click', () => { showTrainingSubview('trainingDayView'); renderDayView(); });
+  customBlockEditBtn.addEventListener('click', () => openCustomBlockEditor(activeCustomBlockTypeId));
+
+  markCustomBlockDoneBtn.addEventListener('click', () => {
+    trainingLog.unshift({
+      id: uid(), ts: Date.now(), date: todayKey(),
+      wave: null, week: null, lift: customBlockTitleEl.textContent, kind: 'custom',
+      sets: [], estimated1RM: null, rpe: null,
+    });
+    if (trainingLog.length > 400) trainingLog = trainingLog.slice(0, 400);
+    markDayBlockDoneForCustomType(activeCustomBlockTypeId);
+    scheduleSave();
+    showTrainingSubview('trainingDayView');
+    renderDayView();
+  });
+
+  // ---- Configuración del programa (Cara 2's ⚙️) ----
+  function openDayProgramConfig(){
+    showTrainingSubview('dayProgramConfigView');
+    renderDayProgramConfig();
+  }
+  dayProgramConfigBackBtn.addEventListener('click', () => showTrainingSubview('trainingHomeView'));
+
+  const BLOCK_TYPE_LABELS = { juggernaut: 'Ciclo Juggernaut', extra: 'Accesorios' };
+
+  function renderDayProgramConfig(){
+    dayProgramListEl.innerHTML = trainingDays.map((day, di) => `
+      <div class="day-program-card" data-day-idx="${di}">
+        <div class="day-program-header">
+          <input class="due day-name-input" data-day-name-idx="${di}" type="text" value="${escapeHtml(day.name)}" style="flex:1; padding:6px 8px; font-size:13px; font-weight:700;" />
+          <button class="fin-remove" data-remove-day="${di}">✕</button>
+        </div>
+        <div class="day-program-blocks">
+          ${day.blocks.map(b => {
+            const info = blockDisplayInfo(b);
+            return `<span class="day-program-block-chip">${escapeHtml(info.name)}<button data-remove-block="${di}:${b.id}">✕</button></span>`;
+          }).join('') || '<span class="fin-item-sub">Sin bloques</span>'}
+        </div>
+        <div class="day-program-add-block">
+          <button class="block-type-btn" data-add-block="${di}:juggernaut">+ Ciclo Juggernaut</button>
+          <button class="block-type-btn" data-add-block="${di}:extra">+ Accesorios</button>
+          ${customBlockTypes.map(t => `<button class="block-type-btn" data-add-block="${di}:custom:${t.id}">+ ${escapeHtml(t.name)}</button>`).join('')}
+        </div>
+      </div>`).join('');
+
+    dayProgramListEl.querySelectorAll('[data-day-name-idx]').forEach(inp => {
+      inp.addEventListener('change', () => { trainingDays[+inp.dataset.dayNameIdx].name = inp.value.trim() || 'Día'; scheduleSave(); });
+    });
+    dayProgramListEl.querySelectorAll('[data-remove-day]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        trainingDays.splice(+btn.dataset.removeDay, 1);
+        if (currentDayIndex >= trainingDays.length) currentDayIndex = 0;
+        scheduleSave();
+        renderDayProgramConfig();
+      });
+    });
+    dayProgramListEl.querySelectorAll('[data-remove-block]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const [di, blockId] = btn.dataset.removeBlock.split(':');
+        trainingDays[+di].blocks = trainingDays[+di].blocks.filter(b => b.id !== blockId);
+        scheduleSave();
+        renderDayProgramConfig();
+      });
+    });
+    dayProgramListEl.querySelectorAll('[data-add-block]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const parts = btn.dataset.addBlock.split(':');
+        const di = +parts[0], type = parts[1];
+        const block = type === 'custom' ? { id: uid(), type: 'custom', blockTypeId: parts[2] } : { id: uid(), type };
+        trainingDays[di].blocks.push(block);
+        scheduleSave();
+        renderDayProgramConfig();
+      });
+    });
+
+    customBlockTypeListEl.innerHTML = customBlockTypes.map(t => `
+      <li class="custom-block-type-row" data-open-type="${t.id}">
+        <div style="flex:1;">
+          <div class="fin-item-name">${escapeHtml(t.name)}</div>
+          <div class="fin-item-sub">${t.warmup.length} calentamiento · ${t.drills.length} ejercicios</div>
+        </div>
+        <span class="chevron">›</span>
+      </li>`).join('');
+    customBlockTypeListEl.querySelectorAll('[data-open-type]').forEach(el => {
+      el.addEventListener('click', () => openCustomBlockEditor(el.dataset.openType));
+    });
+  }
+
+  addDayBtn.addEventListener('click', () => {
+    trainingDays.push({ id: uid(), name: 'Día ' + (trainingDays.length + 1), blocks: [] });
+    scheduleSave();
+    renderDayProgramConfig();
+  });
+  addCustomBlockTypeBtn.addEventListener('click', () => openCustomBlockEditor(null));
+
+  // ---- Editor de un tipo de bloque personalizado ----
+  function openCustomBlockEditor(blockTypeId){
+    editingBlockTypeId = blockTypeId;
+    if (blockTypeId) {
+      const bt = customBlockTypes.find(t => t.id === blockTypeId);
+      customBlockNameInput.value = bt ? bt.name : '';
+      editWarmupDraft = bt ? bt.warmup.map(i => Object.assign({}, i)) : [];
+      editDrillDraft = bt ? bt.drills.map(i => Object.assign({}, i)) : [];
+      customBlockDeleteBtn.style.display = '';
+    } else {
+      customBlockNameInput.value = '';
+      editWarmupDraft = [];
+      editDrillDraft = [];
+      customBlockDeleteBtn.style.display = 'none';
+    }
+    renderEditItemList(editWarmupListEl, editWarmupDraft, 'warmup');
+    renderEditItemList(editDrillListEl, editDrillDraft, 'drill');
+    showTrainingSubview('customBlockEditorView');
+  }
+  customBlockEditorBackBtn.addEventListener('click', () => { showTrainingSubview('dayProgramConfigView'); renderDayProgramConfig(); });
+
+  function renderEditItemList(listEl, draft, kind){
+    listEl.innerHTML = draft.map((item, i) => `
+      <div class="edit-item-row" data-idx="${i}">
+        <input class="edit-item-name" type="text" placeholder="Nombre" value="${escapeHtml(item.name || '')}" data-${kind}-name="${i}" />
+        <input class="edit-item-detail" type="text" placeholder="Detalle" value="${escapeHtml(item.detail || '')}" data-${kind}-detail="${i}" />
+        <button class="fin-remove" data-${kind}-remove="${i}">✕</button>
+      </div>`).join('');
+    listEl.querySelectorAll(`[data-${kind}-name]`).forEach(inp => {
+      inp.addEventListener('input', () => { draft[+inp.dataset[kind + 'Name']].name = inp.value; });
+    });
+    listEl.querySelectorAll(`[data-${kind}-detail]`).forEach(inp => {
+      inp.addEventListener('input', () => { draft[+inp.dataset[kind + 'Detail']].detail = inp.value; });
+    });
+    listEl.querySelectorAll(`[data-${kind}-remove]`).forEach(btn => {
+      btn.addEventListener('click', () => {
+        draft.splice(+btn.dataset[kind + 'Remove'], 1);
+        renderEditItemList(listEl, draft, kind);
+      });
+    });
+  }
+
+  addWarmupItemBtn.addEventListener('click', () => {
+    editWarmupDraft.push({ id: uid(), name: '', detail: '' });
+    renderEditItemList(editWarmupListEl, editWarmupDraft, 'warmup');
+  });
+  addDrillItemBtn.addEventListener('click', () => {
+    editDrillDraft.push({ id: uid(), name: '', detail: '' });
+    renderEditItemList(editDrillListEl, editDrillDraft, 'drill');
+  });
+
+  function wireChecklistImport(toggleBtn, formEl, textareaEl, errorEl, cancelBtn, submitBtn, draftGetter, listEl, kind, jsonKey){
+    toggleBtn.addEventListener('click', () => {
+      const showing = formEl.style.display !== 'none';
+      formEl.style.display = showing ? 'none' : '';
+      errorEl.style.display = 'none';
+      if (!showing) textareaEl.focus();
+    });
+    cancelBtn.addEventListener('click', () => { formEl.style.display = 'none'; textareaEl.value = ''; errorEl.style.display = 'none'; });
+    submitBtn.addEventListener('click', () => {
+      let data;
+      try { data = JSON.parse(textareaEl.value); } catch(e) { errorEl.textContent = 'JSON inválido.'; errorEl.style.display = ''; return; }
+      const list = data[jsonKey];
+      if (!Array.isArray(list) || list.length === 0) {
+        errorEl.textContent = `Debe tener un campo "${jsonKey}" con una lista de al menos un ítem.`;
+        errorEl.style.display = '';
+        return;
+      }
+      let count = 0;
+      list.forEach(item => {
+        if (item && typeof item.name === 'string' && item.name.trim()) {
+          draftGetter().push({ id: uid(), name: item.name.trim(), detail: (item.detail || '').toString().trim() });
+          count++;
+        }
+      });
+      if (count === 0) { errorEl.textContent = 'No encontré ítems válidos (cada uno necesita al menos "name").'; errorEl.style.display = ''; return; }
+      renderEditItemList(listEl, draftGetter(), kind);
+      textareaEl.value = '';
+      formEl.style.display = 'none';
+      errorEl.style.display = 'none';
+    });
+  }
+  wireChecklistImport(importWarmupToggle, importWarmupForm, importWarmupTextarea, importWarmupErrorEl, importWarmupCancelBtn, importWarmupSubmitBtn, () => editWarmupDraft, editWarmupListEl, 'warmup', 'warmup');
+  wireChecklistImport(importDrillToggle, importDrillForm, importDrillTextarea, importDrillErrorEl, importDrillCancelBtn, importDrillSubmitBtn, () => editDrillDraft, editDrillListEl, 'drill', 'drills');
+
+  saveCustomBlockTypeBtn.addEventListener('click', () => {
+    const name = customBlockNameInput.value.trim();
+    if (!name) { customBlockNameInput.focus(); return; }
+    if (editingBlockTypeId) {
+      const bt = customBlockTypes.find(t => t.id === editingBlockTypeId);
+      bt.name = name; bt.warmup = editWarmupDraft; bt.drills = editDrillDraft;
+    } else {
+      customBlockTypes.push({ id: uid(), name, warmup: editWarmupDraft, drills: editDrillDraft });
+    }
+    scheduleSave();
+    showTrainingSubview('dayProgramConfigView');
+    renderDayProgramConfig();
+  });
+
+  customBlockDeleteBtn.addEventListener('click', () => {
+    if (!editingBlockTypeId) return;
+    customBlockTypes = customBlockTypes.filter(t => t.id !== editingBlockTypeId);
+    trainingDays.forEach(d => { d.blocks = d.blocks.filter(b => !(b.type === 'custom' && b.blockTypeId === editingBlockTypeId)); });
+    scheduleSave();
+    showTrainingSubview('dayProgramConfigView');
+    renderDayProgramConfig();
   });
 
   // ---- Offline indicator ----
