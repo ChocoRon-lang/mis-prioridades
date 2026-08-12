@@ -3096,20 +3096,6 @@
   </div>
 </div>
 
-<div class="history-overlay" id="scheduleSetupOverlay">
-  <div class="history-panel" id="scheduleSetupPanel">
-    <div class="history-header">
-      <span class="grabber"></span>
-      <h2>Configura tu semana</h2>
-    </div>
-    <div class="history-list">
-      <p class="rec-hint" style="padding-bottom:10px;">¿Qué haces cada día? Esto define qué te muestra la app como "el entreno de hoy".</p>
-      <div id="scheduleSetupList"></div>
-      <button class="done-toggle" id="scheduleSetupSaveBtn" style="width:100%; margin-top:14px; padding:14px;">Guardar horario</button>
-    </div>
-  </div>
-</div>
-
 <div class="history-overlay" id="progressOverlay">
   <div class="history-panel" id="progressPanel">
     <div class="history-header">
@@ -3454,9 +3440,6 @@ const db = initializeFirestore(firebaseApp, {
   const waveCompleteCloseBtn = document.getElementById('waveCompleteCloseBtn');
   const waveCompleteBodyEl = document.getElementById('waveCompleteBody');
 
-  const scheduleSetupOverlay = document.getElementById('scheduleSetupOverlay');
-  const scheduleSetupListEl = document.getElementById('scheduleSetupList');
-  const scheduleSetupSaveBtn = document.getElementById('scheduleSetupSaveBtn');
 
   const trainingProgressBtn = document.getElementById('trainingProgressBtn');
   const progressOverlay = document.getElementById('progressOverlay');
@@ -3784,16 +3767,7 @@ const db = initializeFirestore(firebaseApp, {
   }
 
   const DAY_NAMES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-  const SCHEDULE_OPTIONS = ['Descanso', ...LIFT_NAMES, 'Otro'];
   const DAY_ABBR = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
-  function normalizeDayName(s){
-    return s.toString().trim().toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // strip accents
-  }
-  const DAY_NAME_TO_INDEX = {};
-  DAY_NAMES.forEach((name, idx) => { DAY_NAME_TO_INDEX[normalizeDayName(name)] = idx; });
-  let weeklySchedule = { 0: 'Descanso', 1: 'Descanso', 2: 'Descanso', 3: 'Descanso', 4: 'Descanso', 5: 'Descanso', 6: 'Descanso' };
-  let scheduleConfigured = false;
 
   // ---- Cara 6 / bloques personalizados + la sesión libre de hoy ----
   let customBlockTypes = [];
@@ -3839,7 +3813,6 @@ const db = initializeFirestore(firebaseApp, {
   const MAX_ROUTINES = 8;
   let routines = []; // [{id, name, items: [{id,type,blockTypeId?,selectedExerciseIds?}]}] — same item shape as session blocks
   let editingRoutineId = null; // null while creating a new routine
-  let routineEditorDraft = null; // { name, items: [...] } — the working copy while editing
   let activeExtraDraftSets = null;
   let selectedExtraRpe = null;
   let activeSessionDate = null;
@@ -3913,8 +3886,6 @@ const db = initializeFirestore(firebaseApp, {
       trainingLog = Array.isArray(state.trainingLog) ? state.trainingLog : [];
       trainingMaxHistory = Array.isArray(state.trainingMaxHistory) ? state.trainingMaxHistory : [];
       dayCompletionLog = Array.isArray(state.dayCompletionLog) ? state.dayCompletionLog : [];
-      if (state.weeklySchedule && typeof state.weeklySchedule === 'object') weeklySchedule = state.weeklySchedule;
-      scheduleConfigured = !!state.scheduleConfigured;
       customBlockTypes = Array.isArray(state.customBlockTypes) ? state.customBlockTypes : defaultCustomBlockTypes();
       currentSessionBlocks = Array.isArray(state.currentSessionBlocks) ? state.currentSessionBlocks : [];
       sessionBlocksDone = (state.sessionBlocksDone && typeof state.sessionBlocksDone === 'object') ? state.sessionBlocksDone : {};
@@ -3952,7 +3923,7 @@ const db = initializeFirestore(firebaseApp, {
   async function persist(){
     if (!currentUserId || !dataLoadOk) return;
     try {
-      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, notificationSound, habits, decks, salaryEntries, otherIncomes, fixedExpenses, debts, savings, freeExpenses, financeHistory, currentWave, currentWeek, lifts, extraExercises, trainingLog, trainingMaxHistory, dayCompletionLog, weeklySchedule, scheduleConfigured, customBlockTypes, currentSessionBlocks, sessionBlocksDone, sessionFromRoutine, routines });
+      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, notificationSound, habits, decks, salaryEntries, otherIncomes, fixedExpenses, debts, savings, freeExpenses, financeHistory, currentWave, currentWeek, lifts, extraExercises, trainingLog, trainingMaxHistory, dayCompletionLog, customBlockTypes, currentSessionBlocks, sessionBlocksDone, sessionFromRoutine, routines });
     } catch(e) {
       console.error('No se pudo guardar', e);
     }
@@ -3964,15 +3935,12 @@ const db = initializeFirestore(firebaseApp, {
     freeExpenses = []; financeHistory = [];
     currentWave = 'oleada8'; currentWeek = 'acumulacion';
     lifts = defaultLifts(); extraExercises = []; trainingLog = []; trainingMaxHistory = []; dayCompletionLog = []; pendingDayFinish = null; activeLiftName = null;
-    weeklySchedule = { 0: 'Descanso', 1: 'Descanso', 2: 'Descanso', 3: 'Descanso', 4: 'Descanso', 5: 'Descanso', 6: 'Descanso' };
-    scheduleConfigured = false;
     customBlockTypes = defaultCustomBlockTypes();
     currentSessionBlocks = [];
     sessionBlocksDone = {};
     sessionFromRoutine = false;
     routines = [];
     editingRoutineId = null;
-    routineEditorDraft = null;
     activeCustomBlockTypeId = null;
     editingBlockTypeId = null;
     openId = null; activeDeckId = null;
@@ -5194,7 +5162,7 @@ const db = initializeFirestore(firebaseApp, {
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-11.9';
+  const APP_VERSION = '2026-08-12.1';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -5953,6 +5921,14 @@ const db = initializeFirestore(firebaseApp, {
     });
   }
 
+  // Umbrella refresh used after wave/reset/import/delete events — safe to
+  // call regardless of which Entreno subview is currently visible, since it
+  // only touches elements that always exist in the DOM.
+  function renderTrainingAll(){
+    renderOverview();
+    renderExtraList();
+  }
+
   function ensureExtraDefaults(ex){
     if (typeof ex.restSeconds !== 'number') ex.restSeconds = 90;
     if (!Array.isArray(ex.sets)) ex.sets = [];
@@ -5969,10 +5945,37 @@ const db = initializeFirestore(firebaseApp, {
     return ex.sets.map(s => `${s.weight || 0}kg×${s.reps || 0}`).join(' · ');
   }
 
+  // Deleting an exercise or a custom block type must not leave stale
+  // references sitting in routines (or the in-progress session) — otherwise
+  // a routine can silently end up pointing at nothing, looking "empty" with
+  // no explanation the next time you use it.
+  function scrubExerciseIdEverywhere(exerciseId){
+    currentSessionBlocks.forEach(b => {
+      if (b.type === 'extra' && Array.isArray(b.selectedExerciseIds)) {
+        b.selectedExerciseIds = b.selectedExerciseIds.filter(id => id !== exerciseId);
+      }
+    });
+    routines.forEach(r => {
+      r.items.forEach(it => {
+        if (it.type === 'extra' && Array.isArray(it.selectedExerciseIds)) {
+          it.selectedExerciseIds = it.selectedExerciseIds.filter(id => id !== exerciseId);
+        }
+      });
+    });
+  }
+
+  function scrubCustomBlockTypeEverywhere(blockTypeId){
+    currentSessionBlocks = currentSessionBlocks.filter(b => !(b.type === 'custom' && b.blockTypeId === blockTypeId));
+    routines.forEach(r => {
+      r.items = r.items.filter(it => !(it.type === 'custom' && it.blockTypeId === blockTypeId));
+    });
+  }
+
   function getAccesoriosPickerTarget(){
     if (!activeAccesoriosBlockId) return null;
-    if (accesoriosReturnView === 'routineEditorView' && routineEditorDraft) {
-      return routineEditorDraft.items.find(it => it.id === activeAccesoriosBlockId) || null;
+    if (accesoriosReturnView === 'routineEditorView') {
+      const r = currentEditingRoutine();
+      return r ? (r.items.find(it => it.id === activeAccesoriosBlockId) || null) : null;
     }
     return currentSessionBlocks.find(b => b.id === activeAccesoriosBlockId) || null;
   }
@@ -5999,7 +6002,7 @@ const db = initializeFirestore(firebaseApp, {
       btn.addEventListener('click', (ev) => {
         ev.stopPropagation();
         extraExercises = extraExercises.filter(e => e.id !== btn.dataset.id);
-        if (block) block.selectedExerciseIds = block.selectedExerciseIds.filter(id => id !== btn.dataset.id);
+        scrubExerciseIdEverywhere(btn.dataset.id);
         scheduleSave();
         renderTrainingAll();
         renderExtraList();
@@ -6976,16 +6979,6 @@ const db = initializeFirestore(firebaseApp, {
     return data;
   }
 
-  function parseDayNames(daysField){
-    if (!Array.isArray(daysField)) return [];
-    const result = [];
-    daysField.forEach(d => {
-      const idx = DAY_NAME_TO_INDEX[normalizeDayName(d)];
-      if (idx !== undefined && !result.includes(idx)) result.push(idx);
-    });
-    return result;
-  }
-
   function applyTrainingImport(data){
     let count = 0;
     if (Array.isArray(data.extra)) {
@@ -6995,7 +6988,6 @@ const db = initializeFirestore(firebaseApp, {
             id: uid(),
             name: e.name.trim(),
             detail: (e.detail || '').toString().trim(),
-            days: parseDayNames(e.days),
             restSeconds: 90,
             sets: [],
           });
@@ -7139,59 +7131,6 @@ const db = initializeFirestore(firebaseApp, {
   if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
     notifEnableBtn.textContent = '✓ Notificaciones activadas';
   }
-
-  // ---- Weekly schedule (which day = which lift / rest / other) ----
-  function renderScheduleRows(container, onChange){
-    container.innerHTML = DAY_NAMES.map((dayName, idx) => {
-      const current = weeklySchedule[idx] || 'Descanso';
-      const isOther = !SCHEDULE_OPTIONS.includes(current);
-      return `
-        <div class="schedule-day-row" data-day="${idx}">
-          <div class="schedule-day-name">${dayName}</div>
-          <div class="schedule-day-options">
-            ${SCHEDULE_OPTIONS.map(opt => `
-              <button class="schedule-opt-btn ${(!isOther && current === opt) || (isOther && opt === 'Otro') ? 'active' : ''}" data-day="${idx}" data-opt="${escapeHtml(opt)}">${escapeHtml(opt)}</button>
-            `).join('')}
-          </div>
-          <input type="text" class="schedule-other-input" data-day-other="${idx}" placeholder="Ej. Rugby" value="${isOther ? escapeHtml(current) : ''}" style="display:${isOther ? '' : 'none'};" />
-        </div>`;
-    }).join('');
-
-    container.querySelectorAll('.schedule-opt-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const day = +btn.dataset.day;
-        const opt = btn.dataset.opt;
-        const otherInput = container.querySelector(`[data-day-other="${day}"]`);
-        if (opt === 'Otro') {
-          weeklySchedule[day] = otherInput.value.trim() || 'Otro';
-          otherInput.style.display = '';
-          otherInput.focus();
-        } else {
-          weeklySchedule[day] = opt;
-          otherInput.style.display = 'none';
-        }
-        renderScheduleRows(container, onChange);
-        if (onChange) onChange();
-      });
-    });
-    container.querySelectorAll('[data-day-other]').forEach(inp => {
-      inp.addEventListener('input', () => {
-        weeklySchedule[+inp.dataset.dayOther] = inp.value.trim() || 'Otro';
-      });
-    });
-  }
-
-  function maybeShowScheduleSetup(){
-    renderScheduleRows(scheduleSetupListEl, null);
-    scheduleSetupOverlay.classList.add('open');
-  }
-
-  scheduleSetupSaveBtn.addEventListener('click', () => {
-    scheduleConfigured = true;
-    scheduleSetupOverlay.classList.remove('open');
-    scheduleSave();
-    renderTrainingAll();
-  });
 
   // ---- Progress chart ----
   let progressLift = 'Press de Banca';
@@ -7721,6 +7660,7 @@ const db = initializeFirestore(firebaseApp, {
     }
     extraExercises = [];
     currentSessionBlocks.forEach(b => { if (b.type === 'extra') b.selectedExerciseIds = []; });
+    routines.forEach(r => { r.items.forEach(it => { if (it.type === 'extra') it.selectedExerciseIds = []; }); });
     deleteAllExtrasArmed = false;
     deleteAllExtrasBtn.textContent = '🗑 Borrar todos los ejercicios';
     scheduleSave();
@@ -7837,23 +7777,31 @@ const db = initializeFirestore(firebaseApp, {
     openRoutineEditor(null);
   });
 
+  function currentEditingRoutine(){ return routines.find(r => r.id === editingRoutineId) || null; }
+
   function openRoutineEditor(routineId){
-    editingRoutineId = routineId;
     if (routineId) {
-      const r = routines.find(x => x.id === routineId);
-      routineEditorDraft = { name: r ? r.name : '', items: r ? r.items.map(it => Object.assign({}, it, { selectedExerciseIds: it.selectedExerciseIds ? it.selectedExerciseIds.slice() : undefined })) : [] };
+      editingRoutineId = routineId;
       routineDeleteBtn.style.display = '';
     } else {
-      routineEditorDraft = { name: '', items: [] };
+      // Persist the new routine immediately — every change from here on
+      // saves in place, so there's no separate "draft" that can be lost.
+      const fresh = { id: uid(), name: '', items: [] };
+      routines.push(fresh);
+      editingRoutineId = fresh.id;
       routineDeleteBtn.style.display = 'none';
+      scheduleSave();
     }
-    routineNameInput.value = routineEditorDraft.name;
+    const r = currentEditingRoutine();
+    routineNameInput.value = r ? r.name : '';
     showTrainingSubview('routineEditorView');
     renderRoutineEditorItems();
   }
 
   function renderRoutineEditorItems(){
-    const items = routineEditorDraft.items;
+    const r = currentEditingRoutine();
+    if (!r) return;
+    const items = r.items;
     if (items.length === 0) {
       routineItemListEl.innerHTML = '';
       routineItemEmptyEl.style.display = '';
@@ -7882,7 +7830,8 @@ const db = initializeFirestore(firebaseApp, {
       });
       routineItemListEl.querySelectorAll('[data-ritem-remove]').forEach(btn => {
         btn.addEventListener('click', () => {
-          routineEditorDraft.items.splice(+btn.dataset.ritemRemove, 1);
+          r.items.splice(+btn.dataset.ritemRemove, 1);
+          scheduleSave();
           renderRoutineEditorItems();
         });
       });
@@ -7899,22 +7848,27 @@ const db = initializeFirestore(firebaseApp, {
         const [type, blockTypeId] = btn.dataset.addRitem.split(':');
         const item = type === 'custom' ? { id: uid(), type: 'custom', blockTypeId } : { id: uid(), type };
         if (type === 'extra') item.selectedExerciseIds = [];
-        routineEditorDraft.items.push(item);
+        r.items.push(item);
+        scheduleSave();
         renderRoutineEditorItems();
       });
     });
   }
 
   function moveRoutineItem(idx, dir){
-    const items = routineEditorDraft.items;
+    const r = currentEditingRoutine();
+    if (!r) return;
+    const items = r.items;
     const newIdx = idx + dir;
     if (newIdx < 0 || newIdx >= items.length) return;
     const tmp = items[idx]; items[idx] = items[newIdx]; items[newIdx] = tmp;
+    scheduleSave();
     renderRoutineEditorItems();
   }
 
   function openRoutineItem(itemId){
-    const item = routineEditorDraft.items.find(it => it.id === itemId);
+    const r = currentEditingRoutine();
+    const item = r && r.items.find(it => it.id === itemId);
     if (!item) return;
     if (item.type === 'extra') {
       if (!Array.isArray(item.selectedExerciseIds)) item.selectedExerciseIds = [];
@@ -7930,21 +7884,40 @@ const db = initializeFirestore(firebaseApp, {
     // Juggernaut / bloques personalizados no necesitan configuración adicional aquí — su contenido ya vive en su propia sección.
   }
 
-  routineEditorBackBtn.addEventListener('click', () => { showTrainingSubview('routinesListView'); renderRoutinesList(); });
+  routineNameInput.addEventListener('input', () => {
+    const r = currentEditingRoutine();
+    if (r) r.name = routineNameInput.value;
+  });
+  routineNameInput.addEventListener('change', () => {
+    const r = currentEditingRoutine();
+    if (r) { r.name = routineNameInput.value.trim(); scheduleSave(); }
+  });
+
+  function leaveRoutineEditor(){
+    // A routine that was never actually filled in (abandoned right after
+    // creating it) is just clutter — clean it up instead of leaving an
+    // empty entry in the list. Anything with a name or an item is real work
+    // and stays, since it's already been saved continuously.
+    const r = currentEditingRoutine();
+    if (r && !r.name.trim() && r.items.length === 0) {
+      routines = routines.filter(x => x.id !== r.id);
+      scheduleSave();
+    }
+    editingRoutineId = null;
+    showTrainingSubview('routinesListView');
+    renderRoutinesList();
+  }
+
+  routineEditorBackBtn.addEventListener('click', leaveRoutineEditor);
 
   saveRoutineBtn.addEventListener('click', () => {
+    const r = currentEditingRoutine();
+    if (!r) return;
     const name = routineNameInput.value.trim();
     if (!name) { routineNameInput.focus(); return; }
-    if (routineEditorDraft.items.length === 0) return;
-    if (editingRoutineId) {
-      const r = routines.find(x => x.id === editingRoutineId);
-      r.name = name;
-      r.items = routineEditorDraft.items;
-    } else {
-      if (routines.length >= MAX_ROUTINES) return;
-      routines.push({ id: uid(), name, items: routineEditorDraft.items });
-    }
+    r.name = name;
     scheduleSave();
+    editingRoutineId = null;
     showTrainingSubview('routinesListView');
     renderRoutinesList();
   });
@@ -7953,6 +7926,7 @@ const db = initializeFirestore(firebaseApp, {
     if (!editingRoutineId) return;
     routines = routines.filter(r => r.id !== editingRoutineId);
     scheduleSave();
+    editingRoutineId = null;
     showTrainingSubview('routinesListView');
     renderRoutinesList();
   });
@@ -8081,7 +8055,7 @@ const db = initializeFirestore(firebaseApp, {
   customBlockDeleteBtn.addEventListener('click', () => {
     if (!editingBlockTypeId) return;
     customBlockTypes = customBlockTypes.filter(t => t.id !== editingBlockTypeId);
-    currentSessionBlocks = currentSessionBlocks.filter(b => !(b.type === 'custom' && b.blockTypeId === editingBlockTypeId));
+    scrubCustomBlockTypeEverywhere(editingBlockTypeId);
     scheduleSave();
     showTrainingSubview('dayProgramConfigView');
     renderDayProgramConfig();
