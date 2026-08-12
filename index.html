@@ -3798,6 +3798,7 @@ const db = initializeFirestore(firebaseApp, {
   // ---- Cara 6 / bloques personalizados + la sesión libre de hoy ----
   let customBlockTypes = [];
   let currentSessionBlocks = []; // [{id, type:'juggernaut'|'extra'|'custom', blockTypeId?}] — armado libremente cada vez
+  let sessionFromRoutine = false; // true once started from "Mis rutinas" — locks reordering/adding
   let sessionBlocksDone = {}; // { [blockId]: true } — se limpia al finalizar/cancelar la sesión
   let activeCustomBlockTypeId = null;
   let editingBlockTypeId = null; // null while creating a new one
@@ -3829,6 +3830,9 @@ const db = initializeFirestore(firebaseApp, {
   let calMonthCursor = new Date();
   let activeExtraId = null;
   let activeAccesoriosBlockId = null;
+  let accesoriosLogMode = false; // true = show every selected exercise expanded with its own set table, instead of the picker
+  let accesoriosSessionDrafts = {}; // { [exerciseId]: [{targetWeight,targetReps,actualWeight,actualReps,done}] }
+  let accesoriosSessionDate = null;
   let accesoriosReturnView = 'trainingDayView';
   let deleteAllExtrasArmed = false;
 
@@ -3914,6 +3918,7 @@ const db = initializeFirestore(firebaseApp, {
       customBlockTypes = Array.isArray(state.customBlockTypes) ? state.customBlockTypes : defaultCustomBlockTypes();
       currentSessionBlocks = Array.isArray(state.currentSessionBlocks) ? state.currentSessionBlocks : [];
       sessionBlocksDone = (state.sessionBlocksDone && typeof state.sessionBlocksDone === 'object') ? state.sessionBlocksDone : {};
+      sessionFromRoutine = !!state.sessionFromRoutine;
       routines = Array.isArray(state.routines) ? state.routines : [];
       applyTheme(state.theme || 'dark');
       notificationSound = state.notificationSound || 'clasico';
@@ -3947,7 +3952,7 @@ const db = initializeFirestore(firebaseApp, {
   async function persist(){
     if (!currentUserId || !dataLoadOk) return;
     try {
-      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, notificationSound, habits, decks, salaryEntries, otherIncomes, fixedExpenses, debts, savings, freeExpenses, financeHistory, currentWave, currentWeek, lifts, extraExercises, trainingLog, trainingMaxHistory, dayCompletionLog, weeklySchedule, scheduleConfigured, customBlockTypes, currentSessionBlocks, sessionBlocksDone, routines });
+      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, notificationSound, habits, decks, salaryEntries, otherIncomes, fixedExpenses, debts, savings, freeExpenses, financeHistory, currentWave, currentWeek, lifts, extraExercises, trainingLog, trainingMaxHistory, dayCompletionLog, weeklySchedule, scheduleConfigured, customBlockTypes, currentSessionBlocks, sessionBlocksDone, sessionFromRoutine, routines });
     } catch(e) {
       console.error('No se pudo guardar', e);
     }
@@ -3964,6 +3969,7 @@ const db = initializeFirestore(firebaseApp, {
     customBlockTypes = defaultCustomBlockTypes();
     currentSessionBlocks = [];
     sessionBlocksDone = {};
+    sessionFromRoutine = false;
     routines = [];
     editingRoutineId = null;
     routineEditorDraft = null;
@@ -5188,7 +5194,7 @@ const db = initializeFirestore(firebaseApp, {
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-11.8';
+  const APP_VERSION = '2026-08-11.9';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -6014,6 +6020,132 @@ const db = initializeFirestore(firebaseApp, {
     });
   }
 
+  // ---- Accesorios: vista expandida (todas las series de los ejercicios elegidos, listas para marcar) ----
+  function openAccesoriosLogView(block){
+    accesoriosLogMode = true;
+    accesoriosSessionDate = todayKey();
+    accesoriosTitleEl.textContent = 'Accesorios';
+    accesoriosHintEl.textContent = '';
+    accesoriosManageControlsEl.style.display = 'none';
+    accesoriosSessionDrafts = {};
+    block.selectedExerciseIds.forEach(id => {
+      const ex = extraExercises.find(e => e.id === id);
+      if (!ex) return;
+      ensureExtraDefaults(ex);
+      const existing = findLogForDate(ex.name, null, null, accesoriosSessionDate);
+      if (existing) {
+        accesoriosSessionDrafts[id] = existing.sets.map(s => ({
+          targetWeight: s.targetWeight, targetReps: s.targetReps,
+          actualWeight: s.actualWeight != null ? s.actualWeight : s.targetWeight,
+          actualReps: s.actualReps != null ? s.actualReps : s.targetReps,
+          done: true,
+        }));
+      } else {
+        accesoriosSessionDrafts[id] = ex.sets.map(s => ({
+          targetWeight: s.weight, targetReps: s.reps,
+          actualWeight: s.weight, actualReps: s.reps, done: false,
+        }));
+      }
+    });
+    showTrainingSubview('accesoriosListView');
+    renderAccesoriosLogView(block);
+  }
+
+  function renderAccesoriosLogView(block){
+    const cards = block.selectedExerciseIds.map(id => {
+      const ex = extraExercises.find(e => e.id === id);
+      if (!ex) return '';
+      const draft = accesoriosSessionDrafts[id] || [];
+      const rows = draft.map((s, i) => `
+        <div class="set-row" data-ex-id="${id}" data-idx="${i}">
+          <div><div class="set-row-num">${i + 1}</div></div>
+          <input type="number" inputmode="decimal" value="${s.actualWeight}" data-acc-kg="${id}:${i}" />
+          <input type="number" inputmode="numeric" value="${s.actualReps}" data-acc-reps="${id}:${i}" />
+          <button class="set-row-check ${s.done ? 'checked' : ''}" data-acc-check="${id}:${i}">✓</button>
+        </div>`).join('');
+      return `
+        <div class="ex-card" style="margin-bottom:14px;">
+          <div class="ex-card-header">
+            <div class="ex-icon">🏋️</div>
+            <div class="ex-header-info">
+              <div class="ex-name">${escapeHtml(ex.name)}</div>
+              <div class="ex-sub">Descanso: ${formatRestLong(ex.restSeconds)}</div>
+            </div>
+          </div>
+          <div class="set-table-header" style="margin-top:12px;"><span>SERIE</span><span>KG</span><span>REPS</span><span></span></div>
+          ${rows || '<p class="fin-item-sub" style="padding:6px 0;">Este ejercicio no tiene series configuradas — ábrelo desde "Editar ejercicios" para agregarle.</p>'}
+        </div>`;
+    }).join('');
+
+    extraListEl.innerHTML = cards + `
+      <button class="wave-change-link" id="editAccesorioSelectionBtn" style="${sessionFromRoutine ? 'display:none;' : ''}">✏️ Editar selección de ejercicios</button>
+      <button class="done-toggle" id="saveAccesoriosLogBtn" style="width:100%; margin-top:10px; padding:14px;">✓ Guardar</button>`;
+
+    extraListEl.querySelectorAll('[data-acc-kg]').forEach(inp => {
+      inp.addEventListener('input', () => {
+        const [id, idx] = inp.dataset.accKg.split(':');
+        accesoriosSessionDrafts[id][+idx].actualWeight = inp.value;
+      });
+    });
+    extraListEl.querySelectorAll('[data-acc-reps]').forEach(inp => {
+      inp.addEventListener('input', () => {
+        const [id, idx] = inp.dataset.accReps.split(':');
+        accesoriosSessionDrafts[id][+idx].actualReps = inp.value;
+      });
+    });
+    extraListEl.querySelectorAll('[data-acc-check]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const [id, idxStr] = btn.dataset.accCheck.split(':');
+        const idx = +idxStr;
+        const draft = accesoriosSessionDrafts[id];
+        const wasDone = draft[idx].done;
+        draft[idx].done = !wasDone;
+        renderAccesoriosLogView(block);
+        if (!wasDone && idx < draft.length - 1) {
+          const ex = extraExercises.find(e => e.id === id);
+          if (ex) startRestTimer(ex.restSeconds);
+        }
+      });
+    });
+    const editBtn = document.getElementById('editAccesorioSelectionBtn');
+    if (editBtn) editBtn.addEventListener('click', () => {
+      accesoriosLogMode = false;
+      accesoriosHintEl.textContent = 'Marca ✓ los ejercicios que vas a hacer hoy.';
+      renderExtraList();
+    });
+    document.getElementById('saveAccesoriosLogBtn').addEventListener('click', () => saveAccesoriosLog(block));
+  }
+
+  function saveAccesoriosLog(block){
+    block.selectedExerciseIds.forEach(id => {
+      const ex = extraExercises.find(e => e.id === id);
+      const draft = accesoriosSessionDrafts[id];
+      if (!ex || !draft) return;
+      const entry = {
+        ts: Date.now(), date: accesoriosSessionDate,
+        wave: null, week: null, lift: ex.name, kind: 'extra',
+        sets: draft.map(s => ({
+          targetWeight: s.targetWeight, targetReps: s.targetReps,
+          actualWeight: s.actualWeight ? parseFloat(s.actualWeight) : null,
+          actualReps: s.actualReps ? parseInt(s.actualReps, 10) : null,
+        })),
+        estimated1RM: null, rpe: null,
+      };
+      const existing = findLogForDate(ex.name, null, null, entry.date);
+      if (existing) { existing.ts = entry.ts; existing.sets = entry.sets; }
+      else {
+        trainingLog.unshift(Object.assign({ id: uid() }, entry));
+        if (trainingLog.length > 400) trainingLog = trainingLog.slice(0, 400);
+      }
+    });
+    markDayBlockDoneForType('extra');
+    scheduleSave();
+    accesoriosLogMode = false;
+    activeAccesoriosBlockId = null;
+    showTrainingSubview('trainingDayView');
+    renderDayView();
+  }
+
   function formatRest(totalSeconds){
     totalSeconds = Math.max(0, totalSeconds);
     const m = Math.floor(totalSeconds / 60);
@@ -6673,6 +6805,7 @@ const db = initializeFirestore(firebaseApp, {
     trainingCalendarOverlay.classList.remove('open');
     currentSessionBlocks = [];
     sessionBlocksDone = {};
+    sessionFromRoutine = false;
     scheduleSave();
     showTrainingSubview('trainingHomeView');
   }
@@ -7395,7 +7528,13 @@ const db = initializeFirestore(firebaseApp, {
   }
 
   // ---- Cara 1 ----
-  goDayTrainingBtn.addEventListener('click', () => { openDayView(); });
+  goDayTrainingBtn.addEventListener('click', () => {
+    currentSessionBlocks = [];
+    sessionBlocksDone = {};
+    sessionFromRoutine = false;
+    scheduleSave();
+    openDayView();
+  });
   dayProgramConfigBtn.addEventListener('click', openDayProgramConfig);
   editExercisesBtn.addEventListener('click', openExerciseDatabase);
 
@@ -7442,18 +7581,21 @@ const db = initializeFirestore(firebaseApp, {
       dayBlockListEl.innerHTML = currentSessionBlocks.map((b, i) => {
         const info = blockDisplayInfo(b);
         const done = !!sessionBlocksDone[b.id];
-        return `
-          <li class="day-block-item ${done ? 'done' : ''}" data-block-id="${b.id}">
+        const handle = sessionFromRoutine ? '' : `
             <span class="dbi-handle">
               <button data-move-up="${i}" ${i === 0 ? 'disabled style="opacity:.3;"' : ''} aria-label="Subir" style="display:block;">▲</button>
               <button data-move-down="${i}" ${i === currentSessionBlocks.length - 1 ? 'disabled style="opacity:.3;"' : ''} aria-label="Bajar" style="display:block;">▼</button>
-            </span>
+            </span>`;
+        const removeBtn = sessionFromRoutine ? '' : `<button class="fin-remove" data-remove-block="${b.id}">✕</button>`;
+        return `
+          <li class="day-block-item ${done ? 'done' : ''}" data-block-id="${b.id}">
+            ${handle}
             <div class="dbi-body" data-open-block="${b.id}">
               <div class="dbi-name">${escapeHtml(info.name)}</div>
               <div class="dbi-sub">${escapeHtml(info.sub)}</div>
             </div>
             <button class="dbi-check ${done ? 'checked' : ''}" data-toggle-block="${b.id}">✓</button>
-            <button class="fin-remove" data-remove-block="${b.id}">✕</button>
+            ${removeBtn}
           </li>`;
       }).join('');
 
@@ -7486,6 +7628,7 @@ const db = initializeFirestore(firebaseApp, {
       });
     }
 
+    addSessionBlockRowEl.style.display = sessionFromRoutine ? 'none' : '';
     addSessionBlockRowEl.innerHTML = SESSION_BLOCK_TYPE_OPTIONS().map(opt => `
       <button class="block-type-btn" data-add-session-block="${opt.type}${opt.blockTypeId ? ':' + opt.blockTypeId : ''}">+ ${escapeHtml(opt.name)}</button>
     `).join('');
@@ -7519,11 +7662,16 @@ const db = initializeFirestore(firebaseApp, {
       if (!Array.isArray(block.selectedExerciseIds)) block.selectedExerciseIds = [];
       activeAccesoriosBlockId = block.id;
       accesoriosReturnView = 'trainingDayView';
-      accesoriosTitleEl.textContent = 'Accesorios';
-      accesoriosHintEl.textContent = 'Marca ✓ los ejercicios que vas a hacer hoy. Toca el nombre de cualquiera (elegido o no) para configurar sus series o registrar tu sesión.';
-      accesoriosManageControlsEl.style.display = 'none';
-      showTrainingSubview('accesoriosListView');
-      renderExtraList();
+      if (block.selectedExerciseIds.length > 0) {
+        openAccesoriosLogView(block);
+      } else {
+        accesoriosLogMode = false;
+        accesoriosTitleEl.textContent = 'Accesorios';
+        accesoriosHintEl.textContent = 'Marca ✓ los ejercicios que vas a hacer hoy.';
+        accesoriosManageControlsEl.style.display = 'none';
+        showTrainingSubview('accesoriosListView');
+        renderExtraList();
+      }
       return;
     }
     if (block.type === 'custom') openCustomBlockSession(block.blockTypeId);
@@ -7536,6 +7684,7 @@ const db = initializeFirestore(firebaseApp, {
       // "Cancelar": discard the in-progress session, nothing gets logged.
       currentSessionBlocks = [];
       sessionBlocksDone = {};
+      sessionFromRoutine = false;
       scheduleSave();
       showTrainingSubview('trainingHomeView');
       return;
@@ -7552,7 +7701,9 @@ const db = initializeFirestore(firebaseApp, {
   // ---- Cara 3 / Cara 5 back buttons ----
   overviewBackBtn.addEventListener('click', () => showTrainingSubview('trainingDayView'));
   accesoriosBackBtn.addEventListener('click', () => {
+    cancelRestTimer();
     activeAccesoriosBlockId = null;
+    accesoriosLogMode = false;
     showTrainingSubview(accesoriosReturnView);
     if (accesoriosReturnView === 'trainingDayView') renderDayView();
     if (accesoriosReturnView === 'routineEditorView') renderRoutineEditorItems();
@@ -7654,7 +7805,7 @@ const db = initializeFirestore(firebaseApp, {
           <div class="routine-row-name">${escapeHtml(r.name)}</div>
           <div class="routine-row-sub">${escapeHtml(routineItemSummary(r))}</div>
         </div>
-        <button class="routine-start-btn" data-start-routine="${r.id}">▶ Usar</button>
+        <button class="routine-start-btn" data-start-routine="${r.id}">▶ Iniciar</button>
       </li>`).join('');
     routinesListEl.querySelectorAll('[data-edit-routine]').forEach(el => {
       el.addEventListener('click', () => openRoutineEditor(el.dataset.editRoutine));
@@ -7675,6 +7826,7 @@ const db = initializeFirestore(firebaseApp, {
       selectedExerciseIds: Array.isArray(it.selectedExerciseIds) ? it.selectedExerciseIds.slice() : undefined,
     }));
     sessionBlocksDone = {};
+    sessionFromRoutine = true;
     scheduleSave();
     showTrainingSubview('trainingDayView');
     renderDayView();
