@@ -2558,12 +2558,6 @@
             <path d="M7 15l4-5 3 3 5-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
-        <button class="icon-btn" id="dayProgramConfigBtn" aria-label="Configurar bloques">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.6"/>
-            <path d="M19.4 13.5a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V19.5a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H4.5a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 6.1 8.6a1.65 1.65 0 0 0-.33-1.82l-.06-.06A2 2 0 1 1 8.54 3.9l.06.06a1.65 1.65 0 0 0 1.82.33H10.5a1.65 1.65 0 0 0 1-1.51V2.5a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V8.5a1.65 1.65 0 0 0 1.51 1h.09a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-          </svg>
-        </button>
       </div>
       <main>
         <button class="home-mode-card" id="goDayTrainingBtn">
@@ -2600,6 +2594,47 @@
           <button class="habit-edit-btn" id="skipDayBtn">✕ Cancelar</button>
           <button class="done-toggle" id="finishDayBtn">✓ Finalizar entrenamiento</button>
         </div>
+      </main>
+    </div>
+
+    <!-- Mis rutinas -->
+    <div id="routinesListView" class="subview" style="display:none;">
+      <div class="cards-toolbar">
+        <button class="icon-btn" id="routinesListBackBtn" aria-label="Volver">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <h2 class="page-title">Mis rutinas</h2>
+        <div style="width:38px;"></div>
+      </div>
+      <main>
+        <p class="rec-hint" id="routinesCountHint" style="padding:0 0 8px 0;"></p>
+        <ul id="routinesList"></ul>
+        <div class="deck-empty" id="routinesEmpty" style="display:none;">
+          <p>Todavía no tienes rutinas guardadas. Crea una para empezar entrenamientos completos de un toque.</p>
+        </div>
+        <button class="add-card-toggle" id="addRoutineBtn">+ Nueva rutina</button>
+      </main>
+    </div>
+
+    <!-- Editor de una rutina -->
+    <div id="routineEditorView" class="subview" style="display:none;">
+      <div class="cards-toolbar">
+        <button class="icon-btn" id="routineEditorBackBtn" aria-label="Volver">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <h2 class="page-title">Editar rutina</h2>
+        <button class="icon-btn" id="routineDeleteBtn" aria-label="Eliminar rutina">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m-9 0 1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <main>
+        <div class="field-label" style="margin-top:0;">Nombre de la rutina</div>
+        <input class="due" id="routineNameInput" type="text" style="width:100%;" placeholder="Ej. Empuje + Cardio" />
+
+        <div class="field-label">Ejercicios de la rutina</div>
+        <ul id="routineItemList"></ul>
+        <div class="deck-empty" id="routineItemEmpty" style="display:none;"><p>Agrega al menos un ejercicio abajo.</p></div>
+        <div class="day-program-add-block" id="addRoutineItemRow" style="margin-top:6px;"></div>
       </main>
     </div>
 
@@ -2662,6 +2697,8 @@
           <div class="add-card-form" id="addExtraForm" style="display:none;">
             <input class="due" id="newExtraName" type="text" style="width:100%;" placeholder="Nombre del ejercicio" />
             <input class="due" id="newExtraDetail" type="text" style="width:100%; margin-top:8px;" placeholder="Nota opcional (ej. con mancuernas)" />
+            <div class="field-label">Categoría</div>
+            <div class="day-program-blocks" id="newExtraCategoryRow"></div>
             <div class="add-card-actions">
               <button class="habit-edit-btn" id="cancelExtraBtn">Cancelar</button>
               <button class="done-toggle" id="saveExtraBtn">Guardar</button>
@@ -2671,7 +2708,7 @@
           <button class="add-card-toggle" id="importRoutineToggle">⇩ Importar rutina (JSON)</button>
           <div class="add-card-form" id="importRoutineForm" style="display:none;">
             <div class="field-label">Pega aquí el JSON que te dé Claude</div>
-            <textarea class="notes" id="importRoutineTextarea" style="min-height:120px;" placeholder='{"extra": [{"name":"...","detail":"..."}]}'></textarea>
+            <textarea class="notes" id="importRoutineTextarea" style="min-height:120px;" placeholder='{"extra": [{"name":"...","detail":"...","category":"ejercicio"}]}'></textarea>
             <div class="auth-error" id="importRoutineError" style="display:none;"></div>
             <div class="add-card-actions">
               <button class="habit-edit-btn" id="importRoutineCancelBtn">Cancelar</button>
@@ -2681,136 +2718,6 @@
 
           <button class="signout-btn" id="deleteAllExtrasBtn" style="border:1px solid var(--urgent); border-radius:11px; padding:11px; width:100%; margin-top:14px;">🗑 Borrar todos los ejercicios</button>
         </div>
-      </main>
-    </div>
-
-    <!-- Cara 6: bloque personalizado (ej. Rugby) -->
-    <div id="customBlockSessionView" class="subview" style="display:none;">
-      <div class="cards-toolbar">
-        <button class="icon-btn" id="customBlockBackBtn" aria-label="Volver">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <h2 class="page-title" id="customBlockTitle">—</h2>
-        <button class="icon-btn" id="customBlockEditBtn" aria-label="Editar">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-      </div>
-      <main>
-        <div class="field-label" style="margin-top:0;">🔥 Calentamiento</div>
-        <ul id="customBlockWarmupList"></ul>
-        <div class="deck-empty" id="customBlockWarmupEmpty" style="display:none;"><p>Sin calentamiento configurado.</p></div>
-
-        <div class="field-label">Ejercicios</div>
-        <ul id="customBlockDrillList"></ul>
-        <div class="deck-empty" id="customBlockDrillEmpty" style="display:none;"><p>Sin ejercicios configurados.</p></div>
-
-        <button class="done-toggle" id="markCustomBlockDoneBtn" style="width:100%; margin-top:14px; padding:14px;">✓ Marcar como hecho</button>
-      </main>
-    </div>
-
-    <!-- Mis rutinas -->
-    <div id="routinesListView" class="subview" style="display:none;">
-      <div class="cards-toolbar">
-        <button class="icon-btn" id="routinesListBackBtn" aria-label="Volver">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <h2 class="page-title">Mis rutinas</h2>
-        <div style="width:38px;"></div>
-      </div>
-      <main>
-        <p class="rec-hint" id="routinesCountHint" style="padding:0 0 8px 0;"></p>
-        <ul id="routinesList"></ul>
-        <div class="deck-empty" id="routinesEmpty" style="display:none;">
-          <p>Todavía no tienes rutinas guardadas. Crea una para empezar entrenamientos completos de un toque.</p>
-        </div>
-        <button class="add-card-toggle" id="addRoutineBtn">+ Nueva rutina</button>
-      </main>
-    </div>
-
-    <!-- Editor de una rutina -->
-    <div id="routineEditorView" class="subview" style="display:none;">
-      <div class="cards-toolbar">
-        <button class="icon-btn" id="routineEditorBackBtn" aria-label="Volver">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <h2 class="page-title">Editar rutina</h2>
-        <button class="icon-btn" id="routineDeleteBtn" aria-label="Eliminar rutina">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m-9 0 1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-      </div>
-      <main>
-        <div class="field-label" style="margin-top:0;">Nombre de la rutina</div>
-        <input class="due" id="routineNameInput" type="text" style="width:100%;" placeholder="Ej. Empuje + Cardio" />
-
-        <div class="field-label">Ejercicios de la rutina</div>
-        <ul id="routineItemList"></ul>
-        <div class="deck-empty" id="routineItemEmpty" style="display:none;"><p>Agrega al menos un ejercicio abajo.</p></div>
-        <div class="day-program-add-block" id="addRoutineItemRow" style="margin-top:6px;"></div>
-
-        <button class="done-toggle" id="saveRoutineBtn" style="width:100%; margin-top:16px; padding:14px;">Guardar rutina</button>
-      </main>
-    </div>
-
-    <!-- Configuración del programa: días + bloques + tipos de bloque personalizados -->
-    <div id="dayProgramConfigView" class="subview" style="display:none;">
-      <div class="cards-toolbar">
-        <button class="icon-btn" id="dayProgramConfigBackBtn" aria-label="Volver">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <h2 class="page-title">Bloques personalizados</h2>
-        <div style="width:38px;"></div>
-      </div>
-      <main>
-        <p class="rec-hint" style="padding:0 0 8px 0;">Además de Juggernaut y Accesorios, puedes agregar bloques como Rugby o Cardio a tu entrenamiento — cada uno con su propio calentamiento y ejercicios.</p>
-        <ul id="customBlockTypeList"></ul>
-        <button class="add-card-toggle" id="addCustomBlockTypeBtn">+ Crear tipo de bloque</button>
-      </main>
-    </div>
-
-    <!-- Editor de un tipo de bloque personalizado -->
-    <div id="customBlockEditorView" class="subview" style="display:none;">
-      <div class="cards-toolbar">
-        <button class="icon-btn" id="customBlockEditorBackBtn" aria-label="Volver">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <h2 class="page-title">Editar bloque</h2>
-        <button class="icon-btn" id="customBlockDeleteBtn" aria-label="Eliminar">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m-9 0 1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-      </div>
-      <main>
-        <div class="field-label" style="margin-top:0;">Nombre</div>
-        <input class="due" id="customBlockNameInput" type="text" style="width:100%;" placeholder="Ej. Rugby" />
-
-        <div class="field-label">🔥 Calentamiento</div>
-        <ul id="editWarmupList"></ul>
-        <button class="add-card-toggle" id="addWarmupItemBtn">+ Agregar ítem de calentamiento</button>
-        <button class="add-card-toggle" id="importWarmupToggle">⇩ Importar calentamiento (JSON)</button>
-        <div class="add-card-form" id="importWarmupForm" style="display:none;">
-          <div class="field-label">Pega aquí el JSON</div>
-          <textarea class="notes" id="importWarmupTextarea" style="min-height:100px;" placeholder='{"warmup":[{"name":"Skip A","detail":"15mt"}]}'></textarea>
-          <div class="auth-error" id="importWarmupError" style="display:none;"></div>
-          <div class="add-card-actions">
-            <button class="habit-edit-btn" id="importWarmupCancelBtn">Cancelar</button>
-            <button class="done-toggle" id="importWarmupSubmitBtn">Importar</button>
-          </div>
-        </div>
-
-        <div class="field-label">Ejercicios</div>
-        <ul id="editDrillList"></ul>
-        <button class="add-card-toggle" id="addDrillItemBtn">+ Agregar ejercicio</button>
-        <button class="add-card-toggle" id="importDrillToggle">⇩ Importar ejercicios (JSON)</button>
-        <div class="add-card-form" id="importDrillForm" style="display:none;">
-          <div class="field-label">Pega aquí el JSON</div>
-          <textarea class="notes" id="importDrillTextarea" style="min-height:100px;" placeholder='{"drills":[{"name":"Piques","detail":"6x15mt"}]}'></textarea>
-          <div class="auth-error" id="importDrillError" style="display:none;"></div>
-          <div class="add-card-actions">
-            <button class="habit-edit-btn" id="importDrillCancelBtn">Cancelar</button>
-            <button class="done-toggle" id="importDrillSubmitBtn">Importar</button>
-          </div>
-        </div>
-
-        <button class="done-toggle" id="saveCustomBlockTypeBtn" style="width:100%; margin-top:16px; padding:14px;">Guardar</button>
       </main>
     </div>
 
@@ -3266,7 +3173,6 @@ const db = initializeFirestore(firebaseApp, {
 
   const trainingHomeViewEl = document.getElementById('trainingHomeView');
   const goDayTrainingBtn = document.getElementById('goDayTrainingBtn');
-  const dayProgramConfigBtn = document.getElementById('dayProgramConfigBtn');
 
   const trainingDayViewEl = document.getElementById('trainingDayView');
   const dayViewBackBtn = document.getElementById('dayViewBackBtn');
@@ -3309,46 +3215,9 @@ const db = initializeFirestore(firebaseApp, {
   const routineItemListEl = document.getElementById('routineItemList');
   const routineItemEmptyEl = document.getElementById('routineItemEmpty');
   const addRoutineItemRowEl = document.getElementById('addRoutineItemRow');
-  const saveRoutineBtn = document.getElementById('saveRoutineBtn');
   const addExtraToggle = document.getElementById('addExtraToggle');
   const addExtraForm = document.getElementById('addExtraForm');
-
-  const customBlockSessionViewEl = document.getElementById('customBlockSessionView');
-  const customBlockBackBtn = document.getElementById('customBlockBackBtn');
-  const customBlockTitleEl = document.getElementById('customBlockTitle');
-  const customBlockEditBtn = document.getElementById('customBlockEditBtn');
-  const customBlockWarmupListEl = document.getElementById('customBlockWarmupList');
-  const customBlockWarmupEmptyEl = document.getElementById('customBlockWarmupEmpty');
-  const customBlockDrillListEl = document.getElementById('customBlockDrillList');
-  const customBlockDrillEmptyEl = document.getElementById('customBlockDrillEmpty');
-  const markCustomBlockDoneBtn = document.getElementById('markCustomBlockDoneBtn');
-
-  const dayProgramConfigViewEl = document.getElementById('dayProgramConfigView');
-  const dayProgramConfigBackBtn = document.getElementById('dayProgramConfigBackBtn');
-  const customBlockTypeListEl = document.getElementById('customBlockTypeList');
-  const addCustomBlockTypeBtn = document.getElementById('addCustomBlockTypeBtn');
-
-  const customBlockEditorViewEl = document.getElementById('customBlockEditorView');
-  const customBlockEditorBackBtn = document.getElementById('customBlockEditorBackBtn');
-  const customBlockDeleteBtn = document.getElementById('customBlockDeleteBtn');
-  const customBlockNameInput = document.getElementById('customBlockNameInput');
-  const editWarmupListEl = document.getElementById('editWarmupList');
-  const addWarmupItemBtn = document.getElementById('addWarmupItemBtn');
-  const importWarmupToggle = document.getElementById('importWarmupToggle');
-  const importWarmupForm = document.getElementById('importWarmupForm');
-  const importWarmupTextarea = document.getElementById('importWarmupTextarea');
-  const importWarmupErrorEl = document.getElementById('importWarmupError');
-  const importWarmupCancelBtn = document.getElementById('importWarmupCancelBtn');
-  const importWarmupSubmitBtn = document.getElementById('importWarmupSubmitBtn');
-  const editDrillListEl = document.getElementById('editDrillList');
-  const addDrillItemBtn = document.getElementById('addDrillItemBtn');
-  const importDrillToggle = document.getElementById('importDrillToggle');
-  const importDrillForm = document.getElementById('importDrillForm');
-  const importDrillTextarea = document.getElementById('importDrillTextarea');
-  const importDrillErrorEl = document.getElementById('importDrillError');
-  const importDrillCancelBtn = document.getElementById('importDrillCancelBtn');
-  const importDrillSubmitBtn = document.getElementById('importDrillSubmitBtn');
-  const saveCustomBlockTypeBtn = document.getElementById('saveCustomBlockTypeBtn');
+  const newExtraCategoryRowEl = document.getElementById('newExtraCategoryRow');
   const newExtraNameEl = document.getElementById('newExtraName');
   const newExtraDetailEl = document.getElementById('newExtraDetail');
   const cancelExtraBtn = document.getElementById('cancelExtraBtn');
@@ -3769,36 +3638,21 @@ const db = initializeFirestore(firebaseApp, {
   const DAY_NAMES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
   const DAY_ABBR = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
 
-  // ---- Cara 6 / bloques personalizados + la sesión libre de hoy ----
-  let customBlockTypes = [];
-  let currentSessionBlocks = []; // [{id, type:'juggernaut'|'extra'|'custom', blockTypeId?}] — armado libremente cada vez
+  // ---- La sesión libre de hoy, armada con bloques ----
+  const EXERCISE_CATEGORIES = [
+    { key: 'calentamiento', label: 'Calentamiento' },
+    { key: 'ejercicio', label: 'Ejercicio' },
+    { key: 'cardio', label: 'Cardio' },
+    { key: 'pliometria', label: 'Pliometría' },
+  ];
+  function categoryLabel(key){
+    const c = EXERCISE_CATEGORIES.find(c => c.key === key);
+    return c ? c.label : 'Ejercicio';
+  }
+
+  let currentSessionBlocks = []; // [{id, type:'juggernaut'|'category', category?}] — armado libremente cada vez
   let sessionFromRoutine = false; // true once started from "Mis rutinas" — locks reordering/adding
   let sessionBlocksDone = {}; // { [blockId]: true } — se limpia al finalizar/cancelar la sesión
-  let activeCustomBlockTypeId = null;
-  let editingBlockTypeId = null; // null while creating a new one
-  let editWarmupDraft = [];
-  let editDrillDraft = [];
-
-  function defaultCustomBlockTypes(){
-    return [
-      {
-        id: uid(), name: 'Rugby',
-        warmup: [
-          { id: uid(), name: 'Skip A', detail: '15mt' },
-          { id: uid(), name: 'Piques progresivos', detail: '3x5' },
-        ],
-        drills: [
-          { id: uid(), name: 'Piques', detail: '6x15mt' },
-          { id: uid(), name: 'Cambio de Dirección', detail: '3x15mt' },
-        ],
-      },
-      {
-        id: uid(), name: 'Cardio',
-        warmup: [],
-        drills: [{ id: uid(), name: 'Cardio Z2', detail: '10min' }],
-      },
-    ];
-  }
 
   let selectedRpe = null;
   let calMonthCursor = new Date();
@@ -3811,7 +3665,7 @@ const db = initializeFirestore(firebaseApp, {
   let deleteAllExtrasArmed = false;
 
   const MAX_ROUTINES = 8;
-  let routines = []; // [{id, name, items: [{id,type,blockTypeId?,selectedExerciseIds?}]}] — same item shape as session blocks
+  let routines = []; // [{id, name, items: [{id,type,category?,selectedExerciseIds?}]}] — same item shape as session blocks
   let editingRoutineId = null; // null while creating a new routine
   let activeExtraDraftSets = null;
   let selectedExtraRpe = null;
@@ -3886,7 +3740,6 @@ const db = initializeFirestore(firebaseApp, {
       trainingLog = Array.isArray(state.trainingLog) ? state.trainingLog : [];
       trainingMaxHistory = Array.isArray(state.trainingMaxHistory) ? state.trainingMaxHistory : [];
       dayCompletionLog = Array.isArray(state.dayCompletionLog) ? state.dayCompletionLog : [];
-      customBlockTypes = Array.isArray(state.customBlockTypes) ? state.customBlockTypes : defaultCustomBlockTypes();
       currentSessionBlocks = Array.isArray(state.currentSessionBlocks) ? state.currentSessionBlocks : [];
       sessionBlocksDone = (state.sessionBlocksDone && typeof state.sessionBlocksDone === 'object') ? state.sessionBlocksDone : {};
       sessionFromRoutine = !!state.sessionFromRoutine;
@@ -3923,7 +3776,7 @@ const db = initializeFirestore(firebaseApp, {
   async function persist(){
     if (!currentUserId || !dataLoadOk) return;
     try {
-      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, notificationSound, habits, decks, salaryEntries, otherIncomes, fixedExpenses, debts, savings, freeExpenses, financeHistory, currentWave, currentWeek, lifts, extraExercises, trainingLog, trainingMaxHistory, dayCompletionLog, customBlockTypes, currentSessionBlocks, sessionBlocksDone, sessionFromRoutine, routines });
+      await setDoc(doc(db, 'users', currentUserId), { tasks, history, theme: currentTheme, notificationSound, habits, decks, salaryEntries, otherIncomes, fixedExpenses, debts, savings, freeExpenses, financeHistory, currentWave, currentWeek, lifts, extraExercises, trainingLog, trainingMaxHistory, dayCompletionLog, currentSessionBlocks, sessionBlocksDone, sessionFromRoutine, routines });
     } catch(e) {
       console.error('No se pudo guardar', e);
     }
@@ -3935,14 +3788,11 @@ const db = initializeFirestore(firebaseApp, {
     freeExpenses = []; financeHistory = [];
     currentWave = 'oleada8'; currentWeek = 'acumulacion';
     lifts = defaultLifts(); extraExercises = []; trainingLog = []; trainingMaxHistory = []; dayCompletionLog = []; pendingDayFinish = null; activeLiftName = null;
-    customBlockTypes = defaultCustomBlockTypes();
     currentSessionBlocks = [];
     sessionBlocksDone = {};
     sessionFromRoutine = false;
     routines = [];
     editingRoutineId = null;
-    activeCustomBlockTypeId = null;
-    editingBlockTypeId = null;
     openId = null; activeDeckId = null;
     loaded = false;
     dataLoadOk = false;
@@ -5162,7 +5012,7 @@ const db = initializeFirestore(firebaseApp, {
   // Bump APP_VERSION here *and* the number inside version.json together on every
   // update. The badge compares this baked-in value against the live version.json
   // on the server to know whether the currently loaded copy is out of date.
-  const APP_VERSION = '2026-08-12.1';
+  const APP_VERSION = '2026-08-12.2';
 
   function setVersionBadge(state, label){
     versionBadgeEl.classList.remove('current', 'outdated', 'unknown');
@@ -5932,6 +5782,7 @@ const db = initializeFirestore(firebaseApp, {
   function ensureExtraDefaults(ex){
     if (typeof ex.restSeconds !== 'number') ex.restSeconds = 90;
     if (!Array.isArray(ex.sets)) ex.sets = [];
+    if (!ex.category || !EXERCISE_CATEGORIES.some(c => c.key === ex.category)) ex.category = 'ejercicio';
     return ex;
   }
 
@@ -5951,23 +5802,16 @@ const db = initializeFirestore(firebaseApp, {
   // no explanation the next time you use it.
   function scrubExerciseIdEverywhere(exerciseId){
     currentSessionBlocks.forEach(b => {
-      if (b.type === 'extra' && Array.isArray(b.selectedExerciseIds)) {
+      if (b.type === 'category' && Array.isArray(b.selectedExerciseIds)) {
         b.selectedExerciseIds = b.selectedExerciseIds.filter(id => id !== exerciseId);
       }
     });
     routines.forEach(r => {
       r.items.forEach(it => {
-        if (it.type === 'extra' && Array.isArray(it.selectedExerciseIds)) {
+        if (it.type === 'category' && Array.isArray(it.selectedExerciseIds)) {
           it.selectedExerciseIds = it.selectedExerciseIds.filter(id => id !== exerciseId);
         }
       });
-    });
-  }
-
-  function scrubCustomBlockTypeEverywhere(blockTypeId){
-    currentSessionBlocks = currentSessionBlocks.filter(b => !(b.type === 'custom' && b.blockTypeId === blockTypeId));
-    routines.forEach(r => {
-      r.items = r.items.filter(it => !(it.type === 'custom' && it.blockTypeId === blockTypeId));
     });
   }
 
@@ -5981,21 +5825,24 @@ const db = initializeFirestore(firebaseApp, {
   }
 
   function renderExtraList(){
-    if (extraExercises.length === 0) {
-      extraListEl.innerHTML = `<p class="fin-item-sub" style="padding:6px 0;">Sin ejercicios en tu base de datos todavía.</p>`;
-      return;
-    }
     extraExercises.forEach(ensureExtraDefaults);
     const block = getAccesoriosPickerTarget();
     const selected = block ? block.selectedExerciseIds : null;
+    const list = block ? extraExercises.filter(e => e.category === block.category) : extraExercises;
 
-    extraListEl.innerHTML = extraExercises.map(e => `
+    if (list.length === 0) {
+      extraListEl.innerHTML = `<p class="fin-item-sub" style="padding:6px 0;">${block ? 'Sin ejercicios en la categoría "' + escapeHtml(categoryLabel(block.category)) + '" todavía — agrégalos desde "Editar ejercicios".' : 'Sin ejercicios en tu base de datos todavía.'}</p>`;
+      return;
+    }
+
+    extraListEl.innerHTML = list.map(e => `
       <li class="fin-item" data-id="${e.id}" style="cursor:pointer;">
         ${selected ? `<button class="checklist-check ${selected.includes(e.id) ? 'checked' : ''}" data-pick-id="${e.id}" style="flex-shrink:0;">✓</button>` : ''}
         ${!block ? `<button class="fin-remove" data-id="${e.id}">✕</button>` : ''}
         <div class="fin-item-info" data-open-id="${e.id}">
           <div class="fin-item-name">${escapeHtml(e.name)}</div>
           <div class="fin-item-sub">${escapeHtml(setsSummary(e))}</div>
+          ${!block ? `<div class="extra-item-days">${escapeHtml(categoryLabel(e.category))}</div>` : ''}
         </div>
       </li>`).join('');
     extraListEl.querySelectorAll('.fin-remove').forEach(btn => {
@@ -6027,7 +5874,7 @@ const db = initializeFirestore(firebaseApp, {
   function openAccesoriosLogView(block){
     accesoriosLogMode = true;
     accesoriosSessionDate = todayKey();
-    accesoriosTitleEl.textContent = 'Accesorios';
+    accesoriosTitleEl.textContent = categoryLabel(block.category);
     accesoriosHintEl.textContent = '';
     accesoriosManageControlsEl.style.display = 'none';
     accesoriosSessionDrafts = {};
@@ -6141,7 +5988,7 @@ const db = initializeFirestore(firebaseApp, {
         if (trainingLog.length > 400) trainingLog = trainingLog.slice(0, 400);
       }
     });
-    markDayBlockDoneForType('extra');
+    markDayBlockDoneForType('category', block.category);
     scheduleSave();
     accesoriosLogMode = false;
     activeAccesoriosBlockId = null;
@@ -6984,10 +6831,13 @@ const db = initializeFirestore(firebaseApp, {
     if (Array.isArray(data.extra)) {
       data.extra.forEach(e => {
         if (e && typeof e.name === 'string' && e.name.trim()) {
+          const catKey = typeof e.category === 'string' ? e.category.trim().toLowerCase() : '';
+          const category = EXERCISE_CATEGORIES.some(c => c.key === catKey) ? catKey : 'ejercicio';
           extraExercises.push({
             id: uid(),
             name: e.name.trim(),
             detail: (e.detail || '').toString().trim(),
+            category,
             restSeconds: 90,
             sets: [],
           });
@@ -7033,10 +6883,23 @@ const db = initializeFirestore(firebaseApp, {
   trainingSettingsCloseBtn.addEventListener('click', () => trainingSettingsOverlay.classList.remove('open'));
   trainingSettingsOverlay.addEventListener('click', (e) => { if (e.target === trainingSettingsOverlay) trainingSettingsOverlay.classList.remove('open'); });
 
+  let newExtraCategory = 'ejercicio';
+  function renderNewExtraCategoryChips(){
+    newExtraCategoryRowEl.innerHTML = EXERCISE_CATEGORIES.map(c => `
+      <button type="button" class="schedule-opt-btn ${newExtraCategory === c.key ? 'active' : ''}" data-cat="${c.key}">${escapeHtml(c.label)}</button>
+    `).join('');
+    newExtraCategoryRowEl.querySelectorAll('[data-cat]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        newExtraCategory = btn.dataset.cat;
+        renderNewExtraCategoryChips();
+      });
+    });
+  }
+
   addExtraToggle.addEventListener('click', () => {
     const showing = addExtraForm.style.display !== 'none';
     addExtraForm.style.display = showing ? 'none' : '';
-    if (!showing) newExtraNameEl.focus();
+    if (!showing) { newExtraCategory = 'ejercicio'; renderNewExtraCategoryChips(); newExtraNameEl.focus(); }
   });
   cancelExtraBtn.addEventListener('click', () => {
     addExtraForm.style.display = 'none';
@@ -7046,7 +6909,7 @@ const db = initializeFirestore(firebaseApp, {
   saveExtraBtn.addEventListener('click', () => {
     const nm = newExtraNameEl.value.trim();
     if (!nm) { newExtraNameEl.focus(); return; }
-    extraExercises.push({ id: uid(), name: nm, detail: newExtraDetailEl.value.trim(), days: [] });
+    extraExercises.push({ id: uid(), name: nm, detail: newExtraDetailEl.value.trim(), category: newExtraCategory, restSeconds: 90, sets: [] });
     scheduleSave();
     newExtraNameEl.value = '';
     newExtraDetailEl.value = '';
@@ -7429,7 +7292,7 @@ const db = initializeFirestore(firebaseApp, {
       trainingLog.unshift(Object.assign({ id: uid() }, entry));
       if (trainingLog.length > 400) trainingLog = trainingLog.slice(0, 400);
     }
-    markDayBlockDoneForType('extra');
+    const __activeBlk = currentSessionBlocks.find(b => b.id === activeAccesoriosBlockId); if (__activeBlk) markDayBlockDoneForType('category', __activeBlk.category);
     scheduleSave();
     exitExtraSession();
   });
@@ -7439,7 +7302,6 @@ const db = initializeFirestore(firebaseApp, {
   // ============================================================
   const TRAINING_SUBVIEW_IDS = [
     'trainingHomeView', 'trainingDayView', 'trainingOverviewView', 'accesoriosListView',
-    'customBlockSessionView', 'dayProgramConfigView', 'customBlockEditorView',
     'liftSessionView', 'extraConfigView', 'extraSessionView',
     'routinesListView', 'routineEditorView',
   ];
@@ -7452,18 +7314,15 @@ const db = initializeFirestore(firebaseApp, {
 
   // Called after successfully finishing a session, so the matching block(s)
   // in today's sesión get their checkmark without any extra taps.
-  function markDayBlockDoneForType(type){
+  function markDayBlockDoneForType(type, category){
     let changed = false;
     currentSessionBlocks.forEach(b => {
-      if (b.type === type && !sessionBlocksDone[b.id]) { sessionBlocksDone[b.id] = true; changed = true; }
+      if (b.type === type && (category === undefined || b.category === category) && !sessionBlocksDone[b.id]) {
+        sessionBlocksDone[b.id] = true;
+        changed = true;
+      }
     });
     if (changed) scheduleSave();
-  }
-  function markDayBlockDoneForCustomType(blockTypeId){
-    currentSessionBlocks.forEach(b => {
-      if (b.type === 'custom' && b.blockTypeId === blockTypeId) sessionBlocksDone[b.id] = true;
-    });
-    scheduleSave();
   }
 
   // ---- Cara 1 ----
@@ -7474,7 +7333,6 @@ const db = initializeFirestore(firebaseApp, {
     scheduleSave();
     openDayView();
   });
-  dayProgramConfigBtn.addEventListener('click', openDayProgramConfig);
   editExercisesBtn.addEventListener('click', openExerciseDatabase);
 
   function openExerciseDatabase(){
@@ -7490,8 +7348,7 @@ const db = initializeFirestore(firebaseApp, {
   // ---- Cara 2: Mi entrenamiento (bloques agregados libremente) ----
   const SESSION_BLOCK_TYPE_OPTIONS = () => ([
     { type: 'juggernaut', name: 'Ciclo Juggernaut' },
-    { type: 'extra', name: 'Accesorios' },
-    ...customBlockTypes.map(t => ({ type: 'custom', blockTypeId: t.id, name: t.name })),
+    ...EXERCISE_CATEGORIES.map(c => ({ type: 'category', category: c.key, name: c.label })),
   ]);
 
   function openDayView(){
@@ -7503,12 +7360,10 @@ const db = initializeFirestore(firebaseApp, {
     if (block.type === 'juggernaut') {
       return { name: 'Ciclo Juggernaut', sub: WAVE_LABEL[currentWave] + ' · ' + WEEK_LABEL[currentWeek] };
     }
-    if (block.type === 'extra') {
-      const n = (block.selectedExerciseIds || []).length;
-      return { name: 'Accesorios', sub: n === 0 ? 'Sin ejercicios elegidos todavía' : n + ' ejercicio' + (n === 1 ? '' : 's') + ' elegido' + (n === 1 ? '' : 's') };
-    }
-    const bt = customBlockTypes.find(t => t.id === block.blockTypeId);
-    return { name: bt ? bt.name : 'Bloque eliminado', sub: bt ? (bt.warmup.length + bt.drills.length) + ' ítems' : '' };
+    // 'category' (and legacy 'extra' blocks from before this update)
+    const label = categoryLabel(block.category);
+    const n = (block.selectedExerciseIds || []).length;
+    return { name: label, sub: n === 0 ? 'Sin ejercicios elegidos todavía' : n + ' ejercicio' + (n === 1 ? '' : 's') + ' elegido' + (n === 1 ? '' : 's') };
   }
 
   function renderDayView(){
@@ -7569,13 +7424,12 @@ const db = initializeFirestore(firebaseApp, {
 
     addSessionBlockRowEl.style.display = sessionFromRoutine ? 'none' : '';
     addSessionBlockRowEl.innerHTML = SESSION_BLOCK_TYPE_OPTIONS().map(opt => `
-      <button class="block-type-btn" data-add-session-block="${opt.type}${opt.blockTypeId ? ':' + opt.blockTypeId : ''}">+ ${escapeHtml(opt.name)}</button>
+      <button class="block-type-btn" data-add-session-block="${opt.type}${opt.category ? ':' + opt.category : ''}">+ ${escapeHtml(opt.name)}</button>
     `).join('');
     addSessionBlockRowEl.querySelectorAll('[data-add-session-block]').forEach(btn => {
       btn.addEventListener('click', () => {
-        const [type, blockTypeId] = btn.dataset.addSessionBlock.split(':');
-        const block = type === 'custom' ? { id: uid(), type: 'custom', blockTypeId } : { id: uid(), type };
-        if (type === 'extra') block.selectedExerciseIds = [];
+        const [type, category] = btn.dataset.addSessionBlock.split(':');
+        const block = type === 'category' ? { id: uid(), type: 'category', category, selectedExerciseIds: [] } : { id: uid(), type };
         currentSessionBlocks.push(block);
         scheduleSave();
         renderDayView();
@@ -7597,7 +7451,7 @@ const db = initializeFirestore(firebaseApp, {
     const block = currentSessionBlocks.find(b => b.id === blockId);
     if (!block) return;
     if (block.type === 'juggernaut') { showTrainingSubview('trainingOverviewView'); renderOverview(); return; }
-    if (block.type === 'extra') {
+    if (block.type === 'category') {
       if (!Array.isArray(block.selectedExerciseIds)) block.selectedExerciseIds = [];
       activeAccesoriosBlockId = block.id;
       accesoriosReturnView = 'trainingDayView';
@@ -7605,7 +7459,7 @@ const db = initializeFirestore(firebaseApp, {
         openAccesoriosLogView(block);
       } else {
         accesoriosLogMode = false;
-        accesoriosTitleEl.textContent = 'Accesorios';
+        accesoriosTitleEl.textContent = categoryLabel(block.category);
         accesoriosHintEl.textContent = 'Marca ✓ los ejercicios que vas a hacer hoy.';
         accesoriosManageControlsEl.style.display = 'none';
         showTrainingSubview('accesoriosListView');
@@ -7613,7 +7467,6 @@ const db = initializeFirestore(firebaseApp, {
       }
       return;
     }
-    if (block.type === 'custom') openCustomBlockSession(block.blockTypeId);
   }
 
   dayViewBackBtn.addEventListener('click', () => showTrainingSubview('trainingHomeView'));
@@ -7648,75 +7501,6 @@ const db = initializeFirestore(firebaseApp, {
     if (accesoriosReturnView === 'routineEditorView') renderRoutineEditorItems();
   });
 
-  deleteAllExtrasBtn.addEventListener('click', () => {
-    if (!deleteAllExtrasArmed) {
-      deleteAllExtrasArmed = true;
-      deleteAllExtrasBtn.textContent = '¿Seguro? Toca de nuevo para borrar TODO';
-      setTimeout(() => {
-        deleteAllExtrasArmed = false;
-        deleteAllExtrasBtn.textContent = '🗑 Borrar todos los ejercicios';
-      }, 4000);
-      return;
-    }
-    extraExercises = [];
-    currentSessionBlocks.forEach(b => { if (b.type === 'extra') b.selectedExerciseIds = []; });
-    routines.forEach(r => { r.items.forEach(it => { if (it.type === 'extra') it.selectedExerciseIds = []; }); });
-    deleteAllExtrasArmed = false;
-    deleteAllExtrasBtn.textContent = '🗑 Borrar todos los ejercicios';
-    scheduleSave();
-    renderExtraList();
-  });
-
-  // ---- Cara 6: bloque personalizado ----
-  function openCustomBlockSession(blockTypeId){
-    const bt = customBlockTypes.find(t => t.id === blockTypeId);
-    if (!bt) return;
-    activeCustomBlockTypeId = blockTypeId;
-    customBlockTitleEl.textContent = bt.name;
-    renderCustomBlockChecklist(customBlockWarmupListEl, customBlockWarmupEmptyEl, bt.warmup);
-    renderCustomBlockChecklist(customBlockDrillListEl, customBlockDrillEmptyEl, bt.drills);
-    showTrainingSubview('customBlockSessionView');
-  }
-
-  const customBlockChecked = {}; // ephemeral per-visit checklist state, keyed by item id
-
-  function renderCustomBlockChecklist(listEl, emptyEl, items){
-    if (!items || items.length === 0) { listEl.innerHTML = ''; emptyEl.style.display = ''; return; }
-    emptyEl.style.display = 'none';
-    listEl.innerHTML = items.map(item => `
-      <li class="checklist-item" data-item-id="${item.id}">
-        <div class="checklist-item-info">
-          <div class="checklist-item-name">${escapeHtml(item.name)}</div>
-          ${item.detail ? `<div class="checklist-item-detail">${escapeHtml(item.detail)}</div>` : ''}
-        </div>
-        <button class="checklist-check ${customBlockChecked[item.id] ? 'checked' : ''}" data-check-item="${item.id}">✓</button>
-      </li>`).join('');
-    listEl.querySelectorAll('[data-check-item]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = btn.dataset.checkItem;
-        customBlockChecked[id] = !customBlockChecked[id];
-        btn.classList.toggle('checked', !!customBlockChecked[id]);
-      });
-    });
-  }
-
-  customBlockBackBtn.addEventListener('click', () => { showTrainingSubview('trainingDayView'); renderDayView(); });
-  customBlockEditBtn.addEventListener('click', () => openCustomBlockEditor(activeCustomBlockTypeId));
-
-  markCustomBlockDoneBtn.addEventListener('click', () => {
-    trainingLog.unshift({
-      id: uid(), ts: Date.now(), date: todayKey(),
-      wave: null, week: null, lift: customBlockTitleEl.textContent, kind: 'custom',
-      sets: [], estimated1RM: null, rpe: null,
-    });
-    if (trainingLog.length > 400) trainingLog = trainingLog.slice(0, 400);
-    markDayBlockDoneForCustomType(activeCustomBlockTypeId);
-    scheduleSave();
-    showTrainingSubview('trainingDayView');
-    renderDayView();
-  });
-
-  // ---- Configuración del programa (Cara 2's ⚙️) ----
   // ---- Mis rutinas ----
   openRoutinesBtn.addEventListener('click', openRoutinesList);
   routinesListBackBtn.addEventListener('click', () => showTrainingSubview('trainingHomeView'));
@@ -7742,7 +7526,7 @@ const db = initializeFirestore(firebaseApp, {
     routinesListEl.innerHTML = routines.map(r => `
       <li class="routine-row" data-routine-id="${r.id}">
         <div class="routine-row-body" data-edit-routine="${r.id}">
-          <div class="routine-row-name">${escapeHtml(r.name)}</div>
+          <div class="routine-row-name">${escapeHtml(r.name || 'Rutina sin nombre')}</div>
           <div class="routine-row-sub">${escapeHtml(routineItemSummary(r))}</div>
         </div>
         <button class="routine-start-btn" data-start-routine="${r.id}">▶ Iniciar</button>
@@ -7841,13 +7625,12 @@ const db = initializeFirestore(firebaseApp, {
     }
 
     addRoutineItemRowEl.innerHTML = SESSION_BLOCK_TYPE_OPTIONS().map(opt => `
-      <button class="block-type-btn" data-add-ritem="${opt.type}${opt.blockTypeId ? ':' + opt.blockTypeId : ''}">+ ${escapeHtml(opt.name)}</button>
+      <button class="block-type-btn" data-add-ritem="${opt.type}${opt.category ? ':' + opt.category : ''}">+ ${escapeHtml(opt.name)}</button>
     `).join('');
     addRoutineItemRowEl.querySelectorAll('[data-add-ritem]').forEach(btn => {
       btn.addEventListener('click', () => {
-        const [type, blockTypeId] = btn.dataset.addRitem.split(':');
-        const item = type === 'custom' ? { id: uid(), type: 'custom', blockTypeId } : { id: uid(), type };
-        if (type === 'extra') item.selectedExerciseIds = [];
+        const [type, category] = btn.dataset.addRitem.split(':');
+        const item = type === 'category' ? { id: uid(), type: 'category', category, selectedExerciseIds: [] } : { id: uid(), type };
         r.items.push(item);
         scheduleSave();
         renderRoutineEditorItems();
@@ -7870,18 +7653,18 @@ const db = initializeFirestore(firebaseApp, {
     const r = currentEditingRoutine();
     const item = r && r.items.find(it => it.id === itemId);
     if (!item) return;
-    if (item.type === 'extra') {
+    if (item.type === 'category') {
       if (!Array.isArray(item.selectedExerciseIds)) item.selectedExerciseIds = [];
       activeAccesoriosBlockId = item.id;
       accesoriosReturnView = 'routineEditorView';
-      accesoriosTitleEl.textContent = 'Accesorios de la rutina';
+      accesoriosTitleEl.textContent = categoryLabel(item.category) + ' de la rutina';
       accesoriosHintEl.textContent = 'Marca ✓ los ejercicios que quieres que traiga esta rutina cada vez que la uses.';
       accesoriosManageControlsEl.style.display = 'none';
       showTrainingSubview('accesoriosListView');
       renderExtraList();
       return;
     }
-    // Juggernaut / bloques personalizados no necesitan configuración adicional aquí — su contenido ya vive en su propia sección.
+    // Ciclo Juggernaut no necesita configuración adicional aquí — su contenido ya vive en su propia sección.
   }
 
   routineNameInput.addEventListener('input', () => {
@@ -7890,7 +7673,7 @@ const db = initializeFirestore(firebaseApp, {
   });
   routineNameInput.addEventListener('change', () => {
     const r = currentEditingRoutine();
-    if (r) { r.name = routineNameInput.value.trim(); scheduleSave(); }
+    if (r) { r.name = routineNameInput.value.trim(); scheduleSave(); renderRoutinesList(); }
   });
 
   function leaveRoutineEditor(){
@@ -7907,20 +7690,7 @@ const db = initializeFirestore(firebaseApp, {
     showTrainingSubview('routinesListView');
     renderRoutinesList();
   }
-
   routineEditorBackBtn.addEventListener('click', leaveRoutineEditor);
-
-  saveRoutineBtn.addEventListener('click', () => {
-    const r = currentEditingRoutine();
-    if (!r) return;
-    const name = routineNameInput.value.trim();
-    if (!name) { routineNameInput.focus(); return; }
-    r.name = name;
-    scheduleSave();
-    editingRoutineId = null;
-    showTrainingSubview('routinesListView');
-    renderRoutinesList();
-  });
 
   routineDeleteBtn.addEventListener('click', () => {
     if (!editingRoutineId) return;
@@ -7931,134 +7701,23 @@ const db = initializeFirestore(firebaseApp, {
     renderRoutinesList();
   });
 
-  function openDayProgramConfig(){
-    showTrainingSubview('dayProgramConfigView');
-    renderDayProgramConfig();
-  }
-  dayProgramConfigBackBtn.addEventListener('click', () => showTrainingSubview('trainingHomeView'));
-
-  function renderDayProgramConfig(){
-    customBlockTypeListEl.innerHTML = customBlockTypes.map(t => `
-      <li class="custom-block-type-row" data-open-type="${t.id}">
-        <div style="flex:1;">
-          <div class="fin-item-name">${escapeHtml(t.name)}</div>
-          <div class="fin-item-sub">${t.warmup.length} calentamiento · ${t.drills.length} ejercicios</div>
-        </div>
-        <span class="chevron">›</span>
-      </li>`).join('');
-    customBlockTypeListEl.querySelectorAll('[data-open-type]').forEach(el => {
-      el.addEventListener('click', () => openCustomBlockEditor(el.dataset.openType));
-    });
-  }
-
-  addCustomBlockTypeBtn.addEventListener('click', () => openCustomBlockEditor(null));
-
-  // ---- Editor de un tipo de bloque personalizado ----
-  function openCustomBlockEditor(blockTypeId){
-    editingBlockTypeId = blockTypeId;
-    if (blockTypeId) {
-      const bt = customBlockTypes.find(t => t.id === blockTypeId);
-      customBlockNameInput.value = bt ? bt.name : '';
-      editWarmupDraft = bt ? bt.warmup.map(i => Object.assign({}, i)) : [];
-      editDrillDraft = bt ? bt.drills.map(i => Object.assign({}, i)) : [];
-      customBlockDeleteBtn.style.display = '';
-    } else {
-      customBlockNameInput.value = '';
-      editWarmupDraft = [];
-      editDrillDraft = [];
-      customBlockDeleteBtn.style.display = 'none';
+  deleteAllExtrasBtn.addEventListener('click', () => {
+    if (!deleteAllExtrasArmed) {
+      deleteAllExtrasArmed = true;
+      deleteAllExtrasBtn.textContent = '¿Seguro? Toca de nuevo para borrar TODO';
+      setTimeout(() => {
+        deleteAllExtrasArmed = false;
+        deleteAllExtrasBtn.textContent = '🗑 Borrar todos los ejercicios';
+      }, 4000);
+      return;
     }
-    renderEditItemList(editWarmupListEl, editWarmupDraft, 'warmup');
-    renderEditItemList(editDrillListEl, editDrillDraft, 'drill');
-    showTrainingSubview('customBlockEditorView');
-  }
-  customBlockEditorBackBtn.addEventListener('click', () => { showTrainingSubview('dayProgramConfigView'); renderDayProgramConfig(); });
-
-  function renderEditItemList(listEl, draft, kind){
-    listEl.innerHTML = draft.map((item, i) => `
-      <div class="edit-item-row" data-idx="${i}">
-        <input class="edit-item-name" type="text" placeholder="Nombre" value="${escapeHtml(item.name || '')}" data-${kind}-name="${i}" />
-        <input class="edit-item-detail" type="text" placeholder="Detalle" value="${escapeHtml(item.detail || '')}" data-${kind}-detail="${i}" />
-        <button class="fin-remove" data-${kind}-remove="${i}">✕</button>
-      </div>`).join('');
-    listEl.querySelectorAll(`[data-${kind}-name]`).forEach(inp => {
-      inp.addEventListener('input', () => { draft[+inp.dataset[kind + 'Name']].name = inp.value; });
-    });
-    listEl.querySelectorAll(`[data-${kind}-detail]`).forEach(inp => {
-      inp.addEventListener('input', () => { draft[+inp.dataset[kind + 'Detail']].detail = inp.value; });
-    });
-    listEl.querySelectorAll(`[data-${kind}-remove]`).forEach(btn => {
-      btn.addEventListener('click', () => {
-        draft.splice(+btn.dataset[kind + 'Remove'], 1);
-        renderEditItemList(listEl, draft, kind);
-      });
-    });
-  }
-
-  addWarmupItemBtn.addEventListener('click', () => {
-    editWarmupDraft.push({ id: uid(), name: '', detail: '' });
-    renderEditItemList(editWarmupListEl, editWarmupDraft, 'warmup');
-  });
-  addDrillItemBtn.addEventListener('click', () => {
-    editDrillDraft.push({ id: uid(), name: '', detail: '' });
-    renderEditItemList(editDrillListEl, editDrillDraft, 'drill');
-  });
-
-  function wireChecklistImport(toggleBtn, formEl, textareaEl, errorEl, cancelBtn, submitBtn, draftGetter, listEl, kind, jsonKey){
-    toggleBtn.addEventListener('click', () => {
-      const showing = formEl.style.display !== 'none';
-      formEl.style.display = showing ? 'none' : '';
-      errorEl.style.display = 'none';
-      if (!showing) textareaEl.focus();
-    });
-    cancelBtn.addEventListener('click', () => { formEl.style.display = 'none'; textareaEl.value = ''; errorEl.style.display = 'none'; });
-    submitBtn.addEventListener('click', () => {
-      let data;
-      try { data = JSON.parse(textareaEl.value); } catch(e) { errorEl.textContent = 'JSON inválido.'; errorEl.style.display = ''; return; }
-      const list = data[jsonKey];
-      if (!Array.isArray(list) || list.length === 0) {
-        errorEl.textContent = `Debe tener un campo "${jsonKey}" con una lista de al menos un ítem.`;
-        errorEl.style.display = '';
-        return;
-      }
-      let count = 0;
-      list.forEach(item => {
-        if (item && typeof item.name === 'string' && item.name.trim()) {
-          draftGetter().push({ id: uid(), name: item.name.trim(), detail: (item.detail || '').toString().trim() });
-          count++;
-        }
-      });
-      if (count === 0) { errorEl.textContent = 'No encontré ítems válidos (cada uno necesita al menos "name").'; errorEl.style.display = ''; return; }
-      renderEditItemList(listEl, draftGetter(), kind);
-      textareaEl.value = '';
-      formEl.style.display = 'none';
-      errorEl.style.display = 'none';
-    });
-  }
-  wireChecklistImport(importWarmupToggle, importWarmupForm, importWarmupTextarea, importWarmupErrorEl, importWarmupCancelBtn, importWarmupSubmitBtn, () => editWarmupDraft, editWarmupListEl, 'warmup', 'warmup');
-  wireChecklistImport(importDrillToggle, importDrillForm, importDrillTextarea, importDrillErrorEl, importDrillCancelBtn, importDrillSubmitBtn, () => editDrillDraft, editDrillListEl, 'drill', 'drills');
-
-  saveCustomBlockTypeBtn.addEventListener('click', () => {
-    const name = customBlockNameInput.value.trim();
-    if (!name) { customBlockNameInput.focus(); return; }
-    if (editingBlockTypeId) {
-      const bt = customBlockTypes.find(t => t.id === editingBlockTypeId);
-      bt.name = name; bt.warmup = editWarmupDraft; bt.drills = editDrillDraft;
-    } else {
-      customBlockTypes.push({ id: uid(), name, warmup: editWarmupDraft, drills: editDrillDraft });
-    }
+    extraExercises = [];
+    currentSessionBlocks.forEach(b => { if (b.type === 'category') b.selectedExerciseIds = []; });
+    routines.forEach(r => { r.items.forEach(it => { if (it.type === 'category') it.selectedExerciseIds = []; }); });
+    deleteAllExtrasArmed = false;
+    deleteAllExtrasBtn.textContent = '🗑 Borrar todos los ejercicios';
     scheduleSave();
-    showTrainingSubview('dayProgramConfigView');
-    renderDayProgramConfig();
-  });
-
-  customBlockDeleteBtn.addEventListener('click', () => {
-    if (!editingBlockTypeId) return;
-    customBlockTypes = customBlockTypes.filter(t => t.id !== editingBlockTypeId);
-    scrubCustomBlockTypeEverywhere(editingBlockTypeId);
-    scheduleSave();
-    showTrainingSubview('dayProgramConfigView');
-    renderDayProgramConfig();
+    renderExtraList();
   });
 
   // ---- Offline indicator ----
